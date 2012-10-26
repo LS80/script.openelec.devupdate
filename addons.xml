@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon id="script.openelec.devupdate"
+       name="OpenELEC Dev Update"
+       version="1.0.4"
+       provider-name="Leopold">
+  <requires>
+    <import addon="xbmc.python" version="2.0"/>
+    <import addon="os.openelec.tv" version="2.0" optional="false"/>
+  </requires>
+  <extension point="xbmc.python.script"
+             library="default.py"/>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>OpenELEC development build updater</summary>
+    <description>This XBMC script downloads and extracts OpenELEC update files. It will display a list of all builds at the URL to select from. The progress for the entire process will be displayed. Once complete it will ask if you want to reboot to install the new build.</description>
+  </extension>
+  <extension point="xbmc.addon.repository"
+             name="OpenELEC Dev Update Repository">
+    <info compressed="false">http://openelec-dev-update.googlecode.com/hg/addons.xml</info>
+    <checksum>http://openelec-dev-update.googlecode.com/hg/addons.xml.md5</checksum>
+    <datadir zip="false">http://openelec-dev-update.googlecode.com/hg</datadir>
+  </extension>
+</addon>
+
+<addon id="repository.openelec.devupdate"
+       name="OpenELEC Dev Update Repository"
+       version="1.0.0"
+       provider-name="Leopold">
+  <extension point="xbmc.addon.repository"
+             name="OpenELEC Dev Update Repository">
+    <info compressed="false">http://openelec-dev-update.googlecode.com/hg/addons.xml</info>
+    <checksum>http://openelec-dev-update.googlecode.com/hg/addons.xml.md5</checksum>
+    <datadir zip="false">http://openelec-dev-update.googlecode.com/hg</datadir>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>OpenELEC Dev Update Repository</summary>
+    <description>Download and install the OpenELEC Dev Update addon.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+</addons>
