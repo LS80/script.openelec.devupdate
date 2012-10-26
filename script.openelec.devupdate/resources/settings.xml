@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label= "General">
+        <setting label="URL" type="labelenum" id="url_list" values="Other|http://sources.openelec.tv/tmp/image|http://openelec.thestateofme.com|https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs|https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y|https://www.dropbox.com/sh/6w9ve84u0zc9v6s/H3OaSNz0Ap/OpenELEC_Master_%5BNightly%5D/Latest" default="http://sources.openelec.tv/tmp/image"/>
+        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,0)" subsetting="true"/>
+        <setting label="URL subdirectory" type="text" id="subdir"/>
+        <setting type="sep"/>
+	    <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
+        <setting label="Do not delete tar files" type="bool" id="keep_tar" default="false"/>
+        <setting type="sep"/>
+        <setting label="Debug" type="bool" id="debug" default="false"/>     
+    </category>
+</settings>

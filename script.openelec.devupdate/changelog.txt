@@ -1,0 +1,21 @@
+﻿1.0.4
+ - Added the unofficial Generic build url.
+
+1.0.3
+ - The addon will now auto-update.
+ - Added a url subdirectory option, useful for the unofficial
+   Xtreamer Ultra build url.
+
+1.0.2
+ - Updated the official build URL. 
+ - Catch write errors and handle them with a popup message box.
+    
+1.0.1
+ - Changed the addon id to script.openelec.devupdate.
+ - Added a debug logging setting.
+ - Better handle url errors by popping up a dialog message box and
+   either log the error cleanly, or open up the settings to attempt
+   to correct the problem.
+    
+1.0.0
+ - Initial release.
