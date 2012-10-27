@@ -29,6 +29,15 @@ UPDATE_FILES = ('SYSTEM', 'SYSTEM.md5',
                 'KERNEL', 'KERNEL.md5')
 UPDATE_PATHS = (os.path.join(UPDATE_DIR, file) for file in UPDATE_FILES)
 
+URLS = {"Official":
+            "http://sources.openelec.tv/tmp/image",
+        "Chris Swan (RPi)":
+            "http://openelec.thestateofme.com",
+        "vicbitter (ION)":
+            "https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs",
+        "incubus (Xtreamer Ultra)":
+            "https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y"}
+
 
 def size_fmt(num):
     for s, f in (('bytes', '{0:d}'), ('KB', '{0:.1f)'), ('MB', '{0:.1f}')):
@@ -217,13 +226,15 @@ def main():
     log("chdir to " + dir)
 
     # Get the url from the settings.
-    url = __addon__.getSetting('url_list')
-    if url == "Other":
+    source = __addon__.getSetting('source')
+    if source == "Other":
         url = __addon__.getSetting('custom_url')
         scheme, netloc, path = urlparse.urlparse(url)[:3]
         if not (scheme and netloc):
             check_url(url, "Invalid URL")
             return
+    else:
+        url = URLS[source]
     if not url.endswith('/'):
         url += '/'
     
