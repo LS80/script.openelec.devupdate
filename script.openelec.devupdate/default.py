@@ -377,7 +377,8 @@ def main():
     if xbmcgui.Dialog().yesno("Confirm reboot", "Reboot now to install the update?"):
         xbmc.restart()
     else:
-        xbmcgui.Dialog().ok("Info", "The update will be installed on the next reboot.")
+        xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {0} will install "
+                            "on the next reboot., 10000)".format(selected_build.revision))
 
 
 main()

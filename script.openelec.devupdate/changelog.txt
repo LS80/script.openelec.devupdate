@@ -1,10 +1,16 @@
-﻿1.0.4
- - Added the unofficial Generic build url.
+﻿1.0.6
+ - Use a notification message to inform about the build
+   installing after a reboot.
+
+1.0.5
+ - Now select a URL using a source name instead of the URL itself.
+
+1.0.4
+ - Added the URL for the Xtreamer Ultra builds by incubus.
+ - Added a url subdirectory option.
 
 1.0.3
  - The addon will now auto-update.
- - Added a url subdirectory option, useful for the unofficial
-   Xtreamer Ultra build url.
 
 1.0.2
  - Updated the official build URL. 
