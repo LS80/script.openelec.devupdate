@@ -1,4 +1,8 @@
-﻿1.0.6
+﻿1.0.7
+ - Now checks if update files are already in place when starting up.
+ - Added an icon for the addon.
+
+1.0.6
  - Use a notification message to inform about the build
    installing after a reboot.
 
