@@ -215,6 +215,16 @@ class DecompressProgress(FileProgress):
 
 
 def main():
+    # Check if the update files are already in place.
+    if all(os.path.isfile(f) for f in UPDATE_PATHS):
+        if xbmcgui.Dialog().yesno("Confirm reboot",
+                                  "The update files are already in place.",
+                                  "Reboot now to install the update",
+                                  "or continue to select another build.",
+                                  "Continue",
+                                  "Reboot"):
+            xbmc.restart()
+
     # Move to the download directory.
     dir = __addon__.getSetting('tmp_dir')
     if not os.path.isdir(dir):
@@ -313,7 +323,7 @@ def main():
         except Canceled:
             return
         except (urllib2.HTTPError, socket.error) as e:
-            url_error(e.geturl(), str(e))
+            url_error(selected_build.url, str(e))
             return
         except WriteError as e:
             write_error(os.path.join(dir, bz2_name), str(e))
@@ -374,7 +384,9 @@ def main():
     except OSError:
         pass
 
-    if xbmcgui.Dialog().yesno("Confirm reboot", "Reboot now to install the update?"):
+    if xbmcgui.Dialog().yesno("Confirm reboot",
+                              "Reboot now to install build {0}?"
+                              .format(selected_build.revision)):
         xbmc.restart()
     else:
         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {0} will install "
