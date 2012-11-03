@@ -2,7 +2,7 @@
 <addons>
 <addon id="script.openelec.devupdate"
        name="OpenELEC Dev Update"
-       version="1.0.6"
+       version="1.0.7"
        provider-name="Leopold">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
