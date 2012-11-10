@@ -19,9 +19,9 @@ __addon__ = xbmcaddon.Addon(__scriptid__)
 
 HOME = os.path.expanduser('~')
 UPDATE_DIR = os.path.join(HOME, '.update')
-UPDATE_FILES = ('SYSTEM', 'SYSTEM.md5',
-                'KERNEL', 'KERNEL.md5')
-UPDATE_PATHS = (os.path.join(UPDATE_DIR, file) for file in UPDATE_FILES)
+UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
 URLS = {"Official":
             "http://sources.openelec.tv/tmp/image",
@@ -82,6 +82,7 @@ def main():
 
     # Get the url from the settings.
     source = __addon__.getSetting('source')
+    log("Source = " +  source)
     if source == "Other":
         url = __addon__.getSetting('custom_url')
         scheme, netloc = urlparse.urlparse(url)[:2]
@@ -196,6 +197,7 @@ def main():
     
     # Create the .update directory if necessary.
     if not os.path.exists(UPDATE_DIR):
+        log("Creating {0} directory".format(UPDATE_DIR))
         os.mkdir(UPDATE_DIR)
     
     # Extract the update files from the tar file to the .update directory.
@@ -209,11 +211,13 @@ def main():
             log("Extracted " + outfile)
         except Canceled:
             # Remove all the update files.
-            try:
-                for file in UPDATE_PATHS:
-                    os.remove(file)
-            except OSError:
-                pass
+            for f in UPDATE_PATHS:
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
+                else:
+                    log("Removed " + f)
             return
         except WriteError as e:
             write_error(outfile, str(e))
@@ -234,6 +238,7 @@ def main():
                               .format(selected_build.revision)):
         xbmc.restart()
     else:
+        log("Skipped reboot.")
         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {0} will install "
                             "on the next reboot., 10000)".format(selected_build.revision))
 
