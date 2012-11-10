@@ -71,20 +71,20 @@ def main():
             xbmc.restart()
 
     # Move to the download directory.
-    dir = __addon__.getSetting('tmp_dir')
-    if not os.path.isdir(dir):
-        xbmcgui.Dialog().ok("Directory Error", dir,
+    tmp_dir = __addon__.getSetting('tmp_dir')
+    if not os.path.isdir(tmp_dir):
+        xbmcgui.Dialog().ok("Directory Error", "{0} does not exist.".format(tmp_dir),
                             "Check the download directory in the addon settings.")
         __addon__.openSettings()
         return
-    os.chdir(dir)
-    log("chdir to " + dir)
+    os.chdir(tmp_dir)
+    log("chdir to " +  tmp_dir)
 
     # Get the url from the settings.
     source = __addon__.getSetting('source')
     if source == "Other":
         url = __addon__.getSetting('custom_url')
-        scheme, netloc, path = urlparse.urlparse(url)[:3]
+        scheme, netloc = urlparse.urlparse(url)[:2]
         if not (scheme and netloc):
             check_url(url, "Invalid URL")
             return
@@ -142,7 +142,7 @@ def main():
 
     # Get the file names.
     bz2_name = selected_build.filename
-    tar_name, ext = os.path.splitext(bz2_name)
+    tar_name = os.path.splitext(bz2_name)[0]
 
     # Download the build bz2 file and uncompress it if the tar file does not already exist.
     if not os.path.isfile(tar_name):
@@ -171,7 +171,7 @@ def main():
             url_error(selected_build.url, str(e))
             return
         except WriteError as e:
-            write_error(os.path.join(dir, bz2_name), str(e))
+            write_error(os.path.join(tmp_dir, bz2_name), str(e))
             return
 
 
@@ -185,7 +185,7 @@ def main():
         except Canceled:
             return
         except WriteError as e:
-            write_error(os.path.join(dir, tar_name), str(e))
+            write_error(os.path.join(tmp_dir, tar_name), str(e))
             return
     else:
         log("Skipping download and decompression")
