@@ -1,27 +1,21 @@
-from __future__ import division
-
-import re
 import os
 import sys
 import urllib2
 import socket
 import urlparse
-import bz2
 import tarfile
-from HTMLParser import HTMLParser
-from datetime import datetime
-import time
 import traceback
 
 import xbmc, xbmcgui, xbmcaddon
 
+from constants import CURRENT_BUILD, ARCH, HEADERS
+from script_exceptions import Canceled, WriteError
+from utils import size_fmt
+from builds import BuildLinkExtractor
+from progress import FileProgress, DecompressProgress
+
 __scriptid__ = 'script.openelec.devupdate'
 __addon__ = xbmcaddon.Addon(__scriptid__)
-
-CURRENT_BUILD = int(re.search('-r(\d+)', open('/etc/version').read()).group(1))
-ARCH = open('/etc/arch').read().rstrip()
-
-HEADERS={'User-agent' : "Mozilla/5.0"}
 
 HOME = os.path.expanduser('~')
 UPDATE_DIR = os.path.join(HOME, '.update')
@@ -37,13 +31,6 @@ URLS = {"Official":
             "https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs",
         "incubus (Xtreamer Ultra)":
             "https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y"}
-
-
-def size_fmt(num):
-    for s, f in (('bytes', '{0:d}'), ('KB', '{0:.1f)'), ('MB', '{0:.1f}')):
-        if num < 1024.0:
-            return (f + " {1}").format(num, s)
-        num /= 1024.0
 
 
 def log(txt, level=xbmc.LOGDEBUG):
@@ -70,148 +57,6 @@ def write_error(path, msg):
     xbmcgui.Dialog().ok("Write Error", msg, path,
                         "Check the download directory in the addon settings.")
     __addon__.openSettings()
-
-class Canceled(Exception):
-    pass
-
-class WriteError(IOError):
-    pass
-        
-
-class BuildLink(object):
-    """Holds information about an OpenELEC build,
-       including how to sort and print them."""
-
-    def __init__(self, baseurl, link, build_date, revision):
-        scheme, netloc, path = urlparse.urlparse(link)[:3]
-        if not scheme:
-            self.filename = link
-            # Construct the full url
-            self.url = urlparse.urljoin(baseurl, link)
-        else:
-            if netloc == "www.dropbox.com": 
-                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
-            self.url = link
-            # Extract the file name part
-            self.filename = os.path.basename(link)
-        
-        try:
-            self.build_date = datetime.strptime(build_date, '%Y%m%d%H%M%S')
-        except TypeError:
-            # Work around an issue with datetime.strptime when the script is run a second time.
-            self.build_date = datetime(*(time.strptime(build_date, '%Y%m%d%H%M%S')[0:6]))
-        self.revision = int(revision)
-        
-    def __eq__(self, other):
-        return (self.build_date == other.build_date and
-                self.revision == other.revision)
-
-    def __hash__(self):
-        return hash((self.revision, self.build_date))
-
-    def __lt__(self, other):
-        return self.build_date < other.build_date
-
-    def __str__(self):
-        return '{0} ({1}) {2}'.format(self.revision,
-                                      self.build_date.strftime('%d %b %y'),
-                                      '*' * (self.revision == CURRENT_BUILD))
-
-
-class BuildLinkExtractor(HTMLParser):
-    """Class to extract all the build links from the specified URL"""
-
-    BUILD_RE = re.compile(".*OpenELEC-.*{0}-devel-(\d+)-r(\d+).tar.bz2".format(ARCH))
-
-    def __init__(self, url):
-        HTMLParser.__init__(self)
-  
-        req = urllib2.Request(url, None, HEADERS)
-        self.response = urllib2.urlopen(req)
-        self.html = self.response.read()
-        self.url = url
-        
-        self.links = []
-
-    def get_links(self):
-        self.feed(self.html)
-        # Remove duplicates and sort so that the most recent build is first.
-        return list(sorted(set(self.links), reverse=True))
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'a':
-            for attr, value in attrs:
-                if attr == 'href':
-                    m = self.BUILD_RE.match(value)
-                    if m:
-                        self.links.append(BuildLink(self.url,
-                                                    value,
-                                                    *m.groups()))
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.response.close()
-
-
-class FileProgress(xbmcgui.DialogProgress):
-    """Extends DialogProgress as a context manager to
-       handle the file progress"""
-
-    BLOCK_SIZE = 131072
-
-    def __init__(self, heading, infile, outpath, size):
-        xbmcgui.DialogProgress.__init__(self)
-        self.create(heading, outpath, size_fmt(size))
-        self._size = size
-        self._in_f = infile
-        try:
-            self._out_f = open(outpath, 'wb')
-        except IOError as e:
-            raise WriteError(e)
-        self._outpath = outpath
-        self._done = 0
- 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self._in_f.close()
-        self._out_f.close()
-        self.close()
-
-        # If an exception occurred remove the incomplete file.
-        if type is not None:
-            os.remove(self._outpath)
-
-    def start(self):
-        while self._done < self._size:
-            if self.iscanceled():
-                raise Canceled
-            data = self._read()
-            try:
-                self._out_f.write(data)
-            except IOError as e:
-                raise WriteError(e)
-            percent = int(self._done * 100 / self._size)
-            self.update(percent)
-
-    def _getdata(self):
-        return self._in_f.read(self.BLOCK_SIZE)
-
-    def _read(self):
-        data = self._getdata()
-        self._done += len(data)
-        return data
-
-
-class DecompressProgress(FileProgress):
-    decompressor = bz2.BZ2Decompressor()
-    def _read(self):
-        data = self.decompressor.decompress(self._getdata())
-        self._done = self._in_f.tell()
-        return data
 
 
 def main():
