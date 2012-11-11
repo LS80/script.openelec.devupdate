@@ -1,5 +1,8 @@
+from __future__ import division
+
 import os
 import bz2
+import time
 
 import xbmcgui
 
@@ -37,6 +40,7 @@ class FileProgress(xbmcgui.DialogProgress):
             os.remove(self._outpath)
 
     def start(self):
+        start_time = time.time()
         while self._done < self._size:
             if self.iscanceled():
                 raise Canceled
@@ -46,7 +50,8 @@ class FileProgress(xbmcgui.DialogProgress):
             except IOError as e:
                 raise WriteError(e)
             percent = int(self._done * 100 / self._size)
-            self.update(percent)
+            bytes_per_second = self._done / (time.time() - start_time)
+            self.update(percent, line3="{0}/s".format(size_fmt(bytes_per_second)))
 
     def _getdata(self):
         return self._in_f.read(self.BLOCK_SIZE)
