@@ -1,4 +1,9 @@
-﻿1.0.7
+﻿1.0.8
+ - Added a speed indicator to the progress bar.	
+ - Worked around the progress dialog bug (#13467).
+ - Added a check of the md5 sums.
+
+1.0.7
  - Now checks if update files are already in place when starting up.
  - Added an icon for the addon.
 
