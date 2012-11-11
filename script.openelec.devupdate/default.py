@@ -105,8 +105,8 @@ def main():
 
     try:
         # Get the list of build links.
-        with BuildLinkExtractor(url) as extractor:
-            links = extractor.get_links()
+        with BuildLinkExtractor(url) as parser:
+            links = parser.get_links()
     except urllib2.HTTPError as e:
         if e.code == 404:
             check_url(e.geturl())
@@ -165,8 +165,8 @@ def main():
             else:
                 # Do the download
                 log("Starting download of " + selected_build.url)
-                with FileProgress("Downloading", rf, bz2_name, bz2_size) as progress:
-                    progress.start()
+                with FileProgress("Downloading", rf, bz2_name, bz2_size) as downloader:
+                    downloader.start()
                 log("Completed download of " + selected_build.url)   
         except Canceled:
             return
@@ -182,8 +182,8 @@ def main():
             # Do the decompression.
             bf = open(bz2_name, 'rb')
             log("Starting decompression of " + bz2_name)
-            with DecompressProgress("Decompressing", bf, tar_name, bz2_size) as progress:
-                progress.start()
+            with DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
+                decompressor.start()
             log("Completed decompression of " + bz2_name)
         except Canceled:
             return
@@ -208,8 +208,8 @@ def main():
         ti = tf.extractfile(member)
         outfile = os.path.join(UPDATE_DIR, os.path.basename(member.name))
         try:
-            with FileProgress("Extracting", ti, outfile, ti.size) as progress:
-                progress.start()
+            with FileProgress("Extracting", ti, outfile, ti.size) as extractor:
+                extractor.start()
             log("Extracted " + outfile)
         except Canceled:
             # Remove all the update files.
