@@ -5,6 +5,8 @@ import socket
 import urlparse
 import tarfile
 import traceback
+import hashlib
+import functools
 
 import xbmc, xbmcgui, xbmcaddon
 
@@ -232,6 +234,34 @@ def main():
             os.remove(tar_name)
     except OSError:
         pass
+    
+    # Check the md5 sums.
+    os.chdir(UPDATE_DIR)
+    for f in UPDATE_IMAGES:
+        hasher = hashlib.md5()
+        for chunk in iter(functools.partial(open(f).read, 8192), ''): 
+            hasher.update(chunk)
+        md5sum = hasher.hexdigest()
+        log("{0} md5 hash = {1}".format(f, md5sum))
+        md5sum_check = open(f + '.md5').read().split()[0]
+        log("{0}.md5 file = {1}".format(f, md5sum_check))
+        if md5sum != md5sum_check:
+            log("{0} md5 mismatch!".format(f))
+            xbmcgui.Dialog().ok("{0} md5 mismatch".format(f),
+                                "The SYSTEM image from",
+                                bz2_name,
+                                "is corrupt. The update files will be removed.")
+            for f in UPDATE_PATHS:
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
+                else:
+                    log("Removed " + f)
+            return
+        else:
+            log("{0} md5 is correct".format(f))
+
 
     if xbmcgui.Dialog().yesno("Confirm reboot",
                               "Reboot now to install build {0}?"
