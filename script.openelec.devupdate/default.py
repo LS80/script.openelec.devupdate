@@ -6,7 +6,6 @@ import urlparse
 import tarfile
 import traceback
 import hashlib
-import functools
 
 import xbmc, xbmcgui, xbmcaddon
 
@@ -59,6 +58,41 @@ def write_error(path, msg):
     xbmcgui.Dialog().ok("Write Error", msg, path,
                         "Check the download directory in the addon settings.")
     __addon__.openSettings()
+    
+def remove_update_files():
+    for f in UPDATE_PATHS:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+        else:
+            log("Removed " + f)
+            
+def md5sum_verified(md5sum_compare, path):
+    progress = xbmcgui.DialogProgress()
+    progress.create("Verifying", "Verifying {0} md5".format(path), " ", " ")
+    
+    BLOCK_SIZE = 8192
+    
+    hasher = hashlib.md5()
+    f = open(path)
+    
+    done = 0
+    size = os.path.getsize(path)
+    while done < size:
+        if progress.iscanceled():
+            progress.close()
+            return True
+        data = f.read(BLOCK_SIZE)
+        done += len(data)
+        hasher.update(data)
+        percent = int(done * 100 / size)
+        progress.update(percent)
+    progress.close()
+        
+    md5sum = hasher.hexdigest()
+    log("{0} md5 hash = {1}".format(path, md5sum))
+    return md5sum == md5sum_compare
 
 
 def main():
@@ -212,18 +246,14 @@ def main():
                 extractor.start()
             log("Extracted " + outfile)
         except Canceled:
-            # Remove all the update files.
-            for f in UPDATE_PATHS:
-                try:
-                    os.remove(f)
-                except OSError:
-                    pass
-                else:
-                    log("Removed " + f)
+            remove_update_files()
             return
         except WriteError as e:
             write_error(outfile, str(e))
             return
+        else:
+            # Work around progress dialog bug (#13467) 
+            del extractor
 
     tf.close()
 
@@ -235,40 +265,29 @@ def main():
     except OSError:
         pass
     
-    # Check the md5 sums.
+    # Verify the md5 sums.
     os.chdir(UPDATE_DIR)
     for f in UPDATE_IMAGES:
-        hasher = hashlib.md5()
-        for chunk in iter(functools.partial(open(f).read, 8192), ''): 
-            hasher.update(chunk)
-        md5sum = hasher.hexdigest()
-        log("{0} md5 hash = {1}".format(f, md5sum))
-        md5sum_check = open(f + '.md5').read().split()[0]
-        log("{0}.md5 file = {1}".format(f, md5sum_check))
-        if md5sum != md5sum_check:
+        md5sum = open(f + '.md5').read().split()[0]
+        log("{0}.md5 file = {1}".format(f, md5sum))
+
+        if not md5sum_verified(md5sum, f):
             log("{0} md5 mismatch!".format(f))
             xbmcgui.Dialog().ok("{0} md5 mismatch".format(f),
-                                "The SYSTEM image from",
+                                "The {0} image from".format(f),
                                 bz2_name,
                                 "is corrupt. The update files will be removed.")
-            for f in UPDATE_PATHS:
-                try:
-                    os.remove(f)
-                except OSError:
-                    pass
-                else:
-                    log("Removed " + f)
+            remove_update_files()
             return
         else:
             log("{0} md5 is correct".format(f))
-
 
     if xbmcgui.Dialog().yesno("Confirm reboot",
                               "Reboot now to install build {0}?"
                               .format(selected_build.revision)):
         xbmc.restart()
     else:
-        log("Skipped reboot.")
+        log("Skipped reboot")
         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {0} will install "
                             "on the next reboot., 10000)".format(selected_build.revision))
 
