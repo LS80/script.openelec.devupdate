@@ -1,7 +1,10 @@
-﻿1.0.8
+﻿1.0.9
+ - Added a progress bar for the md5 verification (slow on RPi).
+
+1.0.8
  - Added a speed indicator to the progress bar.	
- - Worked around the progress dialog bug (#13467).
- - Added a check of the md5 sums.
+ - Worked around the missing progress dialog bug (trac #13467).
+ - Added verification of the md5 sums.
 
 1.0.7
  - Now checks if update files are already in place when starting up.
