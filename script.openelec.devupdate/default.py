@@ -12,7 +12,7 @@ import xbmc, xbmcgui, xbmcaddon
 from constants import CURRENT_BUILD, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import BuildLinkExtractor
+from builds import BuildURL, ReleaseLinkExtractor
 from progress import FileProgress, DecompressProgress
 
 __scriptid__ = 'script.openelec.devupdate'
@@ -24,15 +24,18 @@ UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
 UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
-URLS = {"Official":
-            "http://sources.openelec.tv/tmp/image",
+URLS = {"Official Daily Builds":
+            BuildURL("http://sources.openelec.tv/tmp/image"),
+        "Official Releases":
+            BuildURL("http://openelec.tv/get-openelec",
+                     extractor=ReleaseLinkExtractor),
         "Chris Swan (RPi)":
-            "http://openelec.thestateofme.com",
+            BuildURL("http://openelec.thestateofme.com"),
         "vicbitter (ION)":
-            "https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs",
+            BuildURL("https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs"),
         "incubus (Xtreamer Ultra)":
-            "https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y"}
-
+            BuildURL("https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y")
+        }
 
 def log(txt, level=xbmc.LOGDEBUG):
     if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
@@ -43,7 +46,7 @@ def log(txt, level=xbmc.LOGDEBUG):
 def log_exception():
     log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
         
-def check_url(url, msg="URL not found."):
+def bad_url(url, msg="URL not found."):
     xbmcgui.Dialog().ok("URL Error", msg, url,
                         "Please check the URL in the addon settings.")
     __addon__.openSettings()
@@ -115,35 +118,35 @@ def main():
         return
     os.chdir(tmp_dir)
     log("chdir to " +  tmp_dir)
+    
+    subdir = __addon__.getSetting('subdir')
 
     # Get the url from the settings.
     source = __addon__.getSetting('source')
     log("Source = " +  source)
     if source == "Other":
+        # Custom URL
         url = __addon__.getSetting('custom_url')
+        log("Custom URL = " + url)
         scheme, netloc = urlparse.urlparse(url)[:2]
         if not (scheme and netloc):
-            check_url(url, "Invalid URL")
+            bad_url(url, "Invalid URL")
             return
+        
+        build_url = BuildURL(url, subdir)
     else:
-        url = URLS[source]
-    if not url.endswith('/'):
-        url += '/'
+        # Defined URL
+        build_url = URLS[source]
     
-    # Add the subdirectory.
-    url = urlparse.urljoin(url, __addon__.getSetting('subdir'))
-    if not url.endswith('/'):
-        url += '/'
-
-    log("URL = " + url)    
+    log("Full URL = " + build_url.url)
 
     try:
         # Get the list of build links.
-        with BuildLinkExtractor(url) as parser:
+        with build_url.extractor as parser:
             links = parser.get_links()
     except urllib2.HTTPError as e:
         if e.code == 404:
-            check_url(e.geturl())
+            bad_url(e.geturl())
         else:
             url_error(e.geturl(), str(e))
         return
@@ -152,7 +155,7 @@ def main():
         return
             
     if not links:
-        check_url(url, "No builds were found for {0}.".format(ARCH))
+        bad_url(url, "No builds were found for {0}.".format(ARCH))
         return
 
     # Ask which build to install.
@@ -183,11 +186,12 @@ def main():
 
     # Download the build bz2 file and uncompress it if the tar file does not already exist.
     if not os.path.isfile(tar_name):
+        log("Download URL = " + selected_build.url)
         req = urllib2.Request(selected_build.url, None, HEADERS)
 
         try:
             rf = urllib2.urlopen(req)
-            log("Opened url " + selected_build.url)
+            log("Opened URL " + selected_build.url)
             bz2_size = int(rf.headers.getheader('Content-Length'))
             log("Size of file = " + size_fmt(bz2_size))
 
