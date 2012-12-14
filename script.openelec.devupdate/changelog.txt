@@ -1,4 +1,7 @@
-﻿1.0.9
+﻿1.1.0
+ - Added the option to install official releases.
+
+1.0.9
  - Added a progress bar for the md5 verification (slow on RPi).
 
 1.0.8
