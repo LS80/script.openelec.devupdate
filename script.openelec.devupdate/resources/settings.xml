@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label= "General">
-        <setting label="Source" type="labelenum" id="source" values="Other|Official Daily Builds|Official Releases|Chris Swan (RPi)|vicbitter (ION)|incubus (Xtreamer Ultra)" default="Official Daily Builds"/>
+        <setting label="Source" type="labelenum" id="source" values="Other|Official Daily Builds|Chris Swan (RPi)" default="Official Daily Builds"/>
         <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,0)" subsetting="true"/>
         <setting label="URL subdirectory" type="text" id="subdir"/>
         <setting type="sep"/>
-	    <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
+        <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
         <setting label="Do not delete tar files" type="bool" id="keep_tar" default="false"/>
         <setting type="sep"/>
         <setting label="Debug" type="bool" id="debug" default="false"/>     
