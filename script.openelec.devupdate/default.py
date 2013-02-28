@@ -39,7 +39,7 @@ URLS = {"Official Daily Builds":
 
 def log(txt, level=xbmc.LOGDEBUG):
     if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
-        msg = '{0} v{1}: {2}'.format(__addon__.getAddonInfo('name'),
+        msg = '{} v{}: {}'.format(__addon__.getAddonInfo('name'),
                                      __addon__.getAddonInfo('version'), txt)
         xbmc.log(msg, level)
         
@@ -73,7 +73,7 @@ def remove_update_files():
             
 def md5sum_verified(md5sum_compare, path):
     progress = xbmcgui.DialogProgress()
-    progress.create("Verifying", "Verifying {0} md5".format(path), " ", " ")
+    progress.create("Verifying", "Verifying {} md5".format(path), " ", " ")
     
     BLOCK_SIZE = 8192
     
@@ -94,7 +94,7 @@ def md5sum_verified(md5sum_compare, path):
     progress.close()
         
     md5sum = hasher.hexdigest()
-    log("{0} md5 hash = {1}".format(path, md5sum))
+    log("{} md5 hash = {}".format(path, md5sum))
     return md5sum == md5sum_compare
 
 
@@ -112,7 +112,7 @@ def main():
     # Move to the download directory.
     tmp_dir = __addon__.getSetting('tmp_dir')
     if not os.path.isdir(tmp_dir):
-        xbmcgui.Dialog().ok("Directory Error", "{0} does not exist.".format(tmp_dir),
+        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(tmp_dir),
                             "Check the download directory in the addon settings.")
         __addon__.openSettings()
         return
@@ -127,7 +127,6 @@ def main():
     if source == "Other":
         # Custom URL
         url = __addon__.getSetting('custom_url')
-        log("Custom URL = " + url)
         scheme, netloc = urlparse.urlparse(url)[:2]
         if not (scheme and netloc):
             bad_url(url, "Invalid URL")
@@ -137,8 +136,9 @@ def main():
     else:
         # Defined URL
         build_url = URLS[source]
+        url = build_url.url
     
-    log("Full URL = " + build_url.url)
+    log("Full URL = " + url)
 
     try:
         # Get the list of build links.
@@ -155,7 +155,7 @@ def main():
         return
             
     if not links:
-        bad_url(url, "No builds were found for {0}.".format(ARCH))
+        bad_url(url, "No builds were found for {}.".format(ARCH))
         return
 
     # Ask which build to install.
@@ -167,7 +167,7 @@ def main():
     log("Selected build " + str(selected_build))
 
     # Confirm the update.
-    msg = " from build {0} to build {1}?".format(CURRENT_BUILD,
+    msg = " from build {} to build {}?".format(CURRENT_BUILD,
                                                  selected_build.revision)
     if CURRENT_BUILD > selected_build.revision:
         args = ("Confirm downgrade", "Downgrade" + msg)
@@ -175,7 +175,7 @@ def main():
         args = ("Confirm upgrade", "Upgrade" + msg)
     elif CURRENT_BUILD == selected_build.revision:
         args = ("Confirm install",
-                "The selected build ({0}) is already installed.".format(selected_build.revision),
+                "The selected build ({}) is already installed.".format(selected_build.revision),
                 "Continue?")
     if not xbmcgui.Dialog().yesno(*args):
         return
@@ -237,7 +237,7 @@ def main():
     
     # Create the .update directory if necessary.
     if not os.path.exists(UPDATE_DIR):
-        log("Creating {0} directory".format(UPDATE_DIR))
+        log("Creating {} directory".format(UPDATE_DIR))
         os.mkdir(UPDATE_DIR)
     
     # Extract the update files from the tar file to the .update directory.
@@ -273,26 +273,26 @@ def main():
     os.chdir(UPDATE_DIR)
     for f in UPDATE_IMAGES:
         md5sum = open(f + '.md5').read().split()[0]
-        log("{0}.md5 file = {1}".format(f, md5sum))
+        log("{}.md5 file = {}".format(f, md5sum))
 
         if not md5sum_verified(md5sum, f):
-            log("{0} md5 mismatch!".format(f))
-            xbmcgui.Dialog().ok("{0} md5 mismatch".format(f),
-                                "The {0} image from".format(f),
+            log("{} md5 mismatch!".format(f))
+            xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
+                                "The {} image from".format(f),
                                 bz2_name,
                                 "is corrupt. The update files will be removed.")
             remove_update_files()
             return
         else:
-            log("{0} md5 is correct".format(f))
+            log("{} md5 is correct".format(f))
 
     if xbmcgui.Dialog().yesno("Confirm reboot",
-                              "Reboot now to install build {0}?"
+                              "Reboot now to install build {}?"
                               .format(selected_build.revision)):
         xbmc.restart()
     else:
         log("Skipped reboot")
-        xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {0} will install "
+        xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
                             "on the next reboot., 10000)".format(selected_build.revision))
 
 

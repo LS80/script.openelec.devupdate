@@ -1,4 +1,8 @@
-﻿1.1.0
+1.1.1
+ - Removed the option to install official releases which was
+   broken after the website redesign.
+
+1.1.0
  - Added the option to install official releases.
 
 1.0.9
