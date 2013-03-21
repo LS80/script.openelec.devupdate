@@ -12,7 +12,7 @@ import xbmc, xbmcgui, xbmcaddon
 from constants import CURRENT_BUILD, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import BuildURL, ReleaseLinkExtractor
+from builds import BuildURL, ReleaseLinkExtractor, TestingLinkExtractor
 from progress import FileProgress, DecompressProgress
 
 __scriptid__ = 'script.openelec.devupdate'
@@ -29,6 +29,9 @@ URLS = {"Official Daily Builds":
         "Official Releases":
             BuildURL("http://openelec.tv/get-openelec",
                      extractor=ReleaseLinkExtractor),
+        "Official Testing Builds":
+            BuildURL("http://openelec.tv/get-openelec/download/viewcategory/8-generic-builds" ,
+                     extractor=TestingLinkExtractor),
         "Chris Swan (RPi)":
             BuildURL("http://openelec.thestateofme.com"),
         "vicbitter (ION)":
