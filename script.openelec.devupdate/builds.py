@@ -6,6 +6,8 @@ import urllib2
 from HTMLParser import HTMLParser
 from datetime import datetime
 
+from BeautifulSoup import BeautifulSoup
+
 from constants import CURRENT_BUILD, ARCH, HEADERS
 
 class BuildLink(object):
@@ -110,6 +112,33 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
     def _create_link(self, url, m):
         revision = m.group(1)
         return ReleaseLink(self.url, url, revision)
+
+class TestingLinkExtractor(object):
+
+    BUILD_RE = re.compile(".*OpenELEC Testing.*Version:([\d\.]+)")
+
+    def __init__(self, url):
+        req = urllib2.Request(url, None, HEADERS)
+        self.response = urllib2.urlopen(req)
+        self.html = self.response.read()
+	self.url = url
+
+    def get_links(self):
+        soup = BeautifulSoup(self.html)
+        version = self.BUILD_RE.match(soup.find('td', text=self.BUILD_RE)).group(1)
+
+        # Assume the previous version is also still available
+        versions = (version, version[:-1] + str(int(version[-1]) - 1))
+
+        return [ReleaseLink("http://releases.openelec.tv/",
+                            "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, v),
+                            v) for v in versions]
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.response.close()
     
 class BuildURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
