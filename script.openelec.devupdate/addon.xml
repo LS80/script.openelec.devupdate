@@ -15,4 +15,10 @@
     <summary>OpenELEC development build updater</summary>
     <description>This XBMC script downloads and extracts OpenELEC update files. It will display a list of all builds at the URL to select from. The progress for the entire process will be displayed. Once complete it will ask if you want to reboot to install the new build.</description>
   </extension>
+  <extension point="xbmc.addon.repository"
+             name="OpenELEC Dev Update Repository">
+    <info compressed="false">http://openelec-dev-update.googlecode.com/hg/addons.xml</info>
+    <checksum>http://openelec-dev-update.googlecode.com/hg/addons.xml.md5</checksum>
+    <datadir zip="false">http://openelec-dev-update.googlecode.com/hg</datadir>
+  </extension>
 </addon>
