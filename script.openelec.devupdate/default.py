@@ -12,7 +12,7 @@ import xbmc, xbmcgui, xbmcaddon
 from constants import CURRENT_BUILD, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import BuildURL, ReleaseLinkExtractor, TestingLinkExtractor
+from builds import BuildURL, ReleaseLinkExtractor
 from progress import FileProgress, DecompressProgress
 
 __scriptid__ = 'script.openelec.devupdate'
@@ -27,13 +27,10 @@ UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 URLS = {"Official Daily Builds":
             BuildURL("http://sources.openelec.tv/tmp/image"),
         "Official Releases":
-            BuildURL("http://openelec.tv/get-openelec",
+            BuildURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
                      extractor=ReleaseLinkExtractor),
-        "Official Testing Builds":
-            BuildURL("http://openelec.tv/get-openelec/download/viewcategory/8-generic-builds" ,
-                     extractor=TestingLinkExtractor),
         "Chris Swan (RPi)":
-            BuildURL("http://openelec.thestateofme.com"),
+            BuildURL("http://openelec.thestateofme.com/dev_builds/?O=D"),
         "vicbitter (ION)":
             BuildURL("https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs"),
         "incubus (Xtreamer Ultra)":
@@ -102,6 +99,8 @@ def md5sum_verified(md5sum_compare, path):
 
 
 def main():
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
+    
     # Check if the update files are already in place.
     if all(os.path.isfile(f) for f in UPDATE_PATHS):
         if xbmcgui.Dialog().yesno("Confirm reboot",
@@ -146,7 +145,7 @@ def main():
     try:
         # Get the list of build links.
         with build_url.extractor as parser:
-            links = parser.get_links()
+            links = list(sorted(set(parser.get_links()), reverse=True))
     except urllib2.HTTPError as e:
         if e.code == 404:
             bad_url(e.geturl())
@@ -160,6 +159,8 @@ def main():
     if not links:
         bad_url(url, "No builds were found for {}.".format(ARCH))
         return
+    
+    xbmc.executebuiltin("Dialog.Close(busydialog)")
 
     # Ask which build to install.
     i = xbmcgui.Dialog().select("Select a build to install (* = currently installed)",
