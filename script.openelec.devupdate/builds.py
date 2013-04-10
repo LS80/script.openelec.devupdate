@@ -65,81 +65,43 @@ class ReleaseLink(BuildLink):
         return '{0} {1}'.format(self.revision,
                                 '*' * (self.revision == CURRENT_BUILD))
 
-class BuildLinkExtractor(HTMLParser):
+class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
     BUILD_RE = re.compile(".*OpenELEC-.*{0}-devel-(\d+)-r(\d+).tar.bz2".format(ARCH))
+    TAG = 'a'
 
     def __init__(self, url):
-        HTMLParser.__init__(self)
-  
         req = urllib2.Request(url, None, HEADERS)
         self.response = urllib2.urlopen(req)
-        self.html = self.response.read()
+        self.soup = BeautifulSoup(self.response.read())
         self.url = url
-        
-        self.links = []
 
-    def get_links(self):
-        self.feed(self.html)
-        # Remove duplicates and sort so that the most recent build is first.
-        return list(sorted(set(self.links), reverse=True))
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'a':
-            for attr, value in attrs:
-                if attr == 'href':
-                    #print value
-                    m = self.BUILD_RE.match(value)
-                    if m:
-                        link = self._create_link(value, m)
-                        self.links.append(link)
-                    
-    def _create_link(self, url, m):
-        build_date, revision = m.groups()
-        return BuildLink(self.url, url, revision, build_date)
+    def get_links(self):  
+        for link in self.soup(self.TAG, text=self.BUILD_RE):
+            yield self._create_link(link)
+            
+    def _create_link(self, link):
+        build_date, revision = self.BUILD_RE.match(link).groups()
+        return BuildLink(self.url, link, revision, build_date)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.response.close()
+        
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
     
-    BUILD_RE = re.compile(".*OpenELEC-{0}-(\d+\.\d+\.\d+).tar.bz2".format(ARCH))
-    
-    def _create_link(self, url, m):
-        revision = m.group(1)
-        return ReleaseLink(self.url, url, revision)
+    BUILD_RE = re.compile(".*OpenELEC.*Version:([\d\.]+)")
+    TAG = 'td'
+        
+    def _create_link(self, link):
+        version = self.BUILD_RE.match(link).group(1)
+        return ReleaseLink("http://releases.openelec.tv/",
+                           "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, version), version)
 
-class TestingLinkExtractor(object):
-
-    BUILD_RE = re.compile(".*OpenELEC Testing.*Version:([\d\.]+)")
-
-    def __init__(self, url):
-        req = urllib2.Request(url, None, HEADERS)
-        self.response = urllib2.urlopen(req)
-        self.html = self.response.read()
-	self.url = url
-
-    def get_links(self):
-        soup = BeautifulSoup(self.html)
-        version = self.BUILD_RE.match(soup.find('td', text=self.BUILD_RE)).group(1)
-
-        # Assume the previous version is also still available
-        versions = (version, version[:-1] + str(int(version[-1]) - 1))
-
-        return [ReleaseLink("http://releases.openelec.tv/",
-                            "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, v),
-                            v) for v in versions]
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.response.close()
-    
 class BuildURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
         self.url = url
@@ -158,7 +120,14 @@ class BuildURL(object):
             self.url += '/'
 
 if __name__ == "__main__":
-    URL = "http://openelec.tv/get-openelec"
-    with ReleaseLinkExtractor(URL) as parser:
+    URL = "http://openelec.thestateofme.com/dev_builds/"
+    with BuildLinkExtractor(URL) as parser:
         for link in parser.get_links():
             print link
+            
+    URL = "http://openelec.tv/get-openelec/viewcategory/8-generic-builds"
+    with ReleaseLinkExtractor(URL) as parser:
+        for link in parser.get_links():
+            print link    
+            
+            

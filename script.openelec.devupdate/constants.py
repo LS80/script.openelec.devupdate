@@ -13,6 +13,6 @@ except AttributeError:
 try:
     ARCH = open('/etc/arch').read().rstrip()
 except IOError:
-    ARCH = 'ION.x86_64'
+    ARCH = 'RPi.arm'
 
 HEADERS={'User-agent' : "Mozilla/5.0"}
