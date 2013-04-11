@@ -79,7 +79,7 @@ class BuildLinkExtractor(object):
 
     def get_links(self):  
         for link in self.soup(self.TAG, text=self.BUILD_RE):
-            yield self._create_link(link)
+            yield self._create_link(link.strip())
             
     def _create_link(self, link):
         build_date, revision = self.BUILD_RE.match(link).groups()
@@ -109,7 +109,10 @@ class BuildURL(object):
         if subdir:
             self._add_subdir(subdir)
         
-        self.extractor = extractor(self.url)
+        self._extractor = extractor
+        
+    def extractor(self):
+        return self._extractor(self.url)
         
     def _add_subdir(self, subdir):
         self.url = urlparse.urljoin(self.url, subdir)
@@ -128,6 +131,11 @@ if __name__ == "__main__":
     URL = "http://openelec.tv/get-openelec/viewcategory/8-generic-builds"
     with ReleaseLinkExtractor(URL) as parser:
         for link in parser.get_links():
-            print link    
+            print link
+            
+    URL = "http://sources.openelec.tv/tmp/image"
+    with BuildLinkExtractor(URL) as parser:
+        for link in parser.get_links():
+            print link  
             
             

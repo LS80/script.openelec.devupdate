@@ -1,3 +1,7 @@
+1.1.4
+ - Fixed the slow startup problem.
+ - Fixed an issue with official daily build downloads.
+
 1.1.3
  - Added back the option to install official releases.
  - Fixed the url for Chris Swan's RPi builds.

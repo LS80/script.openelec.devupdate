@@ -144,7 +144,7 @@ def main():
 
     try:
         # Get the list of build links.
-        with build_url.extractor as parser:
+        with build_url.extractor() as parser:
             links = list(sorted(set(parser.get_links()), reverse=True))
     except urllib2.HTTPError as e:
         if e.code == 404:
