@@ -1,3 +1,6 @@
+1.1.5
+ - Official releases now have an associated date.
+ 
 1.1.4
  - Fixed the slow startup problem.
  - Fixed an issue with official daily build downloads.
