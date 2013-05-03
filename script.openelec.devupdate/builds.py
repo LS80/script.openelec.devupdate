@@ -3,7 +3,6 @@ import re
 import os
 import urlparse
 import urllib2
-from HTMLParser import HTMLParser
 from datetime import datetime
 
 from BeautifulSoup import BeautifulSoup
@@ -13,6 +12,8 @@ from constants import CURRENT_BUILD, ARCH, HEADERS
 class BuildLink(object):
     """Holds information about an OpenELEC build,
        including how to sort and print them."""
+       
+    DATETIME_FMT = '%Y%m%d%H%M%S'
 
     def __init__(self, baseurl, link, revision, build_date=None):
         scheme, netloc, path = urlparse.urlparse(link)[:3]
@@ -29,10 +30,10 @@ class BuildLink(object):
         
         if build_date:
             try:
-                self.build_date = datetime.strptime(build_date, '%Y%m%d%H%M%S')
+                self.build_date = datetime.strptime(build_date, self.DATETIME_FMT)
             except TypeError:
                 # Work around an issue with datetime.strptime when the script is run a second time.
-                self.build_date = datetime(*(time.strptime(build_date, '%Y%m%d%H%M%S')[0:6]))
+                self.build_date = datetime(*(time.strptime(build_date, self.DATETIME_FMT)[0:6]))
         else:
             self.build_date = None
 
@@ -56,14 +57,15 @@ class BuildLink(object):
         return '{0} ({1}) {2}'.format(self.revision,
                                       self.build_date.strftime('%d %b %y'),
                                       '*' * (self.revision == CURRENT_BUILD))
-
+        
 class ReleaseLink(BuildLink):
-    def __init__(self, baseurl, link, revision):
-        BuildLink.__init__(self, baseurl, link, revision)
+    DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
+    BASEURL = "http://releases.openelec.tv/"
+    
+    def __init__(self, version, build_date):
+        link = "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, version)
+        BuildLink.__init__(self, self.BASEURL, link, version, build_date)
 
-    def __str__(self):
-        return '{0} {1}'.format(self.revision,
-                                '*' * (self.revision == CURRENT_BUILD))
 
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
@@ -79,11 +81,11 @@ class BuildLinkExtractor(object):
 
     def get_links(self):  
         for link in self.soup(self.TAG, text=self.BUILD_RE):
-            yield self._create_link(link.strip())
+            yield self._create_link(link)
             
     def _create_link(self, link):
         build_date, revision = self.BUILD_RE.match(link).groups()
-        return BuildLink(self.url, link, revision, build_date)
+        return BuildLink(self.url, link.strip(), revision, build_date)
 
     def __enter__(self):
         return self
@@ -95,12 +97,14 @@ class BuildLinkExtractor(object):
 class ReleaseLinkExtractor(BuildLinkExtractor):
     
     BUILD_RE = re.compile(".*OpenELEC.*Version:([\d\.]+)")
-    TAG = 'td'
+    TAG = 'tr'
+    
+    DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
         
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
-        return ReleaseLink("http://releases.openelec.tv/",
-                           "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, version), version)
+        build_date = link.findNext(text=self.DATE_RE).strip()
+        return ReleaseLink(version, build_date)
 
 class BuildURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
@@ -123,19 +127,19 @@ class BuildURL(object):
             self.url += '/'
 
 if __name__ == "__main__":
-    URL = "http://openelec.thestateofme.com/dev_builds/"
-    with BuildLinkExtractor(URL) as parser:
-        for link in parser.get_links():
-            print link
-            
+    
     URL = "http://openelec.tv/get-openelec/viewcategory/8-generic-builds"
     with ReleaseLinkExtractor(URL) as parser:
-        for link in parser.get_links():
+        links = list(parser.get_links())
+        for link in links:
             print link
-            
-    URL = "http://sources.openelec.tv/tmp/image"
-    with BuildLinkExtractor(URL) as parser:
-        for link in parser.get_links():
-            print link  
-            
-            
+
+    latest_release = links[0]
+    print
+    
+    for URL in ("http://sources.openelec.tv/tmp/image",
+                "http://openelec.thestateofme.com/dev_builds/?O=D"):
+        with BuildLinkExtractor(URL) as parser:
+            for link in parser.get_links():
+                print link, link > latest_release
+        print
