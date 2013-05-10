@@ -1,3 +1,6 @@
+1.1.6
+ - Added vicbitter's Gotham builds.
+
 1.1.5
  - Official releases now have an associated date.
  

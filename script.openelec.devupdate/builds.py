@@ -70,8 +70,11 @@ class ReleaseLink(BuildLink):
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = re.compile(".*OpenELEC-.*{0}-devel-(\d+)-r(\d+).tar.bz2".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-devel-(\d+)-r(\d+).tar.bz2".format(ARCH))
     TAG = 'a'
+    CLASS = None
+    HREF = BUILD_RE
+    TEXT = None
 
     def __init__(self, url):
         req = urllib2.Request(url, None, HEADERS)
@@ -80,24 +83,32 @@ class BuildLinkExtractor(object):
         self.url = url
 
     def get_links(self):  
-        for link in self.soup(self.TAG, text=self.BUILD_RE):
+        for link in self.soup(self.TAG, self.CLASS, href=self.HREF, text=self.TEXT):
             yield self._create_link(link)
-            
+
     def _create_link(self, link):
-        build_date, revision = self.BUILD_RE.match(link).groups()
-        return BuildLink(self.url, link.strip(), revision, build_date)
+        href = link['href']
+        build_date, revision = self.BUILD_RE.match(href).groups()
+        return BuildLink(self.url, href.strip(), revision, build_date)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.response.close()
+
+
+class DropboxLinkExtractor(BuildLinkExtractor):
+
+    CLASS = 'filename-link'
         
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
     
     BUILD_RE = re.compile(".*OpenELEC.*Version:([\d\.]+)")
     TAG = 'tr'
+    TEXT = BUILD_RE
+    HREF = None
     
     DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
         
@@ -106,7 +117,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
         build_date = link.findNext(text=self.DATE_RE).strip()
         return ReleaseLink(version, build_date)
 
-class BuildURL(object):
+class BuildsURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
         self.url = url
         self._add_slash()
@@ -143,3 +154,7 @@ if __name__ == "__main__":
             for link in parser.get_links():
                 print link, link > latest_release
         print
+
+    with DropboxLinkExtractor("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9") as parser:
+        for link in parser.get_links():
+            print link, link > latest_release

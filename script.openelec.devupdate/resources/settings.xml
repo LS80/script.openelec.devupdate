@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label= "General">
-        <setting label="Source" type="labelenum" id="source" values="Other|Official Daily Builds|Official Releases|Chris Swan (RPi)" default="Official Daily Builds"/>
+        <setting label="Source" type="labelenum" id="source" values="Other|Official Daily Builds|Official Releases|Chris Swan (RPi)|vicbitter Gotham Builds" default="Official Daily Builds"/>
         <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,0)" subsetting="true"/>
         <setting label="URL subdirectory" type="text" id="subdir"/>
         <setting type="sep"/>
