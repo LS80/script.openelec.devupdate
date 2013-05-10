@@ -12,7 +12,7 @@ import xbmc, xbmcgui, xbmcaddon
 from constants import CURRENT_BUILD, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import BuildURL, ReleaseLinkExtractor
+from builds import BuildsURL, ReleaseLinkExtractor, DropboxLinkExtractor
 from progress import FileProgress, DecompressProgress
 
 __scriptid__ = 'script.openelec.devupdate'
@@ -25,16 +25,15 @@ UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
 UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
 URLS = {"Official Daily Builds":
-            BuildURL("http://sources.openelec.tv/tmp/image"),
+            BuildsURL("http://sources.openelec.tv/tmp/image"),
         "Official Releases":
-            BuildURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
-                     extractor=ReleaseLinkExtractor),
+            BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
+                      extractor=ReleaseLinkExtractor),
         "Chris Swan (RPi)":
-            BuildURL("http://openelec.thestateofme.com/dev_builds/?O=D"),
-        "vicbitter (ION)":
-            BuildURL("https://www.dropbox.com/sh/crtpgonwqdc4k2n/82ivuohfSs"),
-        "incubus (Xtreamer Ultra)":
-            BuildURL("https://www.dropbox.com/sh/gnmr4ee19wi3a1y/W5-9rkJT4y")
+            BuildsURL("http://openelec.thestateofme.com/dev_builds/?O=D"),
+        "vicbitter Gotham Builds":
+            BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
+                      extractor=DropboxLinkExtractor)
         }
 
 def log(txt, level=xbmc.LOGDEBUG):
@@ -53,7 +52,7 @@ def bad_url(url, msg="URL not found."):
     
 def url_error(url, msg):
     log_exception()
-    xbmcgui.Dialog().ok("URL Error", msg, url, 
+    xbmcgui.Dialog().ok("URL Error", msg, url,
                         "Please check the XBMC log file.")
     
 def write_error(path, msg):
@@ -172,7 +171,7 @@ def main():
 
     # Confirm the update.
     msg = " from build {} to build {}?".format(CURRENT_BUILD,
-                                                 selected_build.revision)
+                                               selected_build)
     if CURRENT_BUILD > selected_build.revision:
         args = ("Confirm downgrade", "Downgrade" + msg)
     elif CURRENT_BUILD < selected_build.revision:
