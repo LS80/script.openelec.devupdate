@@ -30,7 +30,7 @@ URLS = {"Official Daily Builds":
             BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
                       extractor=ReleaseLinkExtractor),
         "Chris Swan (RPi)":
-            BuildsURL("http://openelec.thestateofme.com/dev_builds/?O=D"),
+            BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds/?O=D"),
         "vicbitter Gotham Builds":
             BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
                       extractor=DropboxLinkExtractor)
