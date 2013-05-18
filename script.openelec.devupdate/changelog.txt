@@ -1,3 +1,7 @@
+1.1.7
+ - Made older releases available to install.
+ - Fixed problems with the busy dialog.
+
 1.1.6
  - Added vicbitter's Gotham builds.
 

@@ -98,7 +98,6 @@ def md5sum_verified(md5sum_compare, path):
 
 
 def main():
-    xbmc.executebuiltin("ActivateWindow(busydialog)")
     
     # Check if the update files are already in place.
     if all(os.path.isfile(f) for f in UPDATE_PATHS):
@@ -120,44 +119,49 @@ def main():
     os.chdir(tmp_dir)
     log("chdir to " +  tmp_dir)
     
-    subdir = __addon__.getSetting('subdir')
-
-    # Get the url from the settings.
-    source = __addon__.getSetting('source')
-    log("Source = " +  source)
-    if source == "Other":
-        # Custom URL
-        url = __addon__.getSetting('custom_url')
-        scheme, netloc = urlparse.urlparse(url)[:2]
-        if not (scheme and netloc):
-            bad_url(url, "Invalid URL")
-            return
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
         
-        build_url = BuildURL(url, subdir)
-    else:
-        # Defined URL
-        build_url = URLS[source]
-        url = build_url.url
-    
-    log("Full URL = " + url)
-
     try:
-        # Get the list of build links.
-        with build_url.extractor() as parser:
-            links = list(sorted(set(parser.get_links()), reverse=True))
-    except urllib2.HTTPError as e:
-        if e.code == 404:
-            bad_url(e.geturl())
-        else:
-            url_error(e.geturl(), str(e))
-        return
-    except urllib2.URLError as e:
-        url_error(url, str(e))
-        return
+        subdir = __addon__.getSetting('subdir')
+    
+        # Get the url from the settings.
+        source = __addon__.getSetting('source')
+        log("Source = " +  source)
+        if source == "Other":
+            # Custom URL
+            url = __addon__.getSetting('custom_url')
+            scheme, netloc = urlparse.urlparse(url)[:2]
+            if not (scheme and netloc):
+                bad_url(url, "Invalid URL")
+                return
             
-    if not links:
-        bad_url(url, "No builds were found for {}.".format(ARCH))
-        return
+            build_url = BuildURL(url, subdir)
+        else:
+            # Defined URL
+            build_url = URLS[source]
+            url = build_url.url
+        
+        log("Full URL = " + url)
+    
+        try:
+            # Get the list of build links.
+            with build_url.extractor() as parser:
+                links = list(sorted(set(parser.get_links()), reverse=True))
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                bad_url(e.geturl())
+            else:
+                url_error(e.geturl(), str(e))
+            return
+        except urllib2.URLError as e:
+            url_error(url, str(e))
+            return
+                
+        if not links:
+            bad_url(url, "No builds were found for {}.".format(ARCH))
+            return
+    except:
+        xbmc.executebuiltin("Dialog.Close(busydialog)")
     
     xbmc.executebuiltin("Dialog.Close(busydialog)")
 

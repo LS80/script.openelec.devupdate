@@ -4,6 +4,7 @@ import os
 import urlparse
 import urllib2
 from datetime import datetime
+from email.utils import parsedate
 
 from BeautifulSoup import BeautifulSoup
 
@@ -15,56 +16,68 @@ class BuildLink(object):
        
     DATETIME_FMT = '%Y%m%d%H%M%S'
 
-    def __init__(self, baseurl, link, revision, build_date=None):
+    def __init__(self, baseurl, link, revision, build_date_str=None):
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
             self.filename = link
             # Construct the full url
             self.url = urlparse.urljoin(baseurl, link)
         else:
-            if netloc == "www.dropbox.com": 
+            if netloc == "www.dropbox.com":
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
             self.url = link
             # Extract the file name part
             self.filename = os.path.basename(link)
-        
-        if build_date:
-            try:
-                self.build_date = datetime.strptime(build_date, self.DATETIME_FMT)
-            except TypeError:
-                # Work around an issue with datetime.strptime when the script is run a second time.
-                self.build_date = datetime(*(time.strptime(build_date, self.DATETIME_FMT)[0:6]))
-        else:
-            self.build_date = None
 
         try:
             self.revision = int(revision)
         except ValueError:
             self.revision = revision
+            
+        self.build_date_str = build_date_str
+            
+        self._set_build_datetime()
+            
+    def _set_build_datetime(self):
+        if self.build_date_str is None:
+            self.build_datetime = None
+        else:
+            try:
+                self.build_datetime = datetime.strptime(self.build_date_str, self.DATETIME_FMT)
+            except TypeError:
+                # Work around an issue with datetime.strptime when the script is run a second time.
+                self.build_datetime = datetime(*(time.strptime(self.build_date_str, self.DATETIME_FMT)[0:6]))
         
     def __eq__(self, other):
-        return (self.build_date == other.build_date and
+        return (self.build_datetime == other.build_datetime and
                 self.revision == other.revision)
 
     def __hash__(self):
-        return hash((self.revision, self.build_date))
+        return hash((self.revision, self.build_datetime))
 
     def __lt__(self, other):
-        return (self.build_date < other.build_date or
+        return (self.build_datetime < other.build_datetime or
                 self.revision < other.revision)
 
     def __str__(self):
         return '{0} ({1}) {2}'.format(self.revision,
-                                      self.build_date.strftime('%d %b %y'),
+                                      self.build_datetime.strftime('%d %b %y'),
                                       '*' * (self.revision == CURRENT_BUILD))
         
 class ReleaseLink(BuildLink):
-    DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
+    DATETIME_FMT = None
     BASEURL = "http://releases.openelec.tv/"
     
-    def __init__(self, version, build_date):
+    def __init__(self, version):
         link = "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, version)
-        BuildLink.__init__(self, self.BASEURL, link, version, build_date)
+        BuildLink.__init__(self, self.BASEURL, link, version)
+    
+    def _set_build_datetime(self):
+        req = urllib2.Request(self.url, None, HEADERS)
+        rf = urllib2.urlopen(req)
+        self.build_date_str = rf.headers.getheader('Last-Modified')
+        # RFC 2822 format
+        self.build_datetime = datetime(*parsedate(self.build_date_str)[:7])
 
 
 class BuildLinkExtractor(object):
@@ -78,24 +91,25 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         req = urllib2.Request(url, None, HEADERS)
-        self.response = urllib2.urlopen(req)
-        self.soup = BeautifulSoup(self.response.read())
-        self.url = url
+        self._response = urllib2.urlopen(req)
+        self._url = url
+        soup = BeautifulSoup(self._response.read())
+        self._links = soup(self.TAG, self.CLASS, href=self.HREF, text=self.TEXT)
 
     def get_links(self):  
-        for link in self.soup(self.TAG, self.CLASS, href=self.HREF, text=self.TEXT):
+        for link in self._links:
             yield self._create_link(link)
 
     def _create_link(self, link):
         href = link['href']
-        build_date, revision = self.BUILD_RE.match(href).groups()
-        return BuildLink(self.url, href.strip(), revision, build_date)
+        build_date_str, revision = self.BUILD_RE.match(href).groups()
+        return BuildLink(self._url, href.strip(), revision, build_date_str)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.response.close()
+        self._response.close()
 
 
 class DropboxLinkExtractor(BuildLinkExtractor):
@@ -110,12 +124,16 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
     TEXT = BUILD_RE
     HREF = None
     
-    DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
-        
-    def _create_link(self, link):
-        version = self.BUILD_RE.match(link).group(1)
-        build_date = link.findNext(text=self.DATE_RE).strip()
-        return ReleaseLink(version, build_date)
+    #DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
+    
+    def get_links(self):
+        for link in self._links:    
+            version = self.BUILD_RE.match(link).group(1)
+            #build_date = link.findNext(text=self.DATE_RE).strip()
+            all_versions = [version[:-1] + str(i) for i in range(int(version[-1]), -1, -1)]
+            for v in all_versions:
+                yield ReleaseLink(v)
+
 
 class BuildsURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
