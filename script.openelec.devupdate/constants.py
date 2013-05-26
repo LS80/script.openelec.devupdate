@@ -1,14 +1,9 @@
-import re
+__scriptid__ = 'script.openelec.devupdate'
 
 try:
-    VERSION = open('/etc/version').read()
+    VERSION = open('/etc/version').read().rstrip()
 except IOError:
-    VERSION = '1.0.0'
-
-try:
-    CURRENT_BUILD = int(re.search('-r(\d+)', VERSION).group(1))
-except AttributeError:
-    CURRENT_BUILD = VERSION.rstrip()
+    VERSION = '3.0.1'
 
 try:
     ARCH = open('/etc/arch').read().rstrip()

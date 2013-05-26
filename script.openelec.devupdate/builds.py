@@ -8,15 +8,56 @@ from email.utils import parsedate
 
 from BeautifulSoup import BeautifulSoup
 
-from constants import CURRENT_BUILD, ARCH, HEADERS
+from constants import VERSION, ARCH, HEADERS
 
-class BuildLink(object):
+
+class Build(object):
     """Holds information about an OpenELEC build,
        including how to sort and print them."""
        
     DATETIME_FMT = '%Y%m%d%H%M%S'
 
-    def __init__(self, baseurl, link, revision, build_date_str=None):
+    def __init__(self, datetime_str, version):
+        self.version = version
+        self._version = [int(i) for i in version.split('.')]  
+        self.datetime_str = datetime_str
+
+        if datetime_str is None:
+            self._datetime = None
+        else:
+            try:
+                self._datetime = datetime.strptime(datetime_str, self.DATETIME_FMT)
+            except TypeError:
+                # Work around an issue with datetime.strptime when the script is run a second time.
+                self._datetime = datetime(*(time.strptime(datetime_str, self.DATETIME_FMT)[0:6]))
+
+    def __eq__(self, other):
+        return (self._version, self._datetime.date()) == (other._version, other._datetime.date())
+
+    def __hash__(self):
+        return hash((self.version, self.datetime_str))
+
+    def __lt__(self, other):
+        return self._datetime.date() < other._datetime.date() or self._version < other._version
+    
+    def __gt__(self, other):
+        return self._datetime.date() > other._datetime.date() or self._version > other._version
+
+    def __str__(self):
+        return '{} ({})'.format(self.version,
+                                self._datetime.strftime('%d %b %y'))
+        
+        
+class Release(Build):
+    DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
+    
+
+class BuildLink(Build):
+    """Holds information about a link to an OpenELEC build."""
+
+    def __init__(self, baseurl, link, revision, datetime_str=None):
+        Build.__init__(self, datetime_str, version=revision)
+
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
             self.filename = link
@@ -29,55 +70,18 @@ class BuildLink(object):
             # Extract the file name part
             self.filename = os.path.basename(link)
 
-        try:
-            self.revision = int(revision)
-        except ValueError:
-            self.revision = revision
-            
-        self.build_date_str = build_date_str
-            
-        self._set_build_datetime()
-            
-    def _set_build_datetime(self):
-        if self.build_date_str is None:
-            self.build_datetime = None
-        else:
-            try:
-                self.build_datetime = datetime.strptime(self.build_date_str, self.DATETIME_FMT)
-            except TypeError:
-                # Work around an issue with datetime.strptime when the script is run a second time.
-                self.build_datetime = datetime(*(time.strptime(self.build_date_str, self.DATETIME_FMT)[0:6]))
-        
-    def __eq__(self, other):
-        return (self.build_datetime == other.build_datetime and
-                self.revision == other.revision)
 
-    def __hash__(self):
-        return hash((self.revision, self.build_datetime))
-
-    def __lt__(self, other):
-        return (self.build_datetime < other.build_datetime or
-                self.revision < other.revision)
-
-    def __str__(self):
-        return '{0} ({1}) {2}'.format(self.revision,
-                                      self.build_datetime.strftime('%d %b %y'),
-                                      '*' * (self.revision == CURRENT_BUILD))
-        
-class ReleaseLink(BuildLink):
-    DATETIME_FMT = None
+class ReleaseLink(Release):
     BASEURL = "http://releases.openelec.tv/"
     
     def __init__(self, version):
-        link = "OpenELEC-{0}-{1}.tar.bz2".format(ARCH, version)
-        BuildLink.__init__(self, self.BASEURL, link, version)
-    
-    def _set_build_datetime(self):
-        req = urllib2.Request(self.url, None, HEADERS)
-        rf = urllib2.urlopen(req)
-        self.build_date_str = rf.headers.getheader('Last-Modified')
+        self.filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
+        self.url = urlparse.urljoin(self.BASEURL, self.filename)
+        Release.__init__(self, None, version)
+
+    def set_datetime(self, datetime_str):
         # RFC 2822 format
-        self.build_datetime = datetime(*parsedate(self.build_date_str)[:7])
+        self._datetime = datetime(*parsedate(datetime_str)[:7])
 
 
 class BuildLinkExtractor(object):
@@ -102,8 +106,8 @@ class BuildLinkExtractor(object):
 
     def _create_link(self, link):
         href = link['href']
-        build_date_str, revision = self.BUILD_RE.match(href).groups()
-        return BuildLink(self._url, href.strip(), revision, build_date_str)
+        datetime_str, revision = self.BUILD_RE.match(href).groups()
+        return BuildLink(self._url, href.strip(), revision, datetime_str)
 
     def __enter__(self):
         return self
@@ -130,9 +134,19 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
         for link in self._links:    
             version = self.BUILD_RE.match(link).group(1)
             #build_date = link.findNext(text=self.DATE_RE).strip()
+            
+            # Look for older releases and get the upload dates.
             all_versions = [version[:-1] + str(i) for i in range(int(version[-1]), -1, -1)]
             for v in all_versions:
-                yield ReleaseLink(v)
+                rl = ReleaseLink(v)
+                req = urllib2.Request(rl.url, None, HEADERS)
+                try:
+                    rf = urllib2.urlopen(req)
+                except urllib2.HTTPError:
+                    pass
+                else:
+                    rl.set_datetime(rf.headers.getheader('Last-Modified'))
+                    yield rl
 
 
 class BuildsURL(object):
@@ -155,24 +169,36 @@ class BuildsURL(object):
         if not self.url.endswith('/'):
             self.url += '/'
 
+
+# Create a INSTALLED_BUILD object for comparison 
+m = re.search("devel-(\d+)-r(\d+)", VERSION)
+if m:
+    INSTALLED_BUILD = Build(*m.groups())
+else:
+    # Get the tag datetime from github
+    soup = BeautifulSoup(urllib2.urlopen("http://github.com/OpenELEC/OpenELEC.tv/tags").read())
+    tag_table = soup.find('table', 'tag-list')
+    datetime_str = tag_table.find('div', 'tag-info', text=VERSION).findPrevious('time')['title']
+    INSTALLED_BUILD = Release(datetime_str, VERSION)
+    
+    
+URLS = {"Official Daily Builds":
+            BuildsURL("http://sources.openelec.tv/tmp/image"),
+        "Official Releases":
+            BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
+                      extractor=ReleaseLinkExtractor),
+        "Chris Swan (RPi)":
+            BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds"),
+        "vicbitter Gotham Builds":
+            BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
+                      extractor=DropboxLinkExtractor)
+        }
+
+
 if __name__ == "__main__":
-    
-    URL = "http://openelec.tv/get-openelec/viewcategory/8-generic-builds"
-    with ReleaseLinkExtractor(URL) as parser:
-        links = list(parser.get_links())
-        for link in links:
-            print link
-
-    latest_release = links[0]
-    print
-    
-    for URL in ("http://sources.openelec.tv/tmp/image",
-                "http://openelec.thestateofme.com/dev_builds/?O=D"):
-        with BuildLinkExtractor(URL) as parser:
+    for name, build_url in URLS.iteritems():
+        print name
+        with build_url.extractor() as parser:
             for link in parser.get_links():
-                print link, link > latest_release
+                print "\t{} {}".format(link, '*' * (link > INSTALLED_BUILD))
         print
-
-    with DropboxLinkExtractor("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9") as parser:
-        for link in parser.get_links():
-            print link, link > latest_release
