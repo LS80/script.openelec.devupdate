@@ -9,14 +9,11 @@ import hashlib
 
 import xbmc, xbmcgui, xbmcaddon
 
-from constants import CURRENT_BUILD, ARCH, HEADERS
+from constants import __scriptid__, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import BuildsURL, ReleaseLinkExtractor, DropboxLinkExtractor
+from builds import URLS, BuildsURL, INSTALLED_BUILD
 from progress import FileProgress, DecompressProgress
-
-__scriptid__ = 'script.openelec.devupdate'
-__addon__ = xbmcaddon.Addon(__scriptid__)
 
 HOME = os.path.expanduser('~')
 UPDATE_DIR = os.path.join(HOME, '.update')
@@ -24,22 +21,16 @@ UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
 UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
-URLS = {"Official Daily Builds":
-            BuildsURL("http://sources.openelec.tv/tmp/image"),
-        "Official Releases":
-            BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
-                      extractor=ReleaseLinkExtractor),
-        "Chris Swan (RPi)":
-            BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds/?O=D"),
-        "vicbitter Gotham Builds":
-            BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
-                      extractor=DropboxLinkExtractor)
-        }
+__addon__ = xbmcaddon.Addon(__scriptid__)
+__icon__ = __addon__.getAddonInfo('icon')
+
+TMP_DIR = __addon__.getSetting('tmp_dir')
 
 def log(txt, level=xbmc.LOGDEBUG):
+    
     if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
         msg = '{} v{}: {}'.format(__addon__.getAddonInfo('name'),
-                                     __addon__.getAddonInfo('version'), txt)
+                                  __addon__.getAddonInfo('version'), txt)
         xbmc.log(msg, level)
         
 def log_exception():
@@ -97,8 +88,7 @@ def md5sum_verified(md5sum_compare, path):
     return md5sum == md5sum_compare
 
 
-def main():
-    
+def check_update_files():
     # Check if the update files are already in place.
     if all(os.path.isfile(f) for f in UPDATE_PATHS):
         if xbmcgui.Dialog().yesno("Confirm reboot",
@@ -109,19 +99,21 @@ def main():
                                   "Reboot"):
             xbmc.restart()
 
+
+def cd_tmp_dir():
     # Move to the download directory.
-    tmp_dir = __addon__.getSetting('tmp_dir')
-    if not os.path.isdir(tmp_dir):
-        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(tmp_dir),
+    if not os.path.isdir(TMP_DIR):
+        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(TMP_DIR),
                             "Check the download directory in the addon settings.")
         __addon__.openSettings()
-        return
-    os.chdir(tmp_dir)
-    log("chdir to " +  tmp_dir)
+        sys.exit(1)
+    os.chdir(TMP_DIR)
+    log("chdir to " +  TMP_DIR)
     
-    xbmc.executebuiltin("ActivateWindow(busydialog)")
-        
-    try:
+    
+class BuildList():
+
+    def create(self):
         subdir = __addon__.getSetting('subdir')
     
         # Get the url from the settings.
@@ -133,9 +125,9 @@ def main():
             scheme, netloc = urlparse.urlparse(url)[:2]
             if not (scheme and netloc):
                 bad_url(url, "Invalid URL")
-                return
+                sys.exit(1)
             
-            build_url = BuildURL(url, subdir)
+            build_url = BuildsURL(url, subdir)
         else:
             # Defined URL
             build_url = URLS[source]
@@ -152,41 +144,51 @@ def main():
                 bad_url(e.geturl())
             else:
                 url_error(e.geturl(), str(e))
-            return
+            sys.exit(1)
         except urllib2.URLError as e:
             url_error(url, str(e))
-            return
+            sys.exit(1)
                 
         if not links:
             bad_url(url, "No builds were found for {}.".format(ARCH))
-            return
-    except:
-        xbmc.executebuiltin("Dialog.Close(busydialog)")
-    
-    xbmc.executebuiltin("Dialog.Close(busydialog)")
+            sys.exit(1)
+            
+        return links
+        
+    def __enter__(self):
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
+        return self
 
+    def __exit__(self, type, value, tb):
+        xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+
+def select_build(links): 
     # Ask which build to install.
     i = xbmcgui.Dialog().select("Select a build to install (* = currently installed)",
-                                [str(r) for r in links])
+                                [str(r) + ' *'*(r == INSTALLED_BUILD) for r in links])
     if i == -1:
-        return
+        sys.exit(0)
     selected_build = links[i]
     log("Selected build " + str(selected_build))
 
     # Confirm the update.
-    msg = " from build {} to build {}?".format(CURRENT_BUILD,
-                                               selected_build)
-    if CURRENT_BUILD > selected_build.revision:
+    msg = " {} -> {}?".format(INSTALLED_BUILD, selected_build)
+    if selected_build < INSTALLED_BUILD:
         args = ("Confirm downgrade", "Downgrade" + msg)
-    elif CURRENT_BUILD < selected_build.revision:
+    elif selected_build > INSTALLED_BUILD:
         args = ("Confirm upgrade", "Upgrade" + msg)
-    elif CURRENT_BUILD == selected_build.revision:
+    else:
         args = ("Confirm install",
-                "The selected build ({}) is already installed.".format(selected_build.revision),
+                "Build {} is already installed.".format(selected_build),
                 "Continue?")
     if not xbmcgui.Dialog().yesno(*args):
-        return
+        sys.exit(0)
+        
+    return selected_build
 
+
+def download(selected_build):
     # Get the file names.
     bz2_name = selected_build.filename
     tar_name = os.path.splitext(bz2_name)[0]
@@ -214,13 +216,13 @@ def main():
                     downloader.start()
                 log("Completed download of " + selected_build.url)   
         except Canceled:
-            return
+            sys.exit(0)
         except (urllib2.HTTPError, socket.error) as e:
             url_error(selected_build.url, str(e))
-            return
+            sys.exit(1)
         except WriteError as e:
-            write_error(os.path.join(tmp_dir, bz2_name), str(e))
-            return
+            write_error(os.path.join(TMP_DIR, bz2_name), str(e))
+            sys.exit(1)
 
 
         try:
@@ -231,10 +233,10 @@ def main():
                 decompressor.start()
             log("Completed decompression of " + bz2_name)
         except Canceled:
-            return
+            sys.exit(0)
         except WriteError as e:
-            write_error(os.path.join(tmp_dir, tar_name), str(e))
-            return
+            write_error(os.path.join(TMP_DIR, tar_name), str(e))
+            sys.exit(1)
     else:
         log("Skipping download and decompression")
 
@@ -258,10 +260,10 @@ def main():
             log("Extracted " + outfile)
         except Canceled:
             remove_update_files()
-            return
+            sys.exit(0)
         except WriteError as e:
             write_error(outfile, str(e))
-            return
+            sys.exit(1)
         else:
             # Work around progress dialog bug (#13467) 
             del extractor
@@ -276,6 +278,8 @@ def main():
     except OSError:
         pass
     
+
+def verify(selected_build):
     # Verify the md5 sums.
     os.chdir(UPDATE_DIR)
     for f in UPDATE_IMAGES:
@@ -286,24 +290,41 @@ def main():
             log("{} md5 mismatch!".format(f))
             xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
                                 "The {} image from".format(f),
-                                bz2_name,
+                                selected_build.filename,
                                 "is corrupt. The update files will be removed.")
             remove_update_files()
-            return
+            sys.exit(1)
         else:
             log("{} md5 is correct".format(f))
 
+
+def confirm(selected_build):
     if xbmcgui.Dialog().yesno("Confirm reboot",
                               "Reboot now to install build {}?"
-                              .format(selected_build.revision)):
+                              .format(selected_build)):
         xbmc.restart()
     else:
         log("Skipped reboot")
         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
-                            "on the next reboot., 10000)".format(selected_build.revision))
+                            "on the next reboot., 12000, {})".format(selected_build, __icon__))
 
 
-main()
+if __name__ == "__main__":
+    check_update_files()
+    
+    cd_tmp_dir()
+    
+    with BuildList() as build_list: 
+        links = build_list.create()
+        
+    selected_build = select_build(links)
+    
+    download(selected_build)
+    
+    verify(selected_build)
+    
+    confirm(selected_build)
+
     
     
 
