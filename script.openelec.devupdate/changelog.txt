@@ -1,3 +1,9 @@
+2.0.0
+ - Added an option to periodically check if a newer build is available.
+ - Upgrade/downgrade logic is now always based on the date of the build/release.
+ - Improved the settings layout.
+ - Notifications now show the icon.
+
 1.1.7
  - Made older releases available to install.
  - Fixed problems with the busy dialog.
