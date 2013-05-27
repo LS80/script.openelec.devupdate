@@ -1,3 +1,6 @@
+2.0.1
+ - Fixed a problem with hanging xbmc on reboot/shutdown/suspend.
+
 2.0.0
  - Added an option to periodically check if a newer build is available.
  - Upgrade/downgrade logic is now always based on the date of the build/release.
