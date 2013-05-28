@@ -2,16 +2,18 @@
 <settings>
     <category label= "General">
     	<setting type="lsep" label="Source"/>
-        <setting label="Source URL" type="labelenum" id="source" values="Other|Official Daily Builds|Official Releases|Chris Swan (RPi)|vicbitter Gotham Builds" default="Official Daily Builds"/>
-        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,0)" visible="eq(-1,0)" subsetting="true"/>
-        <setting label="URL subdirectory" type="text" id="subdir"/>
+        <setting label="Source URL" type="labelenum" id="source" values="Official Daily Builds|Official Releases|Other|Chris Swan (RPi)|vicbitter Gotham Builds" default="Official Daily Builds"/>
+        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,2)" visible="eq(-1,2)" subsetting="true"/>
+        <setting label="URL subdirectory" type="text" id="subdir" enable="gt(-2,1)" visible="gt(-2,1)"/>
         <setting type="lsep" label="Destination"/>
         <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
         <setting label="Keep tar files" type="bool" id="keep_tar" default="false"/>
         <setting type="lsep" label="Notifications"/>
-        <setting label="Automatically check for new builds" type="bool" id="check" default="true"/>
-        <setting label="Check interval (minutes)" type="slider" id="check_interval" enable="eq(-1,true)" subsetting="true" default="30" range="10,120" option="int"/>
-        <setting type="lsep" label="Advanced"/>
-        <setting label="Debug" type="bool" id="debug" default="false"/>     
-    </category>
+        <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
+        <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
+        <setting label="Never show build list" type="bool" id="check_noprompt" enable="eq(-2,true)" subsetting="true" default="false"/>
+     </category>
+     <category label="Advanced">
+        <setting label="Debug" type="bool" id="debug" default="false"/>
+     </category>
 </settings>

@@ -2,7 +2,6 @@ import sys
 
 import xbmc, xbmcgui, xbmcaddon
 
-
 from constants import __scriptid__
 from builds import INSTALLED_BUILD, Release, BuildsURL, URLS
 
@@ -10,15 +9,18 @@ __addon__ = xbmcaddon.Addon(__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 
 
-if not sys.argv[0]:
-    xbmc.executebuiltin("AlarmClock(OpenELECDevUpdate,XBMC.RunScript({}),00:30:00,silent,loop)".format(__file__))
-    if __addon__.getSetting('check') == 'true':
-        xbmc.executebuiltin("AlarmClock(OpenELECDevUpdateFirst,XBMC.RunScript({},started),00:00:30,silent)".format(__file__))
-        interval = int(__addon__.getSetting('check_interval'))
-        xbmc.executebuiltin("AlarmClock(OpenELECDevUpdateCheck,XBMC.RunScript({},started),00:{}:00,silent,loop)".format(__file__, interval))
-    else:
-        xbmc.executebuiltin("CancelAlarm(OpenELECDevUpdateCheck,silent)")
-elif sys.argv[0] and sys.argv[1] == 'started':
+check_enabled = __addon__.getSetting('check') == 'true'
+check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
+check_noprompt = __addon__.getSetting('check_noprompt') == 'true'
+
+init = not sys.argv[0]
+
+
+if init and not check_onbootonly:
+    # Start a timer to check for a new build every hour.
+    xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))
+
+if check_enabled:
     source = __addon__.getSetting('source')
     if isinstance(INSTALLED_BUILD, Release) and source == "Official Releases":
         # Don't do the job of the official auto-update system.
@@ -36,7 +38,7 @@ elif sys.argv[0] and sys.argv[1] == 'started':
             with build_url.extractor() as parser:
                 latest = list(sorted(set(parser.get_links()), reverse=True))[0]
                 if latest > INSTALLED_BUILD:
-                    if xbmc.Player().isPlayingVideo():
+                    if xbmc.Player().isPlayingVideo() or check_noprompt:
                         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "
                                             "is available., 7500, {})".format(latest, __icon__))
                     else:   
@@ -47,3 +49,4 @@ elif sys.argv[0] and sys.argv[1] == 'started':
         except:
             pass
 
+    
