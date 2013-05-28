@@ -159,7 +159,7 @@ class BuildList():
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         return self
 
-    def __exit__(self, type, value, tb):
+    def __exit__(self, exc_type, exc_value, traceback):
         xbmc.executebuiltin("Dialog.Close(busydialog)")
 
 
@@ -324,7 +324,3 @@ if __name__ == "__main__":
     verify(selected_build)
     
     confirm(selected_build)
-
-    
-    
-
