@@ -299,14 +299,19 @@ def verify(selected_build):
 
 
 def confirm(selected_build):
-    if xbmcgui.Dialog().yesno("Confirm reboot",
-                              "Reboot now to install build {}?"
-                              .format(selected_build)):
-        xbmc.restart()
+    
+    if __addon__.getSetting('confirm_reboot') == 'true':
+        if xbmcgui.Dialog().yesno("Confirm reboot",
+                                  "Reboot now to install build {}?"
+                                  .format(selected_build)):
+            xbmc.restart() 
+        else:
+            log("Skipped reboot")
+            xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
+                                "on the next reboot., 12000, {})".format(selected_build,
+                                                                         __icon__))
     else:
-        log("Skipped reboot")
-        xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
-                            "on the next reboot., 12000, {})".format(selected_build, __icon__))
+        xbmc.restart()
 
 
 if __name__ == "__main__":

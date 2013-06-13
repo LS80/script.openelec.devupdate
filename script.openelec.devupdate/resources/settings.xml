@@ -9,6 +9,7 @@
         <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
         <setting label="Keep tar files" type="bool" id="keep_tar" default="false"/>
         <setting type="lsep" label="Notifications"/>
+       	<setting label="Confirm reboot" type="bool" id="confirm_reboot" default="true"/>
         <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
         <setting label="Never show build list" type="bool" id="check_noprompt" enable="eq(-2,true)" subsetting="true" default="false"/>
