@@ -11,7 +11,7 @@ __icon__ = __addon__.getAddonInfo('icon')
 
 check_enabled = __addon__.getSetting('check') == 'true'
 check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
-check_noprompt = __addon__.getSetting('check_noprompt') == 'true'
+check_prompt = int(__addon__.getSetting('check_prompt'))
 
 init = not sys.argv[0]
 
@@ -38,7 +38,7 @@ if check_enabled:
             with build_url.extractor() as parser:
                 latest = list(sorted(set(parser.get_links()), reverse=True))[0]
                 if latest > INSTALLED_BUILD:
-                    if xbmc.Player().isPlayingVideo() or check_noprompt:
+                    if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "
                                             "is available., 7500, {})".format(latest, __icon__))
                     else:   
