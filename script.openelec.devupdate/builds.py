@@ -51,6 +51,13 @@ class Build(object):
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
     
+    soup = BeautifulSoup(urllib2.urlopen("http://github.com/OpenELEC/OpenELEC.tv/tags").read())
+    TAGS = soup.find('table', 'tag-list')
+    
+    def __init__(self, version):
+        datetime_str = self.TAGS.find('div', 'tag-info', text=version).findPrevious('time')['title']
+        Build.__init__(self, datetime_str, version)
+    
 
 class BuildLink(Build):
     """Holds information about a link to an OpenELEC build."""
@@ -77,11 +84,7 @@ class ReleaseLink(Release):
     def __init__(self, version):
         self.filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
         self.url = urlparse.urljoin(self.BASEURL, self.filename)
-        Release.__init__(self, None, version)
-
-    def set_datetime(self, datetime_str):
-        # RFC 2822 format
-        self._datetime = datetime(*parsedate(datetime_str)[:7])
+        Release.__init__(self, version)
 
 
 class BuildLinkExtractor(object):
@@ -145,7 +148,6 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
                 except urllib2.HTTPError:
                     pass
                 else:
-                    rl.set_datetime(rf.headers.getheader('Last-Modified'))
                     yield rl
 
 
@@ -175,11 +177,7 @@ m = re.search("devel-(\d+)-r(\d+)", VERSION)
 if m:
     INSTALLED_BUILD = Build(*m.groups())
 else:
-    # Get the tag datetime from github
-    soup = BeautifulSoup(urllib2.urlopen("http://github.com/OpenELEC/OpenELEC.tv/tags").read())
-    tag_table = soup.find('table', 'tag-list')
-    datetime_str = tag_table.find('div', 'tag-info', text=VERSION).findPrevious('time')['title']
-    INSTALLED_BUILD = Release(datetime_str, VERSION)
+    INSTALLED_BUILD = Release(VERSION)
     
     
 URLS = {"Official Daily Builds":

@@ -12,8 +12,8 @@ import xbmc, xbmcgui, xbmcaddon
 from constants import __scriptid__, ARCH, HEADERS
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
-from builds import URLS, BuildsURL, INSTALLED_BUILD
 from progress import FileProgress, DecompressProgress
+from builds import URLS, BuildsURL
 
 HOME = os.path.expanduser('~')
 UPDATE_DIR = os.path.join(HOME, '.update')
@@ -319,7 +319,8 @@ if __name__ == "__main__":
     
     cd_tmp_dir()
     
-    with BuildList() as build_list: 
+    with BuildList() as build_list:
+        from builds import INSTALLED_BUILD
         links = build_list.create()
         
     selected_build = select_build(links)
