@@ -1,3 +1,6 @@
+2.0.5
+ - Added http://hwat.be/openelec/official.archive as a new URL option.
+
 2.0.4
  - Fixed a problem with date comparison of the installed build.
  - Changed settings to allow the build list prompt to be completely disabled.

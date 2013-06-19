@@ -2,7 +2,7 @@
 <settings>
     <category label= "General">
     	<setting type="lsep" label="Source"/>
-        <setting label="Source URL" type="labelenum" id="source" values="Official Daily Builds|Official Releases|Other|Chris Swan (RPi)|vicbitter Gotham Builds" default="Official Daily Builds"/>
+        <setting label="Source URL" type="labelenum" id="source" values="Official Daily Builds|Official Releases|Other|Chris Swan (RPi)|hwat.be Archive|vicbitter Gotham Builds" default="Official Daily Builds"/>
         <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,2)" visible="eq(-1,2)" subsetting="true"/>
         <setting label="URL subdirectory" type="text" id="subdir" enable="gt(-2,1)" visible="gt(-2,1)"/>
         <setting type="lsep" label="Destination"/>
