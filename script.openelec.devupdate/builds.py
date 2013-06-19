@@ -4,7 +4,6 @@ import os
 import urlparse
 import urllib2
 from datetime import datetime
-from email.utils import parsedate
 
 from BeautifulSoup import BeautifulSoup
 
@@ -79,11 +78,18 @@ class BuildLink(Build):
 
 
 class ReleaseLink(Release):
-    BASEURL = "http://releases.openelec.tv/"
+    BASEURL = "http://releases.openelec.tv"
     
-    def __init__(self, version):
-        self.filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
-        self.url = urlparse.urljoin(self.BASEURL, self.filename)
+    def __init__(self, version, baseurl=None, filename=None):
+        if baseurl is None:
+            baseurl = self.BASEURL
+        
+        if filename is None:
+            self.filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
+        else:
+            self.filename = filename
+        
+        self.url = urlparse.urljoin(baseurl, self.filename)
         Release.__init__(self, version)
 
 
@@ -132,7 +138,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
     HREF = None
     
     #DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
-    
+
     def get_links(self):
         for link in self._links:    
             version = self.BUILD_RE.match(link).group(1)
@@ -144,11 +150,21 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
                 rl = ReleaseLink(v)
                 req = urllib2.Request(rl.url, None, HEADERS)
                 try:
-                    rf = urllib2.urlopen(req)
+                    urllib2.urlopen(req)
                 except urllib2.HTTPError:
                     pass
                 else:
                     yield rl
+
+
+class ArchiveLinkExtractor(BuildLinkExtractor):
+
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar.bz2".format(ARCH))
+    TEXT = BUILD_RE
+        
+    def _create_link(self, link):
+        version = self.BUILD_RE.match(link).group(1)
+        return ReleaseLink(version, self._url, link)
 
 
 class BuildsURL(object):
@@ -189,7 +205,10 @@ URLS = {"Official Daily Builds":
             BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds"),
         "vicbitter Gotham Builds":
             BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
-                      extractor=DropboxLinkExtractor)
+                      extractor=DropboxLinkExtractor),
+        "hwat.be Archive":
+            BuildsURL("http://hwat.be/openelec/official.archive",
+                      extractor=ArchiveLinkExtractor)
         }
 
 
@@ -197,6 +216,6 @@ if __name__ == "__main__":
     for name, build_url in URLS.iteritems():
         print name
         with build_url.extractor() as parser:
-            for link in parser.get_links():
+            for link in sorted(parser.get_links(), reverse=True):
                 print "\t{} {}".format(link, '*' * (link > INSTALLED_BUILD))
         print
