@@ -31,16 +31,16 @@ class Build(object):
                 self._datetime = datetime(*(time.strptime(datetime_str, self.DATETIME_FMT)[0:6]))
 
     def __eq__(self, other):
-        return (self._version, self._datetime.date()) == (other._version, other._datetime.date())
+        return (self._version, self._datetime) == (other._version, other._datetime)
 
     def __hash__(self):
         return hash((self.version, self.datetime_str))
 
     def __lt__(self, other):
-        return self._datetime.date() < other._datetime.date() or self._version < other._version
+        return self._datetime < other._datetime
     
     def __gt__(self, other):
-        return self._datetime.date() > other._datetime.date() or self._version > other._version
+        return self._datetime > other._datetime
 
     def __str__(self):
         return '{} ({})'.format(self.version,
@@ -213,6 +213,8 @@ URLS = {"Official Daily Builds":
 
 
 if __name__ == "__main__":
+    print INSTALLED_BUILD
+    print
     for name, build_url in URLS.iteritems():
         print name
         with build_url.extractor() as parser:
