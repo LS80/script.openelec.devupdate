@@ -1,3 +1,6 @@
+2.0.6
+ - Fixed a possible problem with bogus new build notifications.
+
 2.0.5
  - Added http://hwat.be/openelec/official.archive as a new URL option.
 
