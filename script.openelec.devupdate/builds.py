@@ -137,7 +137,7 @@ class BuildLinkExtractor(object):
 
     def _create_link(self, link):
         href = link['href']
-        datetime_str, revision = self.BUILD_RE.match(href).groups()
+        datetime_str, revision = self.BUILD_RE.match(href).groups()[:2]
         return BuildLink(self._url, href.strip(), revision, datetime_str)
 
     def __enter__(self):
