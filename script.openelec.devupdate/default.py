@@ -15,8 +15,8 @@ from utils import size_fmt
 from progress import FileProgress, DecompressProgress
 from builds import URLS, BuildsURL
 
-HOME = os.path.expanduser('~')
-UPDATE_DIR = os.path.join(HOME, '.update')
+
+UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
 UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
@@ -25,6 +25,7 @@ __addon__ = xbmcaddon.Addon(__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 
 TMP_DIR = __addon__.getSetting('tmp_dir')
+
 
 def log(txt, level=xbmc.LOGDEBUG):
     
@@ -190,10 +191,14 @@ def select_build(links):
 
 def download(selected_build):
     # Get the file names.
-    bz2_name = selected_build.filename
-    tar_name = os.path.splitext(bz2_name)[0]
+    filename = selected_build.filename
+    name, ext = os.path.splitext(filename)
+    if ext == '.tar':
+        tar_name = filename
+    else:
+        tar_name = name
 
-    # Download the build bz2 file and uncompress it if the tar file does not already exist.
+    # Download the build file if we don't already have the tar file.
     if not os.path.isfile(tar_name):
         log("Download URL = " + selected_build.url)
         req = urllib2.Request(selected_build.url, None, HEADERS)
@@ -204,15 +209,15 @@ def download(selected_build):
             bz2_size = int(rf.headers.getheader('Content-Length'))
             log("Size of file = " + size_fmt(bz2_size))
 
-            if (os.path.isfile(bz2_name) and
-                os.path.getsize(bz2_name) == bz2_size):
+            if (os.path.isfile(filename) and
+                os.path.getsize(filename) == bz2_size):
                 # Skip the download if the file exists with the correct size.
                 log("Skipping download")
                 pass
             else:
                 # Do the download
                 log("Starting download of " + selected_build.url)
-                with FileProgress("Downloading", rf, bz2_name, bz2_size) as downloader:
+                with FileProgress("Downloading", rf, filename, bz2_size) as downloader:
                     downloader.start()
                 log("Completed download of " + selected_build.url)   
         except Canceled:
@@ -221,22 +226,23 @@ def download(selected_build):
             url_error(selected_build.url, str(e))
             sys.exit(1)
         except WriteError as e:
-            write_error(os.path.join(TMP_DIR, bz2_name), str(e))
+            write_error(os.path.join(TMP_DIR, filename), str(e))
             sys.exit(1)
 
 
-        try:
-            # Do the decompression.
-            bf = open(bz2_name, 'rb')
-            log("Starting decompression of " + bz2_name)
-            with DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
-                decompressor.start()
-            log("Completed decompression of " + bz2_name)
-        except Canceled:
-            sys.exit(0)
-        except WriteError as e:
-            write_error(os.path.join(TMP_DIR, tar_name), str(e))
-            sys.exit(1)
+        # Do the decompression if necessary.
+        if ext == '.bz2':
+            try:
+                bf = open(filename, 'rb')
+                log("Starting decompression of " + filename)
+                with DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
+                    decompressor.start()
+                log("Completed decompression of " + filename)
+            except Canceled:
+                sys.exit(0)
+            except WriteError as e:
+                write_error(os.path.join(TMP_DIR, tar_name), str(e))
+                sys.exit(1)
     else:
         log("Skipping download and decompression")
 
@@ -272,8 +278,12 @@ def download(selected_build):
 
     # Clean up the temporary files.
     try:
-        os.remove(bz2_name)
+        if ext == '.bz2':
+            log("Deleting {}".format(filename))
+            os.remove(filename)
+
         if __addon__.getSetting('keep_tar') == "false":
+            log("Deleting {}".format(tar_name))
             os.remove(tar_name)
     except OSError:
         pass
@@ -315,11 +325,9 @@ def confirm(selected_build):
 
 
 if __name__ == "__main__":
-    check_update_files()
-    
-    cd_tmp_dir()
-    
     with BuildList() as build_list:
+        check_update_files()
+        cd_tmp_dir()
         from builds import INSTALLED_BUILD
         links = build_list.create()
         
