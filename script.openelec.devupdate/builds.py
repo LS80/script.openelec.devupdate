@@ -82,21 +82,43 @@ class ReleaseLink(Release):
     
     def __init__(self, version, baseurl=None, filename=None):
         if baseurl is None:
-            baseurl = self.BASEURL
-        
-        if filename is None:
-            self.filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
+            self.baseurl = self.BASEURL
         else:
-            self.filename = filename
+            self.baseurl = baseurl
+
+        if filename is None:
+            filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
+            
+        # Check if the link exists with or without the .bz2 extension.
+        self._exists = False
+        for f in (filename, os.path.splitext(filename)[0]):
+            url = self._test_url(f)
+            if url:
+                self.filename = f
+                self.url = url
+                self._exists = True
+                break
         
-        self.url = urlparse.urljoin(baseurl, self.filename)
         Release.__init__(self, version)
+        
+    def _test_url(self, f):
+        url = urlparse.urljoin(self.baseurl, f)
+        req = urllib2.Request(url, None, HEADERS)
+        try:
+            urllib2.urlopen(req)
+        except urllib2.HTTPError:
+            return None
+        else:
+            return url
+        
+    def exists(self):
+        return self._exists
 
 
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-devel-(\d+)-r(\d+).tar.bz2".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-devel-(\d+)-r(\d+).tar(|.bz2)".format(ARCH))
     TAG = 'a'
     CLASS = None
     HREF = BUILD_RE
@@ -132,7 +154,7 @@ class DropboxLinkExtractor(BuildLinkExtractor):
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
     
-    BUILD_RE = re.compile(".*OpenELEC.*Version:([\d\.]+)")
+    BUILD_RE = re.compile(".*OpenELEC.*i386 Version:([\d\.]+)")
     TAG = 'tr'
     TEXT = BUILD_RE
     HREF = None
@@ -140,7 +162,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
     #DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
 
     def get_links(self):
-        for link in self._links:    
+        for link in self._links:
             version = self.BUILD_RE.match(link).group(1)
             #build_date = link.findNext(text=self.DATE_RE).strip()
             
@@ -148,18 +170,13 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
             all_versions = [version[:-1] + str(i) for i in range(int(version[-1]), -1, -1)]
             for v in all_versions:
                 rl = ReleaseLink(v)
-                req = urllib2.Request(rl.url, None, HEADERS)
-                try:
-                    urllib2.urlopen(req)
-                except urllib2.HTTPError:
-                    pass
-                else:
+                if rl.exists():
                     yield rl
 
 
 class ArchiveLinkExtractor(BuildLinkExtractor):
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar.bz2".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH))
     TEXT = BUILD_RE
         
     def _create_link(self, link):

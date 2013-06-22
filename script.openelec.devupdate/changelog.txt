@@ -1,3 +1,6 @@
+2.0.7
+ - Fixed build list to also show uncompressed tar file builds.
+
 2.0.6
  - Fixed a possible problem with bogus new build notifications.
 
