@@ -1,5 +1,5 @@
 2.0.9
- - The busy indicator now shows more quickly after starting the add-on.
+ - Reduced the delay between starting the add-on and the busy indicator appearing.
 
 2.0.8
  - Fixed a possible script error. 
