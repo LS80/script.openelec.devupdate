@@ -7,7 +7,7 @@ from datetime import datetime
 
 from BeautifulSoup import BeautifulSoup
 
-from constants import VERSION, ARCH, HEADERS
+from constants import ARCH, HEADERS
 
 
 class Build(object):
@@ -205,7 +205,12 @@ class BuildsURL(object):
             self.url += '/'
 
 
-# Create a INSTALLED_BUILD object for comparison 
+# Create a INSTALLED_BUILD object for comparison
+try:
+    VERSION = open('/etc/version').read().rstrip()
+except IOError:
+    VERSION = '3.0.1'
+
 m = re.search("devel-(\d+)-r(\d+)", VERSION)
 if m:
     INSTALLED_BUILD = Build(*m.groups())

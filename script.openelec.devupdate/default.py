@@ -1,30 +1,7 @@
 import os
 import sys
-import urllib2
-import socket
-import urlparse
-import tarfile
-import traceback
-import hashlib
 
 import xbmc, xbmcgui, xbmcaddon
-
-from constants import __scriptid__, ARCH, HEADERS
-from script_exceptions import Canceled, WriteError
-from utils import size_fmt
-from progress import FileProgress, DecompressProgress
-from builds import URLS, BuildsURL
-
-
-UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
-UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
-
-__addon__ = xbmcaddon.Addon(__scriptid__)
-__icon__ = __addon__.getAddonInfo('icon')
-
-TMP_DIR = __addon__.getSetting('tmp_dir')
 
 
 def log(txt, level=xbmc.LOGDEBUG):
@@ -35,6 +12,7 @@ def log(txt, level=xbmc.LOGDEBUG):
         xbmc.log(msg, level)
         
 def log_exception():
+    import traceback
     log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
         
 def bad_url(url, msg="URL not found."):
@@ -63,6 +41,8 @@ def remove_update_files():
             log("Removed " + f)
             
 def md5sum_verified(md5sum_compare, path):
+    import hashlib
+    
     progress = xbmcgui.DialogProgress()
     progress.create("Verifying", "Verifying {} md5".format(path), " ", " ")
     
@@ -103,18 +83,24 @@ def check_update_files():
 
 def cd_tmp_dir():
     # Move to the download directory.
-    if not os.path.isdir(TMP_DIR):
-        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(TMP_DIR),
+    if not os.path.isdir(tmp_dir):
+        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(tmp_dir),
                             "Check the download directory in the addon settings.")
         __addon__.openSettings()
         sys.exit(1)
-    os.chdir(TMP_DIR)
-    log("chdir to " +  TMP_DIR)
+    os.chdir(tmp_dir)
+    log("chdir to " +  tmp_dir)
     
     
 class BuildList():
 
     def create(self):
+        import urllib2
+        import urlparse
+        
+        import constants
+        import builds
+        
         subdir = __addon__.getSetting('subdir')
     
         # Get the url from the settings.
@@ -128,10 +114,10 @@ class BuildList():
                 bad_url(url, "Invalid URL")
                 sys.exit(1)
             
-            build_url = BuildsURL(url, subdir)
+            build_url = builds.BuildsURL(url, subdir)
         else:
             # Defined URL
-            build_url = URLS[source]
+            build_url = builds.URLS[source]
             url = build_url.url
         
         log("Full URL = " + url)
@@ -151,7 +137,7 @@ class BuildList():
             sys.exit(1)
                 
         if not links:
-            bad_url(url, "No builds were found for {}.".format(ARCH))
+            bad_url(url, "No builds were found for {}.".format(constants.ARCH))
             sys.exit(1)
             
         return links
@@ -190,6 +176,15 @@ def select_build(links):
 
 
 def download(selected_build):
+    import urllib2
+    import socket
+    import tarfile
+    
+    import constants
+    import progress
+    import utils
+    import script_exceptions
+
     # Get the file names.
     filename = selected_build.filename
     name, ext = os.path.splitext(filename)
@@ -201,13 +196,13 @@ def download(selected_build):
     # Download the build file if we don't already have the tar file.
     if not os.path.isfile(tar_name):
         log("Download URL = " + selected_build.url)
-        req = urllib2.Request(selected_build.url, None, HEADERS)
+        req = urllib2.Request(selected_build.url, None, constants.HEADERS)
 
         try:
             rf = urllib2.urlopen(req)
             log("Opened URL " + selected_build.url)
             bz2_size = int(rf.headers.getheader('Content-Length'))
-            log("Size of file = " + size_fmt(bz2_size))
+            log("Size of file = " + utils.size_fmt(bz2_size))
 
             if (os.path.isfile(filename) and
                 os.path.getsize(filename) == bz2_size):
@@ -217,16 +212,16 @@ def download(selected_build):
             else:
                 # Do the download
                 log("Starting download of " + selected_build.url)
-                with FileProgress("Downloading", rf, filename, bz2_size) as downloader:
+                with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
                     downloader.start()
                 log("Completed download of " + selected_build.url)   
-        except Canceled:
+        except script_exceptions.Canceled:
             sys.exit(0)
         except (urllib2.HTTPError, socket.error) as e:
             url_error(selected_build.url, str(e))
             sys.exit(1)
-        except WriteError as e:
-            write_error(os.path.join(TMP_DIR, filename), str(e))
+        except script_exceptions.WriteError as e:
+            write_error(os.path.join(tmp_dir, filename), str(e))
             sys.exit(1)
 
 
@@ -235,13 +230,13 @@ def download(selected_build):
             try:
                 bf = open(filename, 'rb')
                 log("Starting decompression of " + filename)
-                with DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
+                with progress.DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
                     decompressor.start()
                 log("Completed decompression of " + filename)
-            except Canceled:
+            except script_exceptions.Canceled:
                 sys.exit(0)
-            except WriteError as e:
-                write_error(os.path.join(TMP_DIR, tar_name), str(e))
+            except script_exceptions.WriteError as e:
+                write_error(os.path.join(tmp_dir, tar_name), str(e))
                 sys.exit(1)
     else:
         log("Skipping download and decompression")
@@ -261,13 +256,13 @@ def download(selected_build):
         ti = tf.extractfile(member)
         outfile = os.path.join(UPDATE_DIR, os.path.basename(member.name))
         try:
-            with FileProgress("Extracting", ti, outfile, ti.size) as extractor:
+            with progress.FileProgress("Extracting", ti, outfile, ti.size) as extractor:
                 extractor.start()
             log("Extracted " + outfile)
-        except Canceled:
+        except script_exceptions.Canceled:
             remove_update_files()
             sys.exit(0)
-        except WriteError as e:
+        except script_exceptions.WriteError as e:
             write_error(outfile, str(e))
             sys.exit(1)
         else:
@@ -326,6 +321,19 @@ def confirm(selected_build):
 
 if __name__ == "__main__":
     with BuildList() as build_list:
+        from constants import __scriptid__
+        
+        UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
+        UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+        UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+        UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
+
+        __addon__ = xbmcaddon.Addon(__scriptid__)
+
+        __icon__ = __addon__.getAddonInfo('icon')
+        
+        tmp_dir = __addon__.getSetting('tmp_dir')
+        
         check_update_files()
         cd_tmp_dir()
         from builds import INSTALLED_BUILD
