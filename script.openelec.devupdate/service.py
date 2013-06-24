@@ -36,7 +36,7 @@ if check_enabled:
                 url = build_url.url
     
             with build_url.extractor() as parser:
-                latest = list(sorted(set(parser.get_links()), reverse=True))[0]
+                latest = sorted(parser.get_links(), reverse=True)[0]
                 if latest > builds.INSTALLED_BUILD:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "

@@ -125,7 +125,7 @@ class BuildList():
         try:
             # Get the list of build links.
             with build_url.extractor() as parser:
-                links = sorted(set(parser.get_links()), reverse=True)
+                links = sorted(parser.get_links(), reverse=True)
         except urllib2.HTTPError as e:
             if e.code == 404:
                 bad_url(e.geturl())
