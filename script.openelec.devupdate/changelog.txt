@@ -1,8 +1,11 @@
+2.0.10
+ - Fixed a possible script error when set to "Official Releases".
+
 2.0.9
  - Reduced the delay between starting the add-on and the busy indicator appearing.
 
 2.0.8
- - Fixed a possible script error. 
+ - Fixed a possible script error when using nightly build sources. 
 
 2.0.7
  - Fixed build list to also show uncompressed tar file builds.
