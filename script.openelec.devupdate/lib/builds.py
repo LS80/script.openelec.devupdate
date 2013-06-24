@@ -3,6 +3,7 @@ import re
 import os
 import urlparse
 import urllib2
+import socket
 from datetime import datetime
 
 from BeautifulSoup import BeautifulSoup
@@ -106,7 +107,7 @@ class ReleaseLink(Release):
         req = urllib2.Request(url, None, HEADERS)
         try:
             urllib2.urlopen(req)
-        except urllib2.HTTPError:
+        except (urllib2.HTTPError, socket.error):
             return None
         else:
             return url
