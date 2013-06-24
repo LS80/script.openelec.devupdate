@@ -150,7 +150,9 @@ class BuildList():
         xbmc.executebuiltin("Dialog.Close(busydialog)")
 
 
-def select_build(links): 
+def select_build(links):
+    from builds import INSTALLED_BUILD
+
     # Ask which build to install.
     i = xbmcgui.Dialog().select("Select a build to install (* = currently installed)",
                                 [str(r) + ' *'*(r == INSTALLED_BUILD) for r in links])
@@ -319,30 +321,28 @@ def confirm(selected_build):
         xbmc.restart()
 
 
-if __name__ == "__main__":
-    with BuildList() as build_list:
-        from constants import __scriptid__
-        
-        UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-        UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
-        UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-        UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
+with BuildList() as build_list:
+    from constants import __scriptid__
+    
+    __addon__ = xbmcaddon.Addon(__scriptid__)
+    __icon__ = __addon__.getAddonInfo('icon')
+    
+    UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
+    UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+    UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+    UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
+    
+    tmp_dir = __addon__.getSetting('tmp_dir')
+    
+    check_update_files()
+    cd_tmp_dir()
 
-        __addon__ = xbmcaddon.Addon(__scriptid__)
+    links = build_list.create()
+    
+selected_build = select_build(links)
 
-        __icon__ = __addon__.getAddonInfo('icon')
-        
-        tmp_dir = __addon__.getSetting('tmp_dir')
-        
-        check_update_files()
-        cd_tmp_dir()
-        from builds import INSTALLED_BUILD
-        links = build_list.create()
-        
-    selected_build = select_build(links)
-    
-    download(selected_build)
-    
-    verify(selected_build)
-    
-    confirm(selected_build)
+download(selected_build)
+
+verify(selected_build)
+
+confirm(selected_build)
