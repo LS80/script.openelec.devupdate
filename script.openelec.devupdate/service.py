@@ -2,8 +2,8 @@ import sys
 
 import xbmc, xbmcgui, xbmcaddon
 
-from constants import __scriptid__
-from builds import INSTALLED_BUILD, Release, BuildsURL, URLS
+from lib.constants import __scriptid__
+from lib import builds
 
 __addon__ = xbmcaddon.Addon(__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
@@ -22,7 +22,7 @@ if init and not check_onbootonly:
 
 if check_enabled:
     source = __addon__.getSetting('source')
-    if isinstance(INSTALLED_BUILD, Release) and source == "Official Releases":
+    if isinstance(builds.INSTALLED_BUILD, builds.Release) and source == "Official Releases":
         # Don't do the job of the official auto-update system.
         pass
     else:
@@ -30,14 +30,14 @@ if check_enabled:
             subdir = __addon__.getSetting('subdir')
             if source == "Other":
                 url = __addon__.getSetting('custom_url')
-                build_url = BuildsURL(url, subdir)
+                build_url = builds.BuildsURL(url, subdir)
             else:
-                build_url = URLS[source]
+                build_url = builds.URLS[source]
                 url = build_url.url
     
             with build_url.extractor() as parser:
                 latest = list(sorted(set(parser.get_links()), reverse=True))[0]
-                if latest > INSTALLED_BUILD:
+                if latest > builds.INSTALLED_BUILD:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "
                                             "is available., 7500, {})".format(latest, __icon__))

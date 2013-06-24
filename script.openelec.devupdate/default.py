@@ -98,8 +98,8 @@ class BuildList():
         import urllib2
         import urlparse
         
-        import constants
-        import builds
+        from lib import constants
+        from lib import builds
         
         subdir = __addon__.getSetting('subdir')
     
@@ -151,7 +151,7 @@ class BuildList():
 
 
 def select_build(links):
-    from builds import INSTALLED_BUILD
+    from lib.builds import INSTALLED_BUILD
 
     # Ask which build to install.
     i = xbmcgui.Dialog().select("Select a build to install (* = currently installed)",
@@ -182,10 +182,10 @@ def download(selected_build):
     import socket
     import tarfile
     
-    import constants
-    import progress
-    import utils
-    import script_exceptions
+    from lib import constants
+    from lib import progress
+    from lib import utils
+    from lib import script_exceptions
 
     # Get the file names.
     filename = selected_build.filename
@@ -322,7 +322,7 @@ def confirm(selected_build):
 
 
 with BuildList() as build_list:
-    from constants import __scriptid__
+    from lib.constants import __scriptid__
     
     __addon__ = xbmcaddon.Addon(__scriptid__)
     __icon__ = __addon__.getAddonInfo('icon')
