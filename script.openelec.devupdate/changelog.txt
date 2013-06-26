@@ -1,3 +1,7 @@
+2.0.11
+ - Fixed a problem with the gui hanging if the update files are already in place.
+ - Added a 10 second reboot timeout dialog instead of rebooting immediately.
+
 2.0.10
  - Fixed a possible script error when set to "Official Releases".
 

@@ -1,3 +1,5 @@
+from __future__ import division
+
 import os
 import sys
 
@@ -44,7 +46,7 @@ def md5sum_verified(md5sum_compare, path):
     import hashlib
     
     progress = xbmcgui.DialogProgress()
-    progress.create("Verifying", "Verifying {} md5".format(path), " ", " ")
+    progress.create("Verifying", " ", "Verifying {} md5".format(path), " ")
     
     BLOCK_SIZE = 8192
     
@@ -164,9 +166,9 @@ def select_build(links):
     # Confirm the update.
     msg = " {} -> {}?".format(INSTALLED_BUILD, selected_build)
     if selected_build < INSTALLED_BUILD:
-        args = ("Confirm downgrade", "Downgrade" + msg)
+        args = ("Confirm downgrade", " ", "Downgrade" + msg)
     elif selected_build > INSTALLED_BUILD:
-        args = ("Confirm upgrade", "Upgrade" + msg)
+        args = ("Confirm upgrade", " ", "Upgrade" + msg)
     else:
         args = ("Confirm install",
                 "Build {} is already installed.".format(selected_build),
@@ -303,23 +305,55 @@ def verify(selected_build):
             sys.exit(1)
         else:
             log("{} md5 is correct".format(f))
+            
 
+def notify(selected_build):
+    log("Skipped reboot")
+    xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
+                        "on the next reboot., 12000, {})".format(selected_build,
+                                                                 __icon__))
 
 def confirm(selected_build):
     
     if __addon__.getSetting('confirm_reboot') == 'true':
         if xbmcgui.Dialog().yesno("Confirm reboot",
+                                  " ",
                                   "Reboot now to install build {}?"
                                   .format(selected_build)):
             xbmc.restart() 
         else:
-            log("Skipped reboot")
-            xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
-                                "on the next reboot., 12000, {})".format(selected_build,
-                                                                         __icon__))
+            notify(selected_build)
     else:
-        xbmc.restart()
+        TIMEOUT = 10
+        progress = xbmcgui.DialogProgress()
+        progress.create('Rebooting')
+        
+        restart = True
+        seconds = TIMEOUT
+        while seconds >= 0:
+            progress.update(int((TIMEOUT - seconds) / TIMEOUT * 100),
+                            "Build {} is ready to install.".format(selected_build),
+                            "Rebooting{}{}...".format((seconds > 0) * " in {} second".format(seconds),
+                                                      "s" * (seconds > 1)))
+            xbmc.sleep(1000)
+            if progress.iscanceled():
+                restart = False
+                break
+            seconds -= 1
+        progress.close()
+        if restart:
+            xbmc.restart()
+        else:
+            notify(selected_build)
 
+
+UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
+UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+
+UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
+
+check_update_files()
 
 with BuildList() as build_list:
     from lib.constants import __scriptid__
@@ -327,14 +361,8 @@ with BuildList() as build_list:
     __addon__ = xbmcaddon.Addon(__scriptid__)
     __icon__ = __addon__.getAddonInfo('icon')
     
-    UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-    UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
-    UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-    UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
-    
     tmp_dir = __addon__.getSetting('tmp_dir')
     
-    check_update_files()
     cd_tmp_dir()
 
     links = build_list.create()
