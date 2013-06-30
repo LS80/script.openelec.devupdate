@@ -314,7 +314,11 @@ def notify(selected_build):
                                                                  __icon__))
 
 def confirm(selected_build):
+    from lib import constants
     
+    with open(constants.NOTIFY_FILE, 'w') as f:
+        f.write(str(selected_build))
+
     if __addon__.getSetting('confirm_reboot') == 'true':
         if xbmcgui.Dialog().yesno("Confirm reboot",
                                   " ",
@@ -347,7 +351,7 @@ def confirm(selected_build):
             notify(selected_build)
 
 
-UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
+UPDATE_DIR = '/storage/.update'
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 
 UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)

@@ -9,4 +9,6 @@ if ARCH.startswith('Virtual'):
     # This just allows easier testing in a virtual machine
     ARCH = 'RPi.arm'    
 
-HEADERS={'User-agent' : "Mozilla/5.0"}
+HEADERS = {'User-agent': "Mozilla/5.0"}
+
+NOTIFY_FILE = '/storage/installed'
