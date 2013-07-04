@@ -5,6 +5,8 @@ import xbmc, xbmcgui, xbmcaddon
 
 from lib import constants
 from lib import builds
+from lib import utils
+from lib.progress import restart_countdown
 
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
@@ -17,6 +19,13 @@ check_prompt = int(__addon__.getSetting('check_prompt'))
 init = not sys.argv[0]
 
 if init:
+    if os.path.exists(constants.RPI_CONFIG_BACKUP):
+        utils.mount_readwrite()
+        os.rename(constants.RPI_CONFIG_BACKUP, constants.RPI_CONFIG_FILE)
+        utils.mount_readonly()
+        if restart_countdown("Ready to reboot to re-enable overclocking."):
+            xbmc.restart()
+    
     if check_onbootonly:
         # Start a timer to check for a new build every hour.
         xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))

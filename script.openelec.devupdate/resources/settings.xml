@@ -16,6 +16,8 @@
         <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-2,true)" subsetting="true" default="1"/>
      </category>
      <category label="Advanced">
+        <setting label="Disable overclocking during update (RPi only)" type="bool" id="disable_overclock" default="false"/>
+        <setting type="sep"/>
         <setting label="Debug" type="bool" id="debug" default="false"/>
      </category>
 </settings>
