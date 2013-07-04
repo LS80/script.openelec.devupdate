@@ -231,7 +231,10 @@ URLS = {"Official Daily Builds":
                       extractor=DropboxLinkExtractor),
         "hwat.be Archive":
             BuildsURL("http://hwat.be/openelec/official.archive",
-                      extractor=ArchiveLinkExtractor)
+                      extractor=ArchiveLinkExtractor),
+        "Rbej Gotham Builds (RPi)":
+            BuildsURL("https://www.dropbox.com/sh/269wt7jd0ebsgn5/k06eEvbTse",
+                      extractor=DropboxLinkExtractor),
         }
 
 
