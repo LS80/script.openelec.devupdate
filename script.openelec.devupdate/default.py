@@ -1,3 +1,22 @@
+############################################################################
+#
+#  Copyright 2012 Lee Smith
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+# 
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+############################################################################
+
 from __future__ import division
 
 import os
@@ -99,8 +118,7 @@ class BuildList():
     def create(self):
         import urllib2
         import urlparse
-        
-        from lib import constants
+
         from lib import builds
         
         subdir = __addon__.getSetting('subdir')
@@ -183,8 +201,7 @@ def download(selected_build):
     import urllib2
     import socket
     import tarfile
-    
-    from lib import constants
+
     from lib import progress
     from lib import utils
     from lib import script_exceptions
@@ -305,7 +322,32 @@ def verify(selected_build):
             sys.exit(1)
         else:
             log("{} md5 is correct".format(f))
+
             
+def disable_overclock():
+    import re
+    from lib import utils
+    
+    if (constants.ARCH == 'RPi.arm' and
+        os.path.isfile(constants.RPI_CONFIG_FILE) and 
+        __addon__.getSetting('disable_overclock') == 'true'):
+        
+        with open(constants.RPI_CONFIG_FILE, 'r') as a:
+            config = a.read()
+        
+        if constants.RPI_OVERCLOCK_RE.search(config):
+            utils.mount_readwrite()
+    
+            os.rename(constants.RPI_CONFIG_FILE, constants.RPI_CONFIG_BACKUP)
+
+            def repl(m):
+                return '#' + m.group(1)
+
+            with open(constants.RPI_CONFIG_FILE, 'w') as b:
+                b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
+
+            utils.mount_readonly()
+    
 
 def notify(selected_build):
     log("Skipped reboot")
@@ -314,8 +356,8 @@ def notify(selected_build):
                                                                  __icon__))
 
 def confirm(selected_build):
-    from lib import constants
-    
+    from lib import progress
+
     with open(constants.NOTIFY_FILE, 'w') as f:
         f.write(str(selected_build))
 
@@ -328,27 +370,11 @@ def confirm(selected_build):
         else:
             notify(selected_build)
     else:
-        TIMEOUT = 10
-        progress = xbmcgui.DialogProgress()
-        progress.create('Rebooting')
-        
-        restart = True
-        seconds = TIMEOUT
-        while seconds >= 0:
-            progress.update(int((TIMEOUT - seconds) / TIMEOUT * 100),
-                            "Build {} is ready to install.".format(selected_build),
-                            "Rebooting{}{}...".format((seconds > 0) * " in {} second".format(seconds),
-                                                      "s" * (seconds > 1)))
-            xbmc.sleep(1000)
-            if progress.iscanceled():
-                restart = False
-                break
-            seconds -= 1
-        progress.close()
-        if restart:
+        if progress.restart_countdown("Build {} is ready to install.".format(selected_build)):
             xbmc.restart()
         else:
             notify(selected_build)
+
 
 
 UPDATE_DIR = '/storage/.update'
@@ -360,9 +386,9 @@ UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 check_update_files()
 
 with BuildList() as build_list:
-    from lib.constants import __scriptid__
+    from lib import constants
     
-    __addon__ = xbmcaddon.Addon(__scriptid__)
+    __addon__ = xbmcaddon.Addon(constants.__scriptid__)
     __icon__ = __addon__.getAddonInfo('icon')
     
     tmp_dir = __addon__.getSetting('tmp_dir')
@@ -376,5 +402,7 @@ selected_build = select_build(links)
 download(selected_build)
 
 verify(selected_build)
+
+disable_overclock()
 
 confirm(selected_build)

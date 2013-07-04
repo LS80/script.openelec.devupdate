@@ -4,7 +4,7 @@ import os
 import bz2
 import time
 
-import xbmcgui
+import xbmc, xbmcgui
 
 from script_exceptions import Canceled, WriteError
 from utils import size_fmt
@@ -68,3 +68,24 @@ class DecompressProgress(FileProgress):
         data = self.decompressor.decompress(self._getdata())
         self._done = self._in_f.tell()
         return data
+    
+
+def restart_countdown(message, timeout=10):
+    progress = xbmcgui.DialogProgress()
+    progress.create('Rebooting')
+        
+    restart = True
+    seconds = timeout
+    while seconds >= 0:
+        progress.update(int((timeout - seconds) / timeout * 100),
+                        message,
+                        "Rebooting{}{}...".format((seconds > 0) * " in {} second".format(seconds),
+                                                  "s" * (seconds > 1)))
+        xbmc.sleep(1000)
+        if progress.iscanceled():
+            restart = False
+            break
+        seconds -= 1
+    progress.close()
+
+    return restart
