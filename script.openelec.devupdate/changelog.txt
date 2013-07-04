@@ -1,3 +1,9 @@
+2.2.0
+ - Added an experimental option to temporarily disable Raspberry Pi overclocking during an update.
+   This helps to prevent SD card corruption.
+ - Added the Rbej builds as a new URL option.
+ - Changed the default URL option to "Official Releases".
+
 2.1.0
  - Added a notification about a successful update on startup.
 
