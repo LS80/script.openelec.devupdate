@@ -229,11 +229,13 @@ URLS = {"Official Daily Builds":
         "vicbitter Gotham Builds":
             BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
                       extractor=DropboxLinkExtractor),
-        "hwat.be Archive":
-            BuildsURL("http://hwat.be/openelec/official.archive",
-                      extractor=ArchiveLinkExtractor),
+        "Official Archive":
+            BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor),
         "Rbej Gotham Builds (RPi)":
-            BuildsURL("https://www.dropbox.com/sh/269wt7jd0ebsgn5/k06eEvbTse",
+            BuildsURL("https://www.dropbox.com/sh/463icbzlf0zanip/QpB7drv-7f",
+                      extractor=DropboxLinkExtractor),
+        "Rbej Frodo Builds (RPi)":
+            BuildsURL("https://www.dropbox.com/sh/rs27to37nu85r6f/2fxd355GpO",
                       extractor=DropboxLinkExtractor),
         }
 

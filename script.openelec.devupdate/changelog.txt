@@ -1,3 +1,7 @@
+2.3.0
+ - Added Rbej Frodo builds.
+ - Removed hwat.be archive and replaced it with the official one at archive.openelec.tv.
+
 2.2.0
  - Added an experimental option to temporarily disable Raspberry Pi overclocking during an update.
    This helps to prevent SD card corruption.
