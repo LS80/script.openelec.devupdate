@@ -6,7 +6,7 @@ import urllib2
 import socket
 from datetime import datetime
 
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, SoupStrainer
 
 from constants import ARCH, HEADERS
 
@@ -19,7 +19,10 @@ class Build(object):
 
     def __init__(self, datetime_str, version):
         self.version = version
-        self._version = [int(i) for i in version.split('.')]  
+        try:
+            self._version = [int(i) for i in version.split('.')]
+        except ValueError:
+            self._version = version  
         self.datetime_str = datetime_str
 
         if datetime_str is None:
@@ -51,13 +54,18 @@ class Build(object):
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
     
-    soup = BeautifulSoup(urllib2.urlopen("http://github.com/OpenELEC/OpenELEC.tv/tags").read())
-    TAGS = soup.find('table', 'tag-list')
+    req = urllib2.Request("http://github.com/OpenELEC/OpenELEC.tv/tags", None, HEADERS)
+    html = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(html, SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
     
     def __init__(self, version):
-        datetime_str = self.TAGS.find('div', 'tag-info', text=version).findPrevious('time')['title']
+        datetime_str = self.soup.find('a', href=re.compile(version)).time['title']
         Build.__init__(self, datetime_str, version)
-    
+        
+        
+class RbejBuild(Build):
+    DATETIME_FMT = '%d.%m.%Y'
+
 
 class BuildLink(Build):
     """Holds information about a link to an OpenELEC build."""
@@ -116,6 +124,13 @@ class ReleaseLink(Release):
         return self._exists
 
 
+class RbejBuildLink(RbejBuild):
+    def __init__(self, baseurl, link, version, datetime_str):
+        RbejBuild.__init__(self, datetime_str, version)
+        self.filename = os.path.basename(link)
+        self.url = urlparse.urljoin(baseurl, link)
+
+
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
@@ -129,8 +144,12 @@ class BuildLinkExtractor(object):
         req = urllib2.Request(url, None, HEADERS)
         self._response = urllib2.urlopen(req)
         self._url = url
-        soup = BeautifulSoup(self._response.read())
-        self._links = soup(self.TAG, self.CLASS, href=self.HREF, text=self.TEXT)
+        html = self._response.read()
+        soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
+                                                               self.CLASS,
+                                                               href=self.HREF,
+                                                               text=self.TEXT))
+        self._links = soup.contents
 
     def get_links(self):  
         for link in self._links:
@@ -185,6 +204,17 @@ class ArchiveLinkExtractor(BuildLinkExtractor):
         return ReleaseLink(version, self._url, link)
 
 
+class RbejLinkExtractor(BuildLinkExtractor):
+
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-(.*?)\((.*?)\).tar(|.bz2)".format(ARCH))
+    HREF = BUILD_RE
+
+    def _create_link(self, link):
+        href = link['href']
+        version, datetime_str = self.BUILD_RE.match(href).groups()[:2]
+        return RbejBuildLink(self._url, href.strip(), version, datetime_str)    
+
+
 class BuildsURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
         self.url = url
@@ -232,11 +262,11 @@ URLS = {"Official Daily Builds":
         "Official Archive":
             BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor),
         "Rbej Gotham Builds (RPi)":
-            BuildsURL("https://www.dropbox.com/sh/463icbzlf0zanip/QpB7drv-7f",
-                      extractor=DropboxLinkExtractor),
+            BuildsURL("http://netlir.dk/rbej/builds/Gotham",
+                      extractor=RbejLinkExtractor),
         "Rbej Frodo Builds (RPi)":
-            BuildsURL("https://www.dropbox.com/sh/rs27to37nu85r6f/2fxd355GpO",
-                      extractor=DropboxLinkExtractor),
+            BuildsURL("http://netlir.dk/rbej/builds/Frodo",
+                      extractor=RbejLinkExtractor)
         }
 
 
