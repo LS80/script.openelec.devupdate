@@ -1,3 +1,6 @@
+2.4.1
+ - Fixed a problem with repeated installed build notifications.
+
 2.4.0
  - Changed the Rbej builds to use the new netlir.dk url.
  - Put the source name in the build selection dialog heading.
