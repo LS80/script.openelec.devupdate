@@ -1,3 +1,7 @@
+2.4.0
+ - Changed the Rbej builds to use the new netlir.dk url.
+ - Put the source name in the build selection dialog heading.
+
 2.3.0
  - Added Rbej Frodo builds.
  - Removed hwat.be archive and replaced it with the official one at archive.openelec.tv.
