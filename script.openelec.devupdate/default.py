@@ -160,7 +160,7 @@ class BuildList():
             bad_url(url, "No builds were found for {}.".format(constants.ARCH))
             sys.exit(1)
             
-        return links
+        return source, links
         
     def __enter__(self):
         xbmc.executebuiltin("ActivateWindow(busydialog)")
@@ -170,11 +170,11 @@ class BuildList():
         xbmc.executebuiltin("Dialog.Close(busydialog)")
 
 
-def select_build(links):
+def select_build(source, links):
     from lib.builds import INSTALLED_BUILD
 
     # Ask which build to install.
-    i = xbmcgui.Dialog().select("Select a build to install (* = currently installed)",
+    i = xbmcgui.Dialog().select("{} (* = installed)".format(source),
                                 [str(r) + ' *'*(r == INSTALLED_BUILD) for r in links])
     if i == -1:
         sys.exit(0)
@@ -396,9 +396,9 @@ with BuildList() as build_list:
     
     cd_tmp_dir()
 
-    links = build_list.create()
+    source, links = build_list.create()
     
-selected_build = select_build(links)
+selected_build = select_build(source, links)
 
 download(selected_build)
 
