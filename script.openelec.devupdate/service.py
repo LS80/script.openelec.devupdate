@@ -31,8 +31,10 @@ if init:
         # Start a timer to check for a new build every hour.
         xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))
 
+
+    notify_file = os.path.join(__dir__, constants.NOTIFY_FILE)
     try:
-        with open(os.path.join(__dir__, constants.NOTIFY_FILE)) as f:
+        with open(notify_file) as f:
             build = f.read()
     except IOError:
         # No new build installed
@@ -41,6 +43,11 @@ if init:
         if build == str(builds.INSTALLED_BUILD):
             xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} was installed successfully."
                                 ", 12000, {})".format(build, __icon__))
+    try:
+        os.remove(notify_file)
+    except:
+        pass
+
 
 if check_enabled:
     source = __addon__.getSetting('source')
