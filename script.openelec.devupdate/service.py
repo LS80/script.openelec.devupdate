@@ -10,6 +10,7 @@ from lib.progress import restart_countdown
 
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
+__dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
 
 check_enabled = __addon__.getSetting('check') == 'true'
@@ -31,7 +32,7 @@ if init:
         xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))
 
     try:
-        with open(constants.NOTIFY_FILE) as f:
+        with open(os.path.join(__dir__, constants.NOTIFY_FILE)) as f:
             build = f.read()
     except IOError:
         # No new build installed
@@ -40,11 +41,6 @@ if init:
         if build == str(builds.INSTALLED_BUILD):
             xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} was installed successfully."
                                 ", 12000, {})".format(build, __icon__))
-    try:
-        os.remove(constants.NOTIFY_FILE)
-    except:
-        pass
-
 
 if check_enabled:
     source = __addon__.getSetting('source')

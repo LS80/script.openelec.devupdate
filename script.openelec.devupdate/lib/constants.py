@@ -13,7 +13,7 @@ if ARCH.startswith('Virtual'):
 
 HEADERS = {'User-agent': "Mozilla/5.0"}
 
-NOTIFY_FILE = '/storage/installed'
+NOTIFY_FILE = 'installed_build.txt'
 
 RPI_CONFIG_FILE = '/flash/config.txt'
 RPI_CONFIG_BACKUP = '/flash/config.txt' + '.bak'

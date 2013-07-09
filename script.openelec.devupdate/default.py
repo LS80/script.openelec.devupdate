@@ -358,7 +358,7 @@ def notify(selected_build):
 def confirm(selected_build):
     from lib import progress
 
-    with open(constants.NOTIFY_FILE, 'w') as f:
+    with open(os.path.join(__dir__, constants.NOTIFY_FILE), 'w') as f:
         f.write(str(selected_build))
 
     if __addon__.getSetting('confirm_reboot') == 'true':
@@ -390,7 +390,8 @@ with BuildList() as build_list:
     
     __addon__ = xbmcaddon.Addon(constants.__scriptid__)
     __icon__ = __addon__.getAddonInfo('icon')
-    
+    __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
+
     tmp_dir = __addon__.getSetting('tmp_dir')
     
     cd_tmp_dir()
