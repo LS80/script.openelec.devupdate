@@ -182,11 +182,11 @@ def select_build(source, links):
     log("Selected build " + str(selected_build))
 
     # Confirm the update.
-    msg = " {} -> {}?".format(INSTALLED_BUILD, selected_build)
+    msg = "{} -> {}?".format(INSTALLED_BUILD, selected_build)
     if selected_build < INSTALLED_BUILD:
-        args = ("Confirm downgrade", " ", "Downgrade" + msg)
+        args = ("Confirm downgrade", "Downgrade", msg)
     elif selected_build > INSTALLED_BUILD:
-        args = ("Confirm upgrade", " ", "Upgrade" + msg)
+        args = ("Confirm upgrade", "Upgrade", msg)
     else:
         args = ("Confirm install",
                 "Build {} is already installed.".format(selected_build),
