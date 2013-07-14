@@ -211,7 +211,10 @@ class RbejLinkExtractor(BuildLinkExtractor):
 
     def _create_link(self, link):
         href = link['href']
-        version, datetime_str = self.BUILD_RE.match(href).groups()[:2]
+        m = self.BUILD_RE.match(href)
+        datetime_str = m.group(2)
+        desc = m.group(1).split('-')
+        version = "{} {}".format(desc[0], desc[2])
         return RbejBuildLink(self._url, href.strip(), version, datetime_str)    
 
 
@@ -244,7 +247,17 @@ except IOError:
 
 m = re.search("devel-(\d+)-r(\d+)", VERSION)
 if m:
-    INSTALLED_BUILD = Build(*m.groups())
+    if ARCH == 'RPi.arm':
+        mm = re.search('Rbej (Frodo|Gotham)', open('/usr/lib/xbmc/xbmc.bin').read())
+        if mm:
+            version = "Rbej {}".format(mm.group(1))
+            # Rbej builds do not have a time as part of the name
+            datetime_str = m.group(1)[:8] + '0'*6
+            INSTALLED_BUILD = Build(datetime_str, version)
+        else:
+            INSTALLED_BUILD = Build(*m.groups())
+    else:
+        INSTALLED_BUILD = Build(*m.groups())
 else:
     INSTALLED_BUILD = Release(VERSION)
     
