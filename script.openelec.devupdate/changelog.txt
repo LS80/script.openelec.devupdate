@@ -1,3 +1,6 @@
+2.4.3
+ - Added an option to install the latest extlinux as part of the update (not Raspberry Pi).
+
 2.4.2
  - Identify Rbej builds when installed and simplify the display name.
 
