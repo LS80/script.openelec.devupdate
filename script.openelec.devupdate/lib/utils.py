@@ -12,3 +12,6 @@ def mount_readwrite():
     
 def mount_readonly():    
     subprocess.call(['mount', '-o', 'ro,remount', '/flash'])
+    
+def update_extlinux():    
+    subprocess.call(['/usr/bin/extlinux', '-i', '/flash'])
