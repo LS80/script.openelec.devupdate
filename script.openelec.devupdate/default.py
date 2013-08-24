@@ -324,7 +324,7 @@ def verify(selected_build):
             log("{} md5 is correct".format(f))
 
             
-def disable_overclock():
+def maybe_disable_overclock():
     import re
     from lib import utils
     
@@ -347,6 +347,17 @@ def disable_overclock():
                 b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
 
             utils.mount_readonly()
+
+
+def maybe_update_extlinux():
+    from lib import utils
+    
+    if (constants.ARCH != 'RPi.arm' and
+        __addon__.getSetting('update_extlinux') == 'true'):
+        
+        utils.mount_readwrite()
+        utils.update_extlinux()
+        utils.mount_readonly()
     
 
 def notify(selected_build):
@@ -404,6 +415,8 @@ download(selected_build)
 
 verify(selected_build)
 
-disable_overclock()
+maybe_disable_overclock()
+
+maybe_update_extlinux()
 
 confirm(selected_build)
