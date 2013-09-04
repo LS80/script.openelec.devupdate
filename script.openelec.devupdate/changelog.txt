@@ -1,3 +1,6 @@
+2.4.4
+ - Support an archive directory which can be a network location.
+
 2.4.3
  - Added an option to install the latest extlinux as part of the update (not Raspberry Pi).
 
