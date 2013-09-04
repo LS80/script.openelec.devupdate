@@ -65,9 +65,30 @@ class Release(Build):
         
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
+    
+    
+class AbstractBuildLink(object):
+    
+    def _set_info(self):
+
+        name, ext = os.path.splitext(self.filename)
+        if ext == '.tar':
+            self.tar_name = self.filename
+        else:
+            self.tar_name = name
+            
+        if ext == '.bz2':
+            self.compressed = True
+        else:
+            self.compressed = False
+
+        self.archive = None
+
+    def set_archive(self, path):
+        self.archive = os.path.join(path, self.tar_name)
 
 
-class BuildLink(Build):
+class BuildLink(Build, AbstractBuildLink):
     """Holds information about a link to an OpenELEC build."""
 
     def __init__(self, baseurl, link, revision, datetime_str=None):
@@ -85,8 +106,10 @@ class BuildLink(Build):
             # Extract the file name part
             self.filename = os.path.basename(link)
 
+        self._set_info()
 
-class ReleaseLink(Release):
+
+class ReleaseLink(Release, AbstractBuildLink):
     BASEURL = "http://releases.openelec.tv"
     
     def __init__(self, version, baseurl=None, filename=None):
@@ -106,6 +129,7 @@ class ReleaseLink(Release):
                 self.filename = f
                 self.url = url
                 self._exists = True
+                self._set_info()
                 break
         
         Release.__init__(self, version)
@@ -124,11 +148,13 @@ class ReleaseLink(Release):
         return self._exists
 
 
-class RbejBuildLink(RbejBuild):
+class RbejBuildLink(RbejBuild, AbstractBuildLink):
     def __init__(self, baseurl, link, version, datetime_str):
         RbejBuild.__init__(self, datetime_str, version)
         self.filename = os.path.basename(link)
         self.url = urlparse.urljoin(baseurl, link)
+        
+        self._set_info()
 
 
 class BuildLinkExtractor(object):
@@ -198,7 +224,7 @@ class ArchiveLinkExtractor(BuildLinkExtractor):
 
     BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH))
     TEXT = BUILD_RE
-        
+
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
         return ReleaseLink(version, self._url, link)

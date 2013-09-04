@@ -104,13 +104,8 @@ def check_update_files():
 
 def cd_tmp_dir():
     # Move to the download directory.
-    if not os.path.isdir(tmp_dir):
-        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(tmp_dir),
-                            "Check the download directory in the addon settings.")
-        __addon__.openSettings()
-        sys.exit(1)
     os.chdir(tmp_dir)
-    log("chdir to " +  tmp_dir)
+    log("chdir to " + tmp_dir)
     
     
 class BuildList():
@@ -118,6 +113,8 @@ class BuildList():
     def create(self):
         import urllib2
         import urlparse
+
+        import xbmcvfs
 
         from lib import builds
         
@@ -155,7 +152,14 @@ class BuildList():
         except urllib2.URLError as e:
             url_error(url, str(e))
             sys.exit(1)
-                
+        
+        # Look in archive area for local build files.
+        archive_dir = os.path.join(archive_root, source)
+        dirs, files = xbmcvfs.listdir(archive_dir)
+        for link in links:
+            if link.tar_name in files:
+                link.set_archive(archive_dir)
+
         if not links:
             bad_url(url, "No builds were found for {}.".format(constants.ARCH))
             sys.exit(1)
@@ -200,71 +204,67 @@ def select_build(source, links):
 def download(selected_build):
     import urllib2
     import socket
-    import tarfile
 
     from lib import progress
     from lib import utils
     from lib import script_exceptions
 
-    # Get the file names.
+    tar_name = selected_build.tar_name
     filename = selected_build.filename
-    name, ext = os.path.splitext(filename)
-    if ext == '.tar':
-        tar_name = filename
-    else:
-        tar_name = name
 
-    # Download the build file if we don't already have the tar file.
-    if not os.path.isfile(tar_name):
-        log("Download URL = " + selected_build.url)
-        req = urllib2.Request(selected_build.url, None, constants.HEADERS)
+    log("Download URL = " + selected_build.url)
+    req = urllib2.Request(selected_build.url, None, constants.HEADERS)
 
+    try:
+        rf = urllib2.urlopen(req)
+        log("Opened URL " + selected_build.url)
+        bz2_size = int(rf.headers.getheader('Content-Length'))
+        log("Size of file = " + utils.size_fmt(bz2_size))
+
+        if (os.path.isfile(filename) and
+            os.path.getsize(filename) == bz2_size):
+            # Skip the download if the file exists with the correct size.
+            log("Skipping download")
+            pass
+        else:
+            # Do the download
+            log("Starting download of " + selected_build.url)
+            with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
+                downloader.start()
+            log("Completed download of " + selected_build.url)   
+    except script_exceptions.Canceled:
+        sys.exit(0)
+    except (urllib2.HTTPError, socket.error) as e:
+        url_error(selected_build.url, str(e))
+        sys.exit(1)
+    except script_exceptions.WriteError as e:
+        write_error(os.path.join(tmp_dir, filename), str(e))
+        sys.exit(1)
+
+
+    # Do the decompression if necessary.
+    if selected_build.compressed and not os.path.isfile(tar_name):
         try:
-            rf = urllib2.urlopen(req)
-            log("Opened URL " + selected_build.url)
-            bz2_size = int(rf.headers.getheader('Content-Length'))
-            log("Size of file = " + utils.size_fmt(bz2_size))
-
-            if (os.path.isfile(filename) and
-                os.path.getsize(filename) == bz2_size):
-                # Skip the download if the file exists with the correct size.
-                log("Skipping download")
-                pass
-            else:
-                # Do the download
-                log("Starting download of " + selected_build.url)
-                with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
-                    downloader.start()
-                log("Completed download of " + selected_build.url)   
+            bf = open(filename, 'rb')
+            log("Starting decompression of " + filename)
+            with progress.DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
+                decompressor.start()
+            log("Completed decompression of " + filename)
         except script_exceptions.Canceled:
             sys.exit(0)
-        except (urllib2.HTTPError, socket.error) as e:
-            url_error(selected_build.url, str(e))
-            sys.exit(1)
         except script_exceptions.WriteError as e:
-            write_error(os.path.join(tmp_dir, filename), str(e))
+            write_error(os.path.join(tmp_dir, tar_name), str(e))
             sys.exit(1)
 
 
-        # Do the decompression if necessary.
-        if ext == '.bz2':
-            try:
-                bf = open(filename, 'rb')
-                log("Starting decompression of " + filename)
-                with progress.DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
-                    decompressor.start()
-                log("Completed decompression of " + filename)
-            except script_exceptions.Canceled:
-                sys.exit(0)
-            except script_exceptions.WriteError as e:
-                write_error(os.path.join(tmp_dir, tar_name), str(e))
-                sys.exit(1)
-    else:
-        log("Skipping download and decompression")
+def extract(selected_build):
+    import tarfile
+    
+    from lib import progress
+    from lib import script_exceptions
 
-
-    tf = tarfile.open(tar_name, 'r')
-    log("Starting extraction from tar file " + tar_name)
+    tf = tarfile.open(selected_build.tar_name, 'r')
+    log("Starting extraction from tar file " + selected_build.tar_name)
     
     # Create the .update directory if necessary.
     if not os.path.exists(UPDATE_DIR):
@@ -292,17 +292,47 @@ def download(selected_build):
 
     tf.close()
 
+
+def maybe_copy_to_archive(source, selected_build):
+    if __addon__.getSetting('archive') == "true" and selected_build.archive is None:
+        archive_dir = os.path.join(archive_root, source)
+        archive_file = os.path.join(archive_dir, selected_build.tar_name)
+        progress = xbmcgui.DialogProgress()
+        msg = 'Copying tar file to archive'
+        progress.create('Archiving build', ' ', msg, ' ')
+        progress.update(0, ' ', msg, ' ')
+        xbmcvfs.mkdir(archive_dir)
+        success = xbmcvfs.copy(os.path.join(__dir__, selected_build.tar_name), archive_file)
+        if progress.iscanceled():
+            xbmcvfs.delete(archive_file)
+        progress.close()
+
+
+def cleanup(selected_build):
+
     # Clean up the temporary files.
     try:
-        if ext == '.bz2':
-            log("Deleting {}".format(filename))
-            os.remove(filename)
+        if selected_build.compressed:
+            log("Deleting {}".format(selected_build.filename))
+            os.remove(selected_build.filename)
 
-        if __addon__.getSetting('keep_tar') == "false":
-            log("Deleting {}".format(tar_name))
-            os.remove(tar_name)
+        log("Deleting {}".format(selected_build.tar_name))
+        os.remove(selected_build.tar_name)
     except OSError:
         pass
+
+
+def copy_from_archive(selected_build):
+    log("Skipping download and decompression")
+    progress = xbmcgui.DialogProgress()
+    msg = 'Retrieving tar file from archive'
+    progress.create('Retrieving build', ' ', msg, ' ')
+    progress.update(0, ' ', msg, ' ')
+    success = xbmcvfs.copy(selected_build.archive, os.path.join(__dir__, selected_build.tar_name))
+    if progress.iscanceled():
+        cleanup(selected_build)
+        sys.exit(0)
+    progress.close()    
     
 
 def verify(selected_build):
@@ -397,13 +427,22 @@ UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 check_update_files()
 
 with BuildList() as build_list:
+    import xbmcvfs
+    
     from lib import constants
     
     __addon__ = xbmcaddon.Addon(constants.__scriptid__)
     __icon__ = __addon__.getAddonInfo('icon')
     __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
-    tmp_dir = __addon__.getSetting('tmp_dir')
+    archive_root = __addon__.getSetting('archive_root')
+    if not xbmcvfs.exists(archive_root):
+        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(archive_root),
+                            "Check the archive directory in the addon settings.")
+        __addon__.openSettings()
+        sys.exit(1)
+    
+    tmp_dir = __dir__
     
     cd_tmp_dir()
 
@@ -411,7 +450,16 @@ with BuildList() as build_list:
     
 selected_build = select_build(source, links)
 
-download(selected_build)
+if selected_build.archive is not None:
+    copy_from_archive(selected_build)
+else:
+    download(selected_build)
+
+extract(selected_build)
+
+maybe_copy_to_archive(source, selected_build)
+
+cleanup(selected_build)
 
 verify(selected_build)
 

@@ -5,9 +5,9 @@
         <setting label="Source URL" type="labelenum" id="source" values="Official Daily Builds|Official Releases|Other|Chris Swan (RPi)|Official Archive|vicbitter Gotham Builds|Rbej Gotham Builds (RPi)|Rbej Frodo Builds (RPi)" default="Official Releases"/>
         <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,2)" visible="eq(-1,2)" subsetting="true"/>
         <setting label="URL subdirectory" type="text" id="subdir" enable="gt(-2,1)" visible="gt(-2,1)"/>
-        <setting type="lsep" label="Destination"/>
-        <setting label="Download directory" type="folder" id="tmp_dir" default="/storage"/>
-        <setting label="Keep tar files (for quicker re-installs)" type="bool" id="keep_tar" default="false"/>
+        <setting type="lsep" label="Archive"/>
+        <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
+        <setting label="Archive directory" type="folder" id="archive_root" default="/storage" enable="eq(-1,true)"/>
      </category>
      <category label="Notifications">
        	<setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="true"/>
