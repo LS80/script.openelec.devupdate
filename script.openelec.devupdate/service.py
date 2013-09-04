@@ -26,6 +26,17 @@ if init:
         utils.mount_readonly()
         if restart_countdown("Ready to reboot to re-enable overclocking."):
             xbmc.restart()
+
+    update_extlinux_file = os.path.join(__dir__, constants.UPDATE_EXTLINUX)
+    if os.path.exists(update_extlinux_file):
+        utils.mount_readwrite()
+        utils.update_extlinux()
+        utils.mount_readonly()
+
+    try:
+        os.remove(update_extlinux_file)
+    except:
+        pass
     
     if check_onbootonly:
         # Start a timer to check for a new build every hour.
@@ -77,5 +88,3 @@ if check_enabled:
                             xbmc.executebuiltin("RunAddon({})".format(constants.__scriptid__))         
         except:
             pass
-
-    

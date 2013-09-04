@@ -379,15 +379,10 @@ def maybe_disable_overclock():
             utils.mount_readonly()
 
 
-def maybe_update_extlinux():
-    from lib import utils
-    
+def maybe_schedule_extlinux_update():
     if (constants.ARCH != 'RPi.arm' and
         __addon__.getSetting('update_extlinux') == 'true'):
-        
-        utils.mount_readwrite()
-        utils.update_extlinux()
-        utils.mount_readonly()
+        open(os.path.join(__dir__, constants.UPDATE_EXTLINUX), 'w').close()
     
 
 def notify(selected_build):
@@ -465,6 +460,6 @@ verify(selected_build)
 
 maybe_disable_overclock()
 
-maybe_update_extlinux()
+maybe_schedule_extlinux_update()
 
 confirm(selected_build)
