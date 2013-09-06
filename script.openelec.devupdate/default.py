@@ -52,6 +52,12 @@ def write_error(path, msg):
                         "Check the download directory in the addon settings.")
     __addon__.openSettings()
     
+def decompress_error(path, msg):
+    log_exception()
+    xbmcgui.Dialog().ok("Decompression Error",
+                        "An error occurred during decompression:",
+                        " ", msg)
+    
 def remove_update_files():
     for f in UPDATE_PATHS:
         try:
@@ -255,6 +261,9 @@ def download(selected_build):
         except script_exceptions.WriteError as e:
             write_error(os.path.join(tmp_dir, tar_name), str(e))
             sys.exit(1)
+        except script_exceptions.DecompressError as e:
+            decompress_error(os.path.join(tmp_dir, filename), str(e))
+            sys.exit(1)            
 
 
 def extract(selected_build):

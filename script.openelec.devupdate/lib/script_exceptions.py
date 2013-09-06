@@ -3,3 +3,6 @@ class Canceled(Exception):
 
 class WriteError(IOError):
     pass
+
+class DecompressError(IOError):
+    pass
