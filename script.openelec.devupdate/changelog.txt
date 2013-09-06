@@ -1,3 +1,6 @@
+2.5.1
+ - Show a message if there is an error during decompression of the build file.
+
 2.5.0
  - Support an archive directory which can be a network location.
 

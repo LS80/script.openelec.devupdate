@@ -6,7 +6,7 @@ import time
 
 import xbmc, xbmcgui
 
-from script_exceptions import Canceled, WriteError
+from script_exceptions import Canceled, WriteError, DecompressError
 from utils import size_fmt
 
 class FileProgress(xbmcgui.DialogProgress):
@@ -65,9 +65,13 @@ class FileProgress(xbmcgui.DialogProgress):
 class DecompressProgress(FileProgress):
     decompressor = bz2.BZ2Decompressor()
     def _read(self):
-        data = self.decompressor.decompress(self._getdata())
+        data = self._getdata()
+        try:
+            decompressed_data = self.decompressor.decompress(data)
+        except IOError as e:
+            raise DecompressError(e)
         self._done = self._in_f.tell()
-        return data
+        return decompressed_data
     
 
 def restart_countdown(message, timeout=10):
