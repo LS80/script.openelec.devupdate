@@ -431,6 +431,8 @@ UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 check_update_files()
 
 with BuildList() as build_list:
+    import urllib2
+    
     import xbmcvfs
     
     from lib import constants
@@ -441,7 +443,7 @@ with BuildList() as build_list:
 
     archive_root = __addon__.getSetting('archive_root')
     if not xbmcvfs.exists(archive_root):
-        xbmcgui.Dialog().ok("Directory Error", "{} does not exist.".format(archive_root),
+        xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(archive_root),
                             "Check the archive directory in the addon settings.")
         __addon__.openSettings()
         sys.exit(1)
@@ -450,7 +452,13 @@ with BuildList() as build_list:
     
     cd_tmp_dir()
 
-    source, links = build_list.create()
+    try:
+        source, links = build_list.create()
+    except urllib2.URLError:
+        xbmcgui.Dialog().ok("Connection Error",
+                            "Check that you are connected to the internet.", " ")
+        __addon__.openSettings()
+        sys.exit(1)
     
 selected_build = select_build(source, links)
 
