@@ -53,16 +53,22 @@ class Build(object):
         
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
-    
-    req = urllib2.Request("http://github.com/OpenELEC/OpenELEC.tv/tags", None, HEADERS)
-    html = urllib2.urlopen(req).read()
-    soup = BeautifulSoup(html, SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
-    
+    soup = None
+
     def __init__(self, version):
+        self.maybe_get_tags()
         datetime_str = self.soup.find('a', href=re.compile(version)).time['title']
         Build.__init__(self, datetime_str, version)
         
-        
+    @classmethod
+    def maybe_get_tags(cls):
+        if cls.soup is None:
+            req = urllib2.Request("http://github.com/OpenELEC/OpenELEC.tv/tags", None, HEADERS)
+            html = urllib2.urlopen(req).read()
+            cls.soup = BeautifulSoup(html,
+                                     SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
+
+
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
     
@@ -177,7 +183,7 @@ class BuildLinkExtractor(object):
                                                                text=self.TEXT))
         self._links = soup.contents
 
-    def get_links(self):  
+    def get_links(self):
         for link in self._links:
             yield self._create_link(link)
 
@@ -212,7 +218,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
             version = self.BUILD_RE.match(link).group(1)
             #build_date = link.findNext(text=self.DATE_RE).strip()
             
-            # Look for older releases and get the upload dates.
+            # Look for older releases.
             all_versions = [version[:-1] + str(i) for i in range(int(version[-1]), -1, -1)]
             for v in all_versions:
                 rl = ReleaseLink(v)
@@ -285,6 +291,7 @@ if m:
     else:
         INSTALLED_BUILD = Build(*m.groups())
 else:
+    # A full release is installed.
     INSTALLED_BUILD = Release(VERSION)
     
     
