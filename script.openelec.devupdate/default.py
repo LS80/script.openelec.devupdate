@@ -159,7 +159,7 @@ class BuildList():
         except urllib2.URLError as e:
             url_error(url, str(e))
             sys.exit(1)
-        except socket.timeout as e:
+        except socket.error as e:
             url_error(url, str(e))
             sys.exit(1)
         
@@ -241,7 +241,7 @@ def download(selected_build):
             log("Starting download of " + selected_build.url)
             with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
                 downloader.start()
-            log("Completed download of " + selected_build.url)   
+            log("Completed download of " + selected_build.url)  
     except script_exceptions.Canceled:
         sys.exit(0)
     except (urllib2.HTTPError, socket.error) as e:
@@ -436,6 +436,7 @@ check_update_files()
 
 with BuildList() as build_list:
     import urllib2
+    import socket
     
     import xbmcvfs
     
@@ -455,6 +456,12 @@ with BuildList() as build_list:
     tmp_dir = __dir__
     
     cd_tmp_dir()
+    
+    if __addon__.getSetting('set_timeout') == 'true':
+        timeout = int(__addon__.getSetting('timeout'))
+        socket.setdefaulttimeout(timeout)
+    else:
+        socket.setdefaulttimeout(None)
 
     try:
         source, links = build_list.create()
