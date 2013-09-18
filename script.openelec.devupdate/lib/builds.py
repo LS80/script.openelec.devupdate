@@ -17,28 +17,23 @@ class Build(object):
        
     DATETIME_FMT = '%Y%m%d%H%M%S'
 
-    def __init__(self, datetime_str, version):
-        self.version = version
-        try:
-            self._version = [int(i) for i in version.split('.')]
-        except ValueError:
-            self._version = version  
-        self.datetime_str = datetime_str
-
-        if datetime_str is None:
-            self._datetime = None
+    def __init__(self, _datetime, version):
+        self._version = version
+        if isinstance(_datetime, datetime):
+            self._datetime = _datetime
         else:
             try:
-                self._datetime = datetime.strptime(datetime_str, self.DATETIME_FMT)
+                self._datetime = datetime.strptime(_datetime, self.DATETIME_FMT)
             except TypeError:
                 # Work around an issue with datetime.strptime when the script is run a second time.
-                self._datetime = datetime(*(time.strptime(datetime_str, self.DATETIME_FMT)[0:6]))
+                #raise
+                self._datetime = datetime(*(time.strptime(_datetime, self.DATETIME_FMT)[0:6]))
 
     def __eq__(self, other):
         return (self._version, self._datetime) == (other._version, other._datetime)
 
     def __hash__(self):
-        return hash((self.version, self.datetime_str))
+        return hash((self._version, self._datetime))
 
     def __lt__(self, other):
         return self._datetime < other._datetime
@@ -47,18 +42,27 @@ class Build(object):
         return self._datetime > other._datetime
 
     def __str__(self):
-        return '{} ({})'.format(self.version,
+        return '{} ({})'.format(self._version,
                                 self._datetime.strftime('%d %b %y'))
         
-        
+
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
     soup = None
 
     def __init__(self, version):
         self.maybe_get_tags()
-        datetime_str = self.soup.find('a', href=re.compile(version)).time['title']
-        Build.__init__(self, datetime_str, version)
+        tag = self.soup.find('a', href=re.compile(version))
+        if tag is not None:
+            _datetime = tag.time['title']
+        else:
+            # If no tag is found then assume it's the latest release
+            from email.utils import parsedate
+            req = urllib2.Request("http://releases.openelec.tv/latest", None, HEADERS)
+            response = urllib2.urlopen(req)
+            _datetime = datetime(*parsedate(response.headers.getheader('Last-Modified'))[:7])
+            
+        Build.__init__(self, _datetime, version)
         
     @classmethod
     def maybe_get_tags(cls):
@@ -71,10 +75,10 @@ class Release(Build):
 
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
-    
-    
-class AbstractBuildLink(object):
-    
+
+
+class BuildLinkBase(object):
+
     def _set_info(self):
 
         name, ext = os.path.splitext(self.filename)
@@ -94,10 +98,10 @@ class AbstractBuildLink(object):
         self.archive = os.path.join(path, self.tar_name)
 
 
-class BuildLink(Build, AbstractBuildLink):
+class BuildLink(Build, BuildLinkBase):
     """Holds information about a link to an OpenELEC build."""
 
-    def __init__(self, baseurl, link, revision, datetime_str=None):
+    def __init__(self, baseurl, link, revision, datetime_str):
         Build.__init__(self, datetime_str, version=revision)
 
         scheme, netloc, path = urlparse.urlparse(link)[:3]
@@ -107,6 +111,7 @@ class BuildLink(Build, AbstractBuildLink):
             self.url = urlparse.urljoin(baseurl, link)
         else:
             if netloc == "www.dropbox.com":
+                # Fix Dropbox url
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
             self.url = link
             # Extract the file name part
@@ -115,7 +120,9 @@ class BuildLink(Build, AbstractBuildLink):
         self._set_info()
 
 
-class ReleaseLink(Release, AbstractBuildLink):
+class ReleaseLink(Release, BuildLinkBase):
+    ''' Class for links to official release downloads '''
+
     BASEURL = "http://releases.openelec.tv"
     
     def __init__(self, version, baseurl=None, filename=None):
@@ -123,38 +130,35 @@ class ReleaseLink(Release, AbstractBuildLink):
             self.baseurl = self.BASEURL
         else:
             self.baseurl = baseurl
-
+        
+        self._exists = True
         if filename is None:
             filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
-            
-        # Check if the link exists with or without the .bz2 extension.
-        self._exists = False
-        for f in (filename, os.path.splitext(filename)[0]):
-            url = self._test_url(f)
-            if url:
-                self.filename = f
-                self.url = url
-                self._exists = True
-                self._set_info()
-                break
+            # Check if the link exists with or without the .bz2 extension.
+            for f in (filename, os.path.splitext(filename)[0]):
+                url = urlparse.urljoin(self.BASEURL, f)
+                req = urllib2.Request(url, None, HEADERS)
+                try:
+                    urllib2.urlopen(req)
+                except (urllib2.HTTPError, socket.error):
+                    self._exists = False
+                else:
+                    self.filename = f
+                    self.url = url
+                    self._set_info()
+                    break
+        else:
+            self.filename = filename
+            self.url = urlparse.urljoin(self.BASEURL, filename)  
+            self._set_info()
         
         Release.__init__(self, version)
-        
-    def _test_url(self, f):
-        url = urlparse.urljoin(self.baseurl, f)
-        req = urllib2.Request(url, None, HEADERS)
-        try:
-            urllib2.urlopen(req)
-        except (urllib2.HTTPError, socket.error):
-            return None
-        else:
-            return url
         
     def exists(self):
         return self._exists
 
 
-class RbejBuildLink(RbejBuild, AbstractBuildLink):
+class RbejBuildLink(RbejBuild, BuildLinkBase):
     def __init__(self, baseurl, link, version, datetime_str):
         RbejBuild.__init__(self, datetime_str, version)
         self.filename = os.path.basename(link)
@@ -174,7 +178,7 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         req = urllib2.Request(url, None, HEADERS)
-        self._response = urllib2.urlopen(req)
+        self._response = urllib2.urlopen(req, timeout=30)
         self._url = url
         html = self._response.read()
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
@@ -219,7 +223,13 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
             #build_date = link.findNext(text=self.DATE_RE).strip()
             
             # Look for older releases.
-            all_versions = [version[:-1] + str(i) for i in range(int(version[-1]), -1, -1)]
+            version_parts = [int(i) for i in version.split('.')]
+            all_versions = []
+            start_minor = version_parts[-1]
+            for i in range(int(version_parts[1]), -1, -1):
+                for j in range(start_minor, -1, -1):
+                    all_versions.append('{}.{}.{}'.format(version_parts[0],i,j))
+                start_minor = 9
             for v in all_versions:
                 rl = ReleaseLink(v)
                 if rl.exists():
@@ -248,6 +258,14 @@ class RbejLinkExtractor(BuildLinkExtractor):
         desc = m.group(1).split('-')
         version = "{} {}".format(desc[0], desc[2])
         return RbejBuildLink(self._url, href.strip(), version, datetime_str)    
+
+class LinkList(object):
+    def __init__(self, links):
+        self._links = links
+    def __iter__(self):
+        return self._links
+    def strings(self):
+        return [str(r) + ' *'*(r == INSTALLED_BUILD) for r in self]
 
 
 class BuildsURL(object):
