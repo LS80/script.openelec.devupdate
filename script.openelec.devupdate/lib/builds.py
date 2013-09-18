@@ -49,6 +49,7 @@ class Build(object):
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
     soup = None
+    latest = None
 
     def __init__(self, version):
         self.maybe_get_tags()
@@ -56,11 +57,9 @@ class Release(Build):
         if tag is not None:
             _datetime = tag.time['title']
         else:
-            # If no tag is found then assume it's the latest release
-            from email.utils import parsedate
-            req = urllib2.Request("http://releases.openelec.tv/latest", None, HEADERS)
-            response = urllib2.urlopen(req)
-            _datetime = datetime(*parsedate(response.headers.getheader('Last-Modified'))[:7])
+            # If no tag is found then assume it's the latest release and no tag has been set yet.
+            self.maybe_get_latest_date()
+            _datetime = self.latest_datetime
             
         Build.__init__(self, _datetime, version)
         
@@ -72,6 +71,14 @@ class Release(Build):
             cls.soup = BeautifulSoup(html,
                                      SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
 
+    @classmethod
+    def maybe_get_latest_date(cls):
+        if cls.latest is None:
+            from email.utils import parsedate
+            req = urllib2.Request("http://releases.openelec.tv/latest", None, HEADERS)
+            response = urllib2.urlopen(req)
+            cls.latest_datetime = datetime(*parsedate(response.headers.getheader('Last-Modified'))[:7])
+            
 
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
@@ -178,7 +185,7 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         req = urllib2.Request(url, None, HEADERS)
-        self._response = urllib2.urlopen(req, timeout=30)
+        self._response = urllib2.urlopen(req)
         self._url = url
         html = self._response.read()
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
