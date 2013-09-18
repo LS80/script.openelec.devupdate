@@ -119,6 +119,7 @@ class BuildList():
     def create(self):
         import urllib2
         import urlparse
+        import socket
 
         import xbmcvfs
 
@@ -147,8 +148,8 @@ class BuildList():
     
         try:
             # Get the list of build links.
-            with build_url.extractor() as parser:
-                links = sorted(parser.get_links(), reverse=True)
+            with build_url.extractor() as extractor:
+                links = sorted(extractor.get_links(), reverse=True)
         except urllib2.HTTPError as e:
             if e.code == 404:
                 bad_url(e.geturl())
@@ -156,6 +157,9 @@ class BuildList():
                 url_error(e.geturl(), str(e))
             sys.exit(1)
         except urllib2.URLError as e:
+            url_error(url, str(e))
+            sys.exit(1)
+        except socket.timeout as e:
             url_error(url, str(e))
             sys.exit(1)
         
