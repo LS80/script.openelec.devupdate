@@ -137,12 +137,11 @@ class ReleaseLink(Release, BuildLinkBase):
             self.baseurl = self.BASEURL
         else:
             self.baseurl = baseurl
-        
-        self._exists = True
+
         if filename is None:
             filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
             # Check if the link exists with or without the .bz2 extension.
-            for f in (filename, os.path.splitext(filename)[0]):
+            for f in (os.path.splitext(filename)[0], filename):
                 url = urlparse.urljoin(self.BASEURL, f)
                 req = urllib2.Request(url, None, HEADERS)
                 try:
@@ -150,6 +149,7 @@ class ReleaseLink(Release, BuildLinkBase):
                 except (urllib2.HTTPError, socket.error):
                     self._exists = False
                 else:
+                    self._exists = True
                     self.filename = f
                     self.url = url
                     self._set_info()
@@ -266,13 +266,7 @@ class RbejLinkExtractor(BuildLinkExtractor):
         version = "{} {}".format(desc[0], desc[2])
         return RbejBuildLink(self._url, href.strip(), version, datetime_str)    
 
-class LinkList(object):
-    def __init__(self, links):
-        self._links = links
-    def __iter__(self):
-        return self._links
-    def strings(self):
-        return [str(r) + ' *'*(r == INSTALLED_BUILD) for r in self]
+
 
 
 class BuildsURL(object):
@@ -296,7 +290,7 @@ class BuildsURL(object):
             self.url += '/'
 
 
-# Create a INSTALLED_BUILD object for comparison
+# Create an INSTALLED_BUILD object for comparison
 try:
     VERSION = open('/etc/version').read().rstrip()
 except IOError:

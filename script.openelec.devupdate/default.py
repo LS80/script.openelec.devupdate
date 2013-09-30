@@ -156,10 +156,7 @@ class BuildList():
             else:
                 url_error(e.geturl(), str(e))
             sys.exit(1)
-        except urllib2.URLError as e:
-            url_error(url, str(e))
-            sys.exit(1)
-        except socket.error as e:
+        except (urllib2.URLError, socket.error) as e:
             url_error(url, str(e))
             sys.exit(1)
         
