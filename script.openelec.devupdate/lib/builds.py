@@ -329,6 +329,9 @@ URLS = {"Official Daily Builds":
         "Rbej Gotham Builds (RPi)":
             BuildsURL("http://netlir.dk/rbej/builds/Gotham",
                       extractor=RbejLinkExtractor),
+        "Rbej Gotham popcornmix Builds (RPi)":
+            BuildsURL("http://netlir.dk/rbej/builds/Gotham%20Popcornmix/",
+                      extractor=RbejLinkExtractor),
         "Rbej Frodo Builds (RPi)":
             BuildsURL("http://netlir.dk/rbej/builds/Frodo",
                       extractor=RbejLinkExtractor)
