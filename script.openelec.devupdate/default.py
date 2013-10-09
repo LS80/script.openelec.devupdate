@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-############################################################################
+#################################################imp###########################
 
 from __future__ import division
 
@@ -24,49 +24,8 @@ import sys
 
 import xbmc, xbmcgui, xbmcaddon
 
+from lib import constants
 
-def log(txt, level=xbmc.LOGDEBUG):
-    
-    if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
-        msg = '{} v{}: {}'.format(__addon__.getAddonInfo('name'),
-                                  __addon__.getAddonInfo('version'), txt)
-        xbmc.log(msg, level)
-        
-def log_exception():
-    import traceback
-    log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
-        
-def bad_url(url, msg="URL not found."):
-    xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the URL in the addon settings.")
-    __addon__.openSettings()
-    
-def url_error(url, msg):
-    log_exception()
-    xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the XBMC log file.")
-    
-def write_error(path, msg):
-    log_exception()
-    xbmcgui.Dialog().ok("Write Error", msg, path,
-                        "Check the download directory in the addon settings.")
-    __addon__.openSettings()
-    
-def decompress_error(path, msg):
-    log_exception()
-    xbmcgui.Dialog().ok("Decompression Error",
-                        "An error occurred during decompression:",
-                        " ", msg)
-    
-def remove_update_files():
-    for f in UPDATE_PATHS:
-        try:
-            os.remove(f)
-        except OSError:
-            pass
-        else:
-            log("Removed " + f)
-            
 def md5sum_verified(md5sum_compare, path):
     import hashlib
     
@@ -92,13 +51,13 @@ def md5sum_verified(md5sum_compare, path):
     progress.close()
         
     md5sum = hasher.hexdigest()
-    log("{} md5 hash = {}".format(path, md5sum))
+    utils.log("{} md5 hash = {}".format(path, md5sum))
     return md5sum == md5sum_compare
 
 
 def check_update_files():
     # Check if the update files are already in place.
-    if all(os.path.isfile(f) for f in UPDATE_PATHS):
+    if all(os.path.isfile(f) for f in constants.UPDATE_PATHS):
         if xbmcgui.Dialog().yesno("Confirm reboot",
                                   "The update files are already in place.",
                                   "Reboot now to install the update",
@@ -111,7 +70,7 @@ def check_update_files():
 def cd_tmp_dir():
     # Move to the download directory.
     os.chdir(tmp_dir)
-    log("chdir to " + tmp_dir)
+    utils.log("chdir to " + tmp_dir)
     
     
 class BuildList():
@@ -129,13 +88,13 @@ class BuildList():
     
         # Get the url from the settings.
         source = __addon__.getSetting('source')
-        log("Source = " +  source)
+        utils.log("Source = " +  source)
         if source == "Other":
             # Custom URL
             url = __addon__.getSetting('custom_url')
             scheme, netloc = urlparse.urlparse(url)[:2]
             if not (scheme and netloc):
-                bad_url(url, "Invalid URL")
+                utils.bad_url(url, "Invalid URL")
                 sys.exit(1)
             
             build_url = builds.BuildsURL(url, subdir)
@@ -144,7 +103,7 @@ class BuildList():
             build_url = builds.URLS[source]
             url = build_url.url
         
-        log("Full URL = " + url)
+        utils.log("Full URL = " + url)
     
         try:
             # Get the list of build links.
@@ -152,23 +111,23 @@ class BuildList():
                 links = sorted(extractor.get_links(), reverse=True)
         except urllib2.HTTPError as e:
             if e.code == 404:
-                bad_url(e.geturl())
+                utils.bad_url(e.geturl())
             else:
-                url_error(e.geturl(), str(e))
+                utils.url_error(e.geturl(), str(e))
             sys.exit(1)
         except (urllib2.URLError, socket.error) as e:
-            url_error(url, str(e))
+            utils.url_error(url, str(e))
             sys.exit(1)
         
         # Look in archive area for local build files.
         archive_dir = os.path.join(archive_root, source)
-        dirs, files = xbmcvfs.listdir(archive_dir)
+        files = xbmcvfs.listdir(archive_dir)[0]
         for link in links:
             if link.tar_name in files:
                 link.set_archive(archive_dir)
 
         if not links:
-            bad_url(url, "No builds were found for {}.".format(constants.ARCH))
+            utils.bad_url(url, "No builds were found for {}.".format(constants.ARCH))
             sys.exit(1)
             
         return source, links
@@ -190,7 +149,7 @@ def select_build(source, links):
     if i == -1:
         sys.exit(0)
     selected_build = links[i]
-    log("Selected build " + str(selected_build))
+    utils.log("Selected build " + str(selected_build))
 
     # Confirm the update.
     msg = "{} -> {}?".format(INSTALLED_BUILD, selected_build)
@@ -213,39 +172,38 @@ def download(selected_build):
     import socket
 
     from lib import progress
-    from lib import utils
     from lib import script_exceptions
 
     tar_name = selected_build.tar_name
     filename = selected_build.filename
 
-    log("Download URL = " + selected_build.url)
+    utils.log("Download URL = " + selected_build.url)
     req = urllib2.Request(selected_build.url, None, constants.HEADERS)
 
     try:
         rf = urllib2.urlopen(req)
-        log("Opened URL " + selected_build.url)
+        utils.log("Opened URL " + selected_build.url)
         bz2_size = int(rf.headers.getheader('Content-Length'))
-        log("Size of file = " + utils.size_fmt(bz2_size))
+        utils.log("Size of file = " + utils.size_fmt(bz2_size))
 
         if (os.path.isfile(filename) and
             os.path.getsize(filename) == bz2_size):
             # Skip the download if the file exists with the correct size.
-            log("Skipping download")
+            utils.log("Skipping download")
             pass
         else:
             # Do the download
-            log("Starting download of " + selected_build.url)
+            utils.log("Starting download of " + selected_build.url)
             with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
                 downloader.start()
-            log("Completed download of " + selected_build.url)  
+            utils.log("Completed download of " + selected_build.url)  
     except script_exceptions.Canceled:
         sys.exit(0)
     except (urllib2.HTTPError, socket.error) as e:
-        url_error(selected_build.url, str(e))
+        utils.url_error(selected_build.url, str(e))
         sys.exit(1)
     except script_exceptions.WriteError as e:
-        write_error(os.path.join(tmp_dir, filename), str(e))
+        utils.write_error(os.path.join(tmp_dir, filename), str(e))
         sys.exit(1)
 
 
@@ -253,17 +211,17 @@ def download(selected_build):
     if selected_build.compressed and not os.path.isfile(tar_name):
         try:
             bf = open(filename, 'rb')
-            log("Starting decompression of " + filename)
+            utils.log("Starting decompression of " + filename)
             with progress.DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
                 decompressor.start()
-            log("Completed decompression of " + filename)
+            utils.log("Completed decompression of " + filename)
         except script_exceptions.Canceled:
             sys.exit(0)
         except script_exceptions.WriteError as e:
-            write_error(os.path.join(tmp_dir, tar_name), str(e))
+            utils.write_error(os.path.join(tmp_dir, tar_name), str(e))
             sys.exit(1)
         except script_exceptions.DecompressError as e:
-            decompress_error(os.path.join(tmp_dir, filename), str(e))
+            utils.decompress_error(os.path.join(tmp_dir, filename), str(e))
             sys.exit(1)            
 
 
@@ -274,27 +232,27 @@ def extract(selected_build):
     from lib import script_exceptions
 
     tf = tarfile.open(selected_build.tar_name, 'r')
-    log("Starting extraction from tar file " + selected_build.tar_name)
+    utils.log("Starting extraction from tar file " + selected_build.tar_name)
     
     # Create the .update directory if necessary.
-    if not os.path.exists(UPDATE_DIR):
-        log("Creating {} directory".format(UPDATE_DIR))
-        os.mkdir(UPDATE_DIR)
+    if not os.path.exists(constants.UPDATE_DIR):
+        utils.log("Creating {} directory".format(constants.UPDATE_DIR))
+        os.mkdir(constants.UPDATE_DIR)
     
     # Extract the update files from the tar file to the .update directory.
-    tar_members = (m for m in tf.getmembers() if os.path.basename(m.name) in UPDATE_FILES)
+    tar_members = (m for m in tf.getmembers() if os.path.basename(m.name) in constants.UPDATE_FILES)
     for member in tar_members:
         ti = tf.extractfile(member)
-        outfile = os.path.join(UPDATE_DIR, os.path.basename(member.name))
+        outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
         try:
             with progress.FileProgress("Extracting", ti, outfile, ti.size) as extractor:
                 extractor.start()
-            log("Extracted " + outfile)
+            utils.log("Extracted " + outfile)
         except script_exceptions.Canceled:
-            remove_update_files()
+            utils.remove_update_files()
             sys.exit(0)
         except script_exceptions.WriteError as e:
-            write_error(outfile, str(e))
+            utils.write_error(outfile, str(e))
             sys.exit(1)
         else:
             # Work around progress dialog bug (#13467) 
@@ -323,17 +281,17 @@ def cleanup(selected_build):
     # Clean up the temporary files.
     try:
         if selected_build.compressed:
-            log("Deleting {}".format(selected_build.filename))
+            utils.log("Deleting {}".format(selected_build.filename))
             os.remove(selected_build.filename)
 
-        log("Deleting {}".format(selected_build.tar_name))
+        utils.log("Deleting {}".format(selected_build.tar_name))
         os.remove(selected_build.tar_name)
     except OSError:
         pass
 
 
 def copy_from_archive(selected_build):
-    log("Skipping download and decompression")
+    utils.log("Skipping download and decompression")
     progress = xbmcgui.DialogProgress()
     msg = 'Retrieving tar file from archive'
     progress.create('Retrieving build', ' ', msg, ' ')
@@ -347,26 +305,25 @@ def copy_from_archive(selected_build):
 
 def verify(selected_build):
     # Verify the md5 sums.
-    os.chdir(UPDATE_DIR)
-    for f in UPDATE_IMAGES:
+    os.chdir(constants.UPDATE_DIR)
+    for f in constants.UPDATE_IMAGES:
         md5sum = open(f + '.md5').read().split()[0]
-        log("{}.md5 file = {}".format(f, md5sum))
+        utils.log("{}.md5 file = {}".format(f, md5sum))
 
         if not md5sum_verified(md5sum, f):
-            log("{} md5 mismatch!".format(f))
+            utils.log("{} md5 mismatch!".format(f))
             xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
                                 "The {} image from".format(f),
                                 selected_build.filename,
                                 "is corrupt. The update files will be removed.")
-            remove_update_files()
+            utils.remove_update_files()
             sys.exit(1)
         else:
-            log("{} md5 is correct".format(f))
+            utils.log("{} md5 is correct".format(f))
 
             
 def maybe_disable_overclock():
     import re
-    from lib import utils
     
     if (constants.ARCH == 'RPi.arm' and
         os.path.isfile(constants.RPI_CONFIG_FILE) and 
@@ -396,7 +353,7 @@ def maybe_schedule_extlinux_update():
     
 
 def notify(selected_build):
-    log("Skipped reboot")
+    utils.log("Skipped reboot")
     xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
                         "on the next reboot., 12000, {})".format(selected_build,
                                                                  __icon__))
@@ -423,12 +380,6 @@ def confirm(selected_build):
 
 
 
-UPDATE_DIR = '/storage/.update'
-UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
-
-UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
-
 check_update_files()
 
 with BuildList() as build_list:
@@ -436,10 +387,10 @@ with BuildList() as build_list:
     import socket
     
     import xbmcvfs
+
+    from lib import utils
     
-    from lib import constants
-    
-    __addon__ = xbmcaddon.Addon(constants.__scriptid__)
+    __addon__ = xbmcaddon.Addon()
     __icon__ = __addon__.getAddonInfo('icon')
     __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
