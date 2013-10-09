@@ -8,7 +8,7 @@ from lib import builds
 from lib import utils
 from lib.progress import restart_countdown
 
-__addon__ = xbmcaddon.Addon(constants.__scriptid__)
+__addon__ = xbmcaddon.Addon()
 __icon__ = __addon__.getAddonInfo('icon')
 __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 

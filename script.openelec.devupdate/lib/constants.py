@@ -1,6 +1,11 @@
 import re
+import os
 
-__scriptid__ = 'script.openelec.devupdate'
+UPDATE_DIR = '/storage/.update'
+UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+
+UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
 try:
     ARCH = open('/etc/arch').read().rstrip()
