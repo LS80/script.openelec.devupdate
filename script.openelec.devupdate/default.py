@@ -121,7 +121,7 @@ class BuildList():
         
         # Look in archive area for local build files.
         archive_dir = os.path.join(archive_root, source)
-        files = xbmcvfs.listdir(archive_dir)[0]
+        files = xbmcvfs.listdir(archive_dir)[1]
         for link in links:
             if link.tar_name in files:
                 link.set_archive(archive_dir)
