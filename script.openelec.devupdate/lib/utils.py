@@ -1,13 +1,12 @@
 from __future__ import division
 import subprocess
 import os
-import sys
 
 import xbmc, xbmcaddon, xbmcgui
 
 import constants
 
-__addon__ = xbmcaddon.Addon()
+__addon__ = xbmcaddon.Addon('script.openelec.devupdate')
 
 def log(txt, level=xbmc.LOGDEBUG):
     if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
@@ -61,9 +60,13 @@ def remove_update_files():
         try:
             os.remove(f)
         except OSError:
+            log("Could not remove " + f)
             pass
         else:
             log("Removed " + f)
             
 if __name__ == "__main__":
-    remove_update_files()
+    import sys
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'cancel':
+            remove_update_files()
