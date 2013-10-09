@@ -16,6 +16,9 @@
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
         <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-2,true)" subsetting="true" default="1"/>
      </category>
+     <category label="Actions">
+        <setting label="Cancel pending update" type="action" action="RunScript($CWD/lib/utils.py, cancel)"/>
+     </category>
      <category label="Advanced">
         <setting label="Disable overclocking during update (RPi only)" type="bool" id="disable_overclock" default="false"/>
         <setting type="sep"/>
