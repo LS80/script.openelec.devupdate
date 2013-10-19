@@ -113,7 +113,6 @@ class BuildLink(Build, BuildLinkBase):
 
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
-            self.filename = link
             # Construct the full url
             self.url = urlparse.urljoin(baseurl, link)
         else:
@@ -121,8 +120,9 @@ class BuildLink(Build, BuildLinkBase):
                 # Fix Dropbox url
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
             self.url = link
-            # Extract the file name part
-            self.filename = os.path.basename(link)
+
+        # Extract the file name part
+        self.filename = os.path.basename(link)
 
         self._set_info()
 
