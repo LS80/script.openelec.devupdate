@@ -177,7 +177,7 @@ class RbejBuildLink(RbejBuild, BuildLinkBase):
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-devel-(\d+)-r(\d+).tar(|.bz2)".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-devel-(\d+)-r(\d+).tar(|.bz2)$".format(ARCH))
     TAG = 'a'
     CLASS = None
     HREF = BUILD_RE
@@ -334,7 +334,10 @@ URLS = {"Official Daily Builds":
                       extractor=RbejLinkExtractor),
         "Rbej Frodo Builds (RPi)":
             BuildsURL("http://netlir.dk/rbej/builds/Frodo",
-                      extractor=RbejLinkExtractor)
+                      extractor=RbejLinkExtractor),
+        "xbmcnightlybuilds":
+            BuildsURL("http://openelec.xbmcnightlybuilds.com",
+                      subdir=ARCH.split('.')[0])
         }
 
 

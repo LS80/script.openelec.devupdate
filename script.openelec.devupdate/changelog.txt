@@ -1,3 +1,6 @@
+2.10.0
+ - Added an option to install builds from openelec.xbmcnightlybuilds.com
+
 2.9.0
  - Added a settings action to cancel a pending update.
 
