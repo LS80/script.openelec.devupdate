@@ -85,6 +85,6 @@ if check_enabled:
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
                                                   "A more recent build is available:   {}".format(latest),
                                                   "Show builds available to install?"):
-                            xbmc.executebuiltin("RunAddon({})".format(constants.__scriptid__))         
+                            xbmc.executebuiltin("RunAddon({})".format('script.openelec.devupdate'))
         except:
             pass

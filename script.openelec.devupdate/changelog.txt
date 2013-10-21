@@ -1,3 +1,6 @@
+2.10.2
+ - Fixed a problem showing the available builds after a new build check.
+
 2.10.1
  - Fixed a problem with downloads from xbmcnightlybuilds.
 
