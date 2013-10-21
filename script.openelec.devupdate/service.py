@@ -1,10 +1,15 @@
 import os
 import sys
+import urllib2
 
 import xbmc, xbmcgui, xbmcaddon
 
+try:
+    from lib import builds
+except urllib2.URLError:
+    sys.exit(1)
+
 from lib import constants
-from lib import builds
 from lib import utils
 from lib.progress import restart_countdown
 
