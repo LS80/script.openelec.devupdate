@@ -8,6 +8,7 @@ import xbmc, xbmcaddon, xbmcgui
 import constants
 
 __addon__ = xbmcaddon.Addon('script.openelec.devupdate')
+__icon__ = __addon__.getAddonInfo('icon')
 
 def log(txt, level=xbmc.LOGDEBUG):
     if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
@@ -62,12 +63,14 @@ def remove_update_files():
             os.remove(f)
         except OSError:
             log("Could not remove " + f)
-            pass
+            return False
         else:
             log("Removed " + f)
+            return True
             
 if __name__ == "__main__":
-    import sys
     if len(sys.argv) > 1:
         if sys.argv[1] == 'cancel':
-            remove_update_files()
+            if remove_update_files():
+                xbmc.executebuiltin("Notification(OpenELEC Dev Update, Pending update cancelled"
+                                    ", 12000, {})".format(__icon__))
