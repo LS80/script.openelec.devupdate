@@ -10,6 +10,14 @@ from BeautifulSoup import BeautifulSoup, SoupStrainer
 
 from constants import ARCH, HEADERS
 
+try:
+    import xbmcaddon
+except:
+    pass
+else:
+    if xbmcaddon.Addon().getSetting('set_arch') == 'true':
+        ARCH = xbmcaddon.Addon().getSetting('arch')
+
 
 class Build(object):
     """Holds information about an OpenELEC build,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.openelec.devupdate"
        name="OpenELEC Dev Update"
-       version="2.10.3"
+       version="2.11.0"
        provider-name="Leopold">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
@@ -12,7 +12,7 @@
   <extension point="xbmc.service" library="service.py" start="login"/>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>OpenELEC development build updater</summary>
+    <summary>Unofficial OpenELEC development build updater</summary>
     <description>This XBMC add-on downloads and extracts OpenELEC update files ready to be installed on the next reboot. Based on the source specified in the settings all builds for the relevant architecture will be displayed in a list.</description>
     <forum>http://openelec.tv/forum/128-addons/49855</forum>
     <website>http://openelec-dev-update.googlecode.com</website>

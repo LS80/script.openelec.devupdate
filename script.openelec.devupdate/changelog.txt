@@ -1,3 +1,8 @@
+2.11.0
+ - Added an option to install a build type other than the currently installed one.
+   (ION, Intel, and Fusion now need the Generic build)
+ - Added a notification after cancelling a pending update.
+
 2.10.3
  - Fixed a script error in the build check service when there is no network.
 

@@ -141,10 +141,10 @@ class BuildList():
 
 
 def select_build(source, links):
-    from lib.builds import INSTALLED_BUILD
+    from lib.builds import INSTALLED_BUILD, ARCH
 
     # Ask which build to install.
-    i = xbmcgui.Dialog().select("{} (* = installed)".format(source),
+    i = xbmcgui.Dialog().select("{} {} (* = installed)".format(ARCH, source),
                                 [str(r) + ' *'*(r == INSTALLED_BUILD) for r in links])
     if i == -1:
         sys.exit(0)
