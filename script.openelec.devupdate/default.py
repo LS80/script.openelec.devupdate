@@ -108,7 +108,7 @@ class BuildList():
         try:
             # Get the list of build links.
             with build_url.extractor() as extractor:
-                links = sorted(extractor.get_links(), reverse=True)
+                links = sorted(set(extractor.get_links()), reverse=True)
         except urllib2.HTTPError as e:
             if e.code == 404:
                 utils.bad_url(e.geturl())
@@ -142,6 +142,8 @@ class BuildList():
 
 def select_build(source, links):
     from lib.builds import INSTALLED_BUILD, ARCH
+    
+    # TODO - what if INSTALLED_BUILD is a release with no date? 
 
     # Ask which build to install.
     i = xbmcgui.Dialog().select("{} {} (* = installed)".format(ARCH, source),

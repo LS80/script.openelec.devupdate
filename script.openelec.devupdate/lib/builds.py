@@ -52,41 +52,35 @@ class Build(object):
     def __str__(self):
         return '{} ({})'.format(self._version,
                                 self._datetime.strftime('%d %b %y'))
-        
+
 
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
-    soup = None
+    tag_soup = None
     latest = None
 
-    def __init__(self, version):
+    def __init__(self, version):        
         self.maybe_get_tags()
-        tag = self.soup.find('a', href=re.compile(version))
+        tag = self.tag_soup.find('a', href=re.compile(version))
         if tag is not None:
-            _datetime = tag.time['title']
+            self._has_date = True
+            Build.__init__(self, tag.time['title'], version)
         else:
-            # If no tag is found then assume it's the latest release and no tag has been set yet.
-            self.maybe_get_latest_date()
-            _datetime = self.latest_datetime
-            
-        Build.__init__(self, _datetime, version)
+            self._has_date = False
+        
+    def is_valid(self):
+        return self._has_date
+    
+    __nonzero__ = is_valid
         
     @classmethod
     def maybe_get_tags(cls):
-        if cls.soup is None:
+        if cls.tag_soup is None:
             req = urllib2.Request("http://github.com/OpenELEC/OpenELEC.tv/tags", None, HEADERS)
             html = urllib2.urlopen(req).read()
-            cls.soup = BeautifulSoup(html,
-                                     SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
-
-    @classmethod
-    def maybe_get_latest_date(cls):
-        if cls.latest is None:
-            from email.utils import parsedate
-            req = urllib2.Request("http://releases.openelec.tv/latest", None, HEADERS)
-            response = urllib2.urlopen(req)
-            cls.latest_datetime = datetime(*parsedate(response.headers.getheader('Last-Modified'))[:7])
-            
+            cls.tag_soup = BeautifulSoup(html,
+                                         SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
+      
 
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
@@ -163,14 +157,15 @@ class ReleaseLink(Release, BuildLinkBase):
                     self._set_info()
                     break
         else:
+            self._exists = True
             self.filename = filename
             self.url = urlparse.urljoin(self.BASEURL, filename)  
             self._set_info()
         
         Release.__init__(self, version)
         
-    def exists(self):
-        return self._exists
+    def __nonzero__(self):
+        return self.is_valid() and self._exists
 
 
 class RbejBuildLink(RbejBuild, BuildLinkBase):
@@ -204,7 +199,9 @@ class BuildLinkExtractor(object):
 
     def get_links(self):
         for link in self._links:
-            yield self._create_link(link)
+            l = self._create_link(link)
+            if l:
+                yield l
 
     def _create_link(self, link):
         href = link['href']
@@ -247,7 +244,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
                 start_minor = 9
             for v in all_versions:
                 rl = ReleaseLink(v)
-                if rl.exists():
+                if rl:
                     yield rl
 
 
@@ -302,7 +299,7 @@ class BuildsURL(object):
 try:
     VERSION = open('/etc/version').read().rstrip()
 except IOError:
-    VERSION = '3.0.1'
+    VERSION = '3.2.0'
 
 m = re.search("devel-(\d+)-r(\d+)", VERSION)
 if m:
@@ -350,11 +347,24 @@ URLS = {"Official Daily Builds":
 
 
 if __name__ == "__main__":
-    print INSTALLED_BUILD
-    print
-    for name, build_url in URLS.iteritems():
+    import sys
+
+    def print_links(name, build_url):
         print name
         with build_url.extractor() as parser:
-            for link in sorted(parser.get_links(), reverse=True):
-                print "\t{} {}".format(link, '*' * (link > INSTALLED_BUILD))
+            for link in sorted(set(parser.get_links()), reverse=True):
+                print "\t{:25s} {}".format(str(link) + ' *' * (link > INSTALLED_BUILD), link.filename)
         print
+
+    print "Installed build = {}".format(INSTALLED_BUILD)
+    print
+
+    if len(sys.argv) > 1:
+        name = sys.argv[1]
+        if name not in URLS:
+            print '"{}" not in URL list'.format(name)
+        else:
+            print_links(name, URLS[name])
+    else:
+        for name, build_url in sorted(URLS.items()):
+            print_links(name, build_url)
