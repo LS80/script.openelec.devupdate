@@ -1,3 +1,10 @@
+2.12.0
+ - Removed vicbitter Gotham build source.
+
+2.11.1
+ - Fixed possible duplicates in build list.
+ - Fixed wrong dates for very old releases.
+
 2.11.0
  - Added an option to install a build type other than the currently installed one.
    (ION, Intel, and Fusion now need the Generic build)
