@@ -1,3 +1,6 @@
+2.12.1
+ - Fixed downloads from Official Archive.
+
 2.12.0
  - Removed vicbitter Gotham build source.
 

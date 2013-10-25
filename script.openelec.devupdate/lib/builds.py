@@ -129,38 +129,38 @@ class BuildLink(Build, BuildLinkBase):
         self._set_info()
 
 
+class ArchiveLink(Release, BuildLinkBase):
+    ''' Class for links to official archive release downloads '''
+    
+    def __init__(self, version, baseurl, filename):
+        self.filename = filename
+        self.url = urlparse.urljoin(baseurl, filename)
+        self._set_info()
+        
+        Release.__init__(self, version)
+
+
 class ReleaseLink(Release, BuildLinkBase):
     ''' Class for links to official release downloads '''
 
     BASEURL = "http://releases.openelec.tv"
     
-    def __init__(self, version, baseurl=None, filename=None):
-        if baseurl is None:
-            self.baseurl = self.BASEURL
-        else:
-            self.baseurl = baseurl
-
-        if filename is None:
-            filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
-            # Check if the link exists with or without the .bz2 extension.
-            for f in (os.path.splitext(filename)[0], filename):
-                url = urlparse.urljoin(self.BASEURL, f)
-                req = urllib2.Request(url, None, HEADERS)
-                try:
-                    urllib2.urlopen(req)
-                except (urllib2.HTTPError, socket.error):
-                    self._exists = False
-                else:
-                    self._exists = True
-                    self.filename = f
-                    self.url = url
-                    self._set_info()
-                    break
-        else:
-            self._exists = True
-            self.filename = filename
-            self.url = urlparse.urljoin(self.BASEURL, filename)  
-            self._set_info()
+    def __init__(self, version):
+        filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
+        # Check if the link exists with or without the .bz2 extension.
+        for f in (os.path.splitext(filename)[0], filename):
+            url = urlparse.urljoin(self.BASEURL, f)
+            req = urllib2.Request(url, None, HEADERS)
+            try:
+                urllib2.urlopen(req)
+            except (urllib2.HTTPError, socket.error):
+                self._exists = False
+            else:
+                self._exists = True
+                self.filename = f
+                self.url = url
+                self._set_info()
+                break
         
         Release.__init__(self, version)
         
@@ -255,7 +255,7 @@ class ArchiveLinkExtractor(BuildLinkExtractor):
 
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
-        return ReleaseLink(version, self._url, link)
+        return ArchiveLink(version, self._url, link)
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
