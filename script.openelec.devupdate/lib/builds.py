@@ -326,9 +326,6 @@ URLS = {"Official Daily Builds":
                       extractor=ReleaseLinkExtractor),
         "Chris Swan (RPi)":
             BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds"),
-        "vicbitter Gotham Builds":
-            BuildsURL("https://www.dropbox.com/sh/3uhc063czl2eu3o/2r8Ng7agdD/OpenELEC-XBMC-13/Latest/kernel.3.9",
-                      extractor=DropboxLinkExtractor),
         "Official Archive":
             BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor),
         "Rbej Gotham Builds (RPi)":
