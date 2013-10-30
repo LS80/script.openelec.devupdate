@@ -8,15 +8,15 @@ from datetime import datetime
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
-from constants import ARCH, HEADERS
+from constants import ARCH, HEADERS, __scriptid__
 
 try:
     import xbmcaddon
 except:
     pass
 else:
-    if xbmcaddon.Addon().getSetting('set_arch') == 'true':
-        ARCH = xbmcaddon.Addon().getSetting('arch')
+    if xbmcaddon.Addon(__scriptid__).getSetting('set_arch') == 'true':
+        ARCH = xbmcaddon.Addon(__scriptid__).getSetting('arch')
 
 
 class Build(object):
