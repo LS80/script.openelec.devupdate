@@ -1,3 +1,8 @@
+2.12.2
+ - Fixed the new build check service that has caused XBMC to crash since 2.9.0.
+ - Fixed the "Check only on boot" option.
+ - Increased the new build check frequency from 1 hour to 4 hours.
+
 2.12.1
  - Fixed downloads from Official Archive.
 
