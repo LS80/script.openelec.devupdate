@@ -48,7 +48,7 @@ if init:
     if not check_onbootonly:
         # Start a timer to check for a new build every hour.
         utils.log("Starting build check timer")
-        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))
+        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),04:00:00,silent,loop)".format(__file__))
 
 
     notify_file = os.path.join(__dir__, constants.NOTIFY_FILE)
