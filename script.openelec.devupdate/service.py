@@ -26,6 +26,7 @@ init = not sys.argv[0]
 
 if init:
     if os.path.exists(constants.RPI_CONFIG_BACKUP):
+        utils.log("Re-enabling overclocking")
         utils.mount_readwrite()
         os.rename(constants.RPI_CONFIG_BACKUP, constants.RPI_CONFIG_FILE)
         utils.mount_readonly()
@@ -34,6 +35,7 @@ if init:
 
     update_extlinux_file = os.path.join(__dir__, constants.UPDATE_EXTLINUX)
     if os.path.exists(update_extlinux_file):
+        utils.log("Updating extlinux")
         utils.mount_readwrite()
         utils.update_extlinux()
         utils.mount_readonly()
@@ -43,8 +45,9 @@ if init:
     except:
         pass
     
-    if check_onbootonly:
+    if not check_onbootonly:
         # Start a timer to check for a new build every hour.
+        utils.log("Starting build check timer")
         xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),01:00:00,silent,loop)".format(__file__))
 
 
@@ -56,6 +59,7 @@ if init:
         # No new build installed
         pass
     else:
+        utils.log("Notifying that build {} was installed".format(build))
         if build == str(builds.INSTALLED_BUILD):
             xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} was installed successfully."
                                 ", 12000, {})".format(build, __icon__))
@@ -69,7 +73,7 @@ if check_enabled:
     source = __addon__.getSetting('source')
     if isinstance(builds.INSTALLED_BUILD, builds.Release) and source == "Official Releases":
         # Don't do the job of the official auto-update system.
-        pass
+        utils.log("Skipping build check - official release")
     else:
         try:
             subdir = __addon__.getSetting('subdir')
@@ -80,13 +84,16 @@ if check_enabled:
                 build_url = builds.URLS[source]
                 url = build_url.url
     
+            utils.log("Checking {}".format(url))
             with build_url.extractor() as parser:
                 latest = sorted(parser.get_links(), reverse=True)[0]
                 if latest > builds.INSTALLED_BUILD:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
+                        utils.log("Notifying that new build {} is available".format(latest))
                         xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "
                                             "is available., 7500, {})".format(latest, __icon__))
-                    else:   
+                    else:
+                        utils.log("New build {} is available, prompting to show build list".format(latest))
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
                                                   "A more recent build is available:   {}".format(latest),
                                                   "Show builds available to install?"):
