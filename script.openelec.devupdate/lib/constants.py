@@ -1,6 +1,8 @@
 import re
 import os
 
+__scriptid__ = "script.openelec.devupdate"
+
 UPDATE_DIR = '/storage/.update'
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 

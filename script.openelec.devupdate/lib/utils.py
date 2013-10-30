@@ -7,7 +7,7 @@ import xbmc, xbmcaddon, xbmcgui
 
 import constants
 
-__addon__ = xbmcaddon.Addon('script.openelec.devupdate')
+__addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 
 def log(txt, level=xbmc.LOGDEBUG):

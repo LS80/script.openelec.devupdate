@@ -13,7 +13,7 @@ from lib import constants
 from lib import utils
 from lib.progress import restart_countdown
 
-__addon__ = xbmcaddon.Addon()
+__addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
@@ -97,6 +97,6 @@ if check_enabled:
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
                                                   "A more recent build is available:   {}".format(latest),
                                                   "Show builds available to install?"):
-                            xbmc.executebuiltin("RunAddon({})".format('script.openelec.devupdate'))
+                            xbmc.executebuiltin("RunAddon({})".format(constants.__scriptid__))
         except:
             pass
