@@ -96,6 +96,7 @@ if check_enabled:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
                                                   "A more recent build is available:   {}".format(latest),
+                                                  "Current build:   {}".format(builds.INSTALLED_BUILD),
                                                   "Show builds available to install?"):
                             xbmc.executebuiltin("RunAddon({})".format(constants.__scriptid__))
         except:
