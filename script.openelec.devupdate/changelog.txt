@@ -1,3 +1,7 @@
+2.14.0
+ - Changed the selection of the build source and build type
+   to use a selection dialog instead of a spinner.
+
 2.13.0
  - Added the current build to the new build notification dialog.
 
