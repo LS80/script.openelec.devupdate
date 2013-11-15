@@ -2,9 +2,9 @@
 <settings>
     <category label="General">
     	<setting type="lsep" label="Source"/>
-        <setting label="Source URL" type="labelenum" id="source" values="Official Daily Builds|Official Releases|Other|Chris Swan (RPi)|Official Archive|Rbej Gotham Builds (RPi)|Rbej Gotham popcornmix Builds (RPi)|Rbej Frodo Builds (RPi)|xbmcnightlybuilds" default="Official Releases"/>
-        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,2)" visible="eq(-1,2)" subsetting="true"/>
-        <setting label="URL subdirectory" type="text" id="subdir" enable="gt(-2,1)" visible="gt(-2,1)"/>
+        <setting label="Source URL" type="select" id="source" values="Official Daily Builds|Official Releases|Official Archive|xbmcnightlybuilds|Chris Swan (RPi)|Rbej Gotham Builds (RPi)|Rbej Gotham popcornmix Builds (RPi)|Rbej Frodo Builds (RPi)|Other" default="Official Daily Builds"/>
+        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,Other)" visible="eq(-1,Other)" subsetting="true"/>
+        <setting label="URL subdirectory" type="text" id="subdir" enable="!eq(-2,Official Releases)+!eq(-2,Other)" visible="!eq(-2,Official Releases)+!eq(-2,Other)"/>
         <setting type="lsep" label="Archive"/>
         <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
         <setting label="Archive directory" type="folder" id="archive_root" default="/storage" enable="eq(-1,true)"/>
@@ -21,7 +21,7 @@
      </category>
      <category label="Advanced">
         <setting label="Set build type" type="bool" id="set_arch" default="false"/>
-        <setting label="Build type to install" type="labelenum" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
         <setting label="Disable overclocking during update (RPi only)" type="bool" id="disable_overclock" default="false"/>
         <setting type="sep"/>
