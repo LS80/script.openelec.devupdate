@@ -1,3 +1,6 @@
+2.14.1
+ - Fixed a dependencies not met error when installed with the latest Gotham nightlies.
+
 2.14.0
  - Changed the selection of the build source and build type
    to use a selection dialog instead of a spinner.
