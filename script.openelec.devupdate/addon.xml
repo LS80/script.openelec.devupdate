@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.openelec.devupdate"
        name="OpenELEC Dev Update"
-       version="2.14.0"
+       version="2.14.1"
        provider-name="Leopold">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="os.openelec.tv" version="2.0" optional="false"/>
     <import addon="script.module.beautifulsoup" version="3.2.0" optional="false"/>
   </requires>
