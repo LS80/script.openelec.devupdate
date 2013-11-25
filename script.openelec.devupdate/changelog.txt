@@ -1,3 +1,6 @@
+2.14.2
+ - Only check for archive directory if the option is enabled.
+
 2.14.1
  - Fixed a dependencies not met error when installed with the latest Gotham nightlies.
 

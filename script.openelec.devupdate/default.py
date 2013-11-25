@@ -119,12 +119,13 @@ class BuildList():
             utils.url_error(url, str(e))
             sys.exit(1)
         
-        # Look in archive area for local build files.
-        archive_dir = os.path.join(archive_root, source)
-        files = xbmcvfs.listdir(archive_dir)[1]
-        for link in links:
-            if link.tar_name in files:
-                link.set_archive(archive_dir)
+        if __addon__.getSetting('archive') == "true":
+            # Look in archive area for local build files.
+            archive_dir = os.path.join(archive_root, source)
+            files = xbmcvfs.listdir(archive_dir)[1]
+            for link in links:
+                if link.tar_name in files:
+                    link.set_archive(archive_dir)
 
         if not links:
             utils.bad_url(url, "No builds were found for {}.".format(constants.ARCH))
@@ -396,12 +397,13 @@ with BuildList() as build_list:
     __icon__ = __addon__.getAddonInfo('icon')
     __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
-    archive_root = __addon__.getSetting('archive_root')
-    if not xbmcvfs.exists(archive_root):
-        xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(archive_root),
-                            "Check the archive directory in the addon settings.")
-        __addon__.openSettings()
-        sys.exit(1)
+    if __addon__.getSetting('archive') == "true":
+        archive_root = __addon__.getSetting('archive_root')
+        if not xbmcvfs.exists(archive_root):
+            xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(archive_root),
+                                "Check the archive directory in the addon settings.")
+            __addon__.openSettings()
+            sys.exit(1)
     
     tmp_dir = __dir__
     
