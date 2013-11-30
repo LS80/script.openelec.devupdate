@@ -1,3 +1,6 @@
+2.15.0
+ - Added MilhouseVH builds.
+
 2.14.2
  - Only check for archive directory if the option is enabled.
 
