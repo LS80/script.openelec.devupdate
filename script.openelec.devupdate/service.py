@@ -2,7 +2,7 @@ import os
 import sys
 import urllib2
 
-import xbmc, xbmcgui, xbmcaddon
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
 try:
     from lib import builds
@@ -25,10 +25,11 @@ check_prompt = int(__addon__.getSetting('check_prompt'))
 init = not sys.argv[0]
 
 if init:
-    if os.path.exists(constants.RPI_CONFIG_BACKUP):
+    rpi_config_backup_file = os.path.join(__dir__, constants.RPI_CONFIG_FILE)
+    if os.path.exists(rpi_config_backup_file):
         utils.log("Re-enabling overclocking")
         utils.mount_readwrite()
-        os.rename(constants.RPI_CONFIG_BACKUP, constants.RPI_CONFIG_FILE)
+        xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
         utils.mount_readonly()
         if restart_countdown("Ready to reboot to re-enable overclocking."):
             xbmc.restart()
@@ -42,6 +43,7 @@ if init:
 
     try:
         os.remove(update_extlinux_file)
+        os.remove(rpi_config_backup_file)
     except:
         pass
     
