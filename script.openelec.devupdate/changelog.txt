@@ -1,3 +1,7 @@
+2.15.1
+ - Put Raspberry Pi config.txt temporary backup in the add-on data directory
+   instead of /flash, to avoid potential conflicts with other code.
+
 2.15.0
  - Added MilhouseVH builds.
 

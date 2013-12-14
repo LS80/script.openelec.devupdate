@@ -329,21 +329,23 @@ def maybe_disable_overclock():
     import re
     
     if (constants.ARCH == 'RPi.arm' and
-        os.path.isfile(constants.RPI_CONFIG_FILE) and 
+        os.path.isfile(constants.RPI_CONFIG_PATH) and
         __addon__.getSetting('disable_overclock') == 'true'):
         
-        with open(constants.RPI_CONFIG_FILE, 'r') as a:
+        with open(constants.RPI_CONFIG_PATH, 'r') as a:
             config = a.read()
         
         if constants.RPI_OVERCLOCK_RE.search(config):
-            utils.mount_readwrite()
-    
-            os.rename(constants.RPI_CONFIG_FILE, constants.RPI_CONFIG_BACKUP)
+
+            xbmcvfs.copy(constants.RPI_CONFIG_PATH,
+                         os.path.join(__dir__, constants.RPI_CONFIG_FILE))
 
             def repl(m):
                 return '#' + m.group(1)
+            
+            utils.mount_readwrite()
 
-            with open(constants.RPI_CONFIG_FILE, 'w') as b:
+            with open(constants.RPI_CONFIG_PATH, 'w') as b:
                 b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
 
             utils.mount_readonly()
