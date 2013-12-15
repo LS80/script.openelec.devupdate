@@ -31,6 +31,7 @@ if init:
         utils.mount_readwrite()
         xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
         utils.mount_readonly()
+        xbmcvfs.delete(rpi_config_backup_file)
         if restart_countdown("Ready to reboot to re-enable overclocking."):
             xbmc.restart()
 
@@ -40,12 +41,8 @@ if init:
         utils.mount_readwrite()
         utils.update_extlinux()
         utils.mount_readonly()
-
-    try:
         os.remove(update_extlinux_file)
-        os.remove(rpi_config_backup_file)
-    except:
-        pass
+
     
     if not check_onbootonly:
         # Start a timer to check for a new build every hour.
