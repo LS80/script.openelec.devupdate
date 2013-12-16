@@ -180,7 +180,7 @@ class RbejBuildLink(RbejBuild, BuildLinkBase):
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+).tar(|.bz2)$".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+).tar(|.bz2)$".format(ARCH))
     TAG = 'a'
     CLASS = None
     HREF = BUILD_RE
