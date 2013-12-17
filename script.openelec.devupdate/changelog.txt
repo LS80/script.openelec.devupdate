@@ -1,3 +1,6 @@
+2.16.1
+ - Create temporary download directory if is doesn't exist.
+
 2.16.0
  - Handle the new build version format with the git shorthash (-r12345-g123abc.tar) 
 
