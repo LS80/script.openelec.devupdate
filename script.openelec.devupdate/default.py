@@ -69,6 +69,10 @@ def check_update_files():
 
 def cd_tmp_dir():
     # Move to the download directory.
+    try:
+        os.makedirs(tmp_dir)
+    except OSError:
+        pass
     os.chdir(tmp_dir)
     utils.log("chdir to " + tmp_dir)
     
