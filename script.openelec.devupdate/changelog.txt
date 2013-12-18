@@ -1,5 +1,9 @@
+2.16.2
+ - Fixed a problem with incomplete build lists for xbmcnightlybuilds.
+ - Fixed broken Official Archive source.
+
 2.16.1
- - Create temporary download directory if is doesn't exist.
+ - Create the directory for temporary downloads if it doesn't exist.
 
 2.16.0
  - Handle the new build version format with the git shorthash (-r12345-g123abc.tar) 
