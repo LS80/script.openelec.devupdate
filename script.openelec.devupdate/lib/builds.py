@@ -6,6 +6,8 @@ import urllib2
 import socket
 from datetime import datetime
 from collections import OrderedDict
+import gzip
+from StringIO import StringIO
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
@@ -188,10 +190,19 @@ class BuildLinkExtractor(object):
     TEXT = None
 
     def __init__(self, url):
-        req = urllib2.Request(url, None, HEADERS)
-        self._response = urllib2.urlopen(req)
         self._url = url
-        html = self._response.read()
+
+        request = urllib2.Request(url, None, HEADERS)
+        request.add_header('Accept-encoding', "gzip")
+
+        self._response = urllib2.urlopen(request)
+
+        if self._response.info().get('Content-Encoding') == "gzip":
+            f = gzip.GzipFile(fileobj=StringIO(self._response.read()))
+        else:
+            f = self._response
+
+        html = f.read()
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
                                                                self.CLASS,
                                                                href=self.HREF,
