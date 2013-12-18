@@ -5,6 +5,7 @@ import urlparse
 import urllib2
 import socket
 from datetime import datetime
+from collections import OrderedDict
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
 
@@ -319,30 +320,31 @@ else:
     INSTALLED_BUILD = Release(VERSION)
     
     
-URLS = {"Official Daily Builds":
-            BuildsURL("http://sources.openelec.tv/tmp/image"),
-        "Official Releases":
-            BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
-                      extractor=ReleaseLinkExtractor),
-        "Chris Swan (RPi)":
-            BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds"),
-        "Official Archive":
-            BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor),
-        "Rbej Gotham Builds (RPi)":
-            BuildsURL("http://netlir.dk/rbej/builds/Gotham",
-                      extractor=RbejLinkExtractor),
-        "Rbej Gotham popcornmix Builds (RPi)":
-            BuildsURL("http://netlir.dk/rbej/builds/Gotham%20Popcornmix/",
-                      extractor=RbejLinkExtractor),
-        "Rbej Frodo Builds (RPi)":
-            BuildsURL("http://netlir.dk/rbej/builds/Frodo",
-                      extractor=RbejLinkExtractor),
-        "xbmcnightlybuilds":
-            BuildsURL("http://openelec.xbmcnightlybuilds.com",
-                      subdir=ARCH.split('.')[0]),
-        "MilhouseVH Builds":
-            BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")        
-        }
+URLS = OrderedDict((
+                   ("Official Daily Builds",
+                    BuildsURL("http://sources.openelec.tv/tmp/image")),
+                   ("Official Releases",
+                    BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
+                              extractor=ReleaseLinkExtractor)),
+                   ("Chris Swan (RPi)",
+                    BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
+                   ("Official Archive",
+                    BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor)),
+                   ("Rbej Gotham Builds (RPi)",
+                    BuildsURL("http://netlir.dk/rbej/builds/Gotham",
+                              extractor=RbejLinkExtractor)),
+                   ("Rbej Gotham popcornmix Builds (RPi)",
+                    BuildsURL("http://netlir.dk/rbej/builds/Gotham%20Popcornmix/",
+                              extractor=RbejLinkExtractor)),
+                   ("Rbej Frodo Builds (RPi)",
+                    BuildsURL("http://netlir.dk/rbej/builds/Frodo",
+                              extractor=RbejLinkExtractor)),
+                   ("xbmcnightlybuilds",
+                    BuildsURL("http://openelec.xbmcnightlybuilds.com",
+                              subdir=ARCH.split('.')[0])),
+                   ("MilhouseVH Builds",
+                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
+                  ))
 
 
 if __name__ == "__main__":
@@ -365,5 +367,5 @@ if __name__ == "__main__":
         else:
             print_links(name, URLS[name])
     else:
-        for name, build_url in sorted(URLS.items()):
+        for name, build_url in URLS.items():
             print_links(name, build_url)
