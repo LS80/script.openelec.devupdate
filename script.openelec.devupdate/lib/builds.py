@@ -251,12 +251,12 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
 
 class ArchiveLinkExtractor(BuildLinkExtractor):
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH))
+    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH), re.DOTALL)
     TEXT = BUILD_RE
 
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
-        return ArchiveLink(version, self._url, link)
+        return ArchiveLink(version, self._url, link.strip())
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
