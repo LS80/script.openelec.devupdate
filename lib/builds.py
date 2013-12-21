@@ -337,10 +337,13 @@ URLS = OrderedDict((
                    ("Official Releases",
                     BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
                               extractor=ReleaseLinkExtractor)),
-                   ("Chris Swan (RPi)",
-                    BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                    ("Official Archive",
                     BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor)),
+                   ("xbmcnightlybuilds",
+                    BuildsURL("http://openelec.xbmcnightlybuilds.com",
+                              subdir=ARCH.split('.')[0])),
+                   ("Chris Swan (RPi)",
+                    BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                    ("Rbej Gotham Builds (RPi)",
                     BuildsURL("http://netlir.dk/rbej/builds/Gotham",
                               extractor=RbejLinkExtractor)),
@@ -350,10 +353,7 @@ URLS = OrderedDict((
                    ("Rbej Frodo Builds (RPi)",
                     BuildsURL("http://netlir.dk/rbej/builds/Frodo",
                               extractor=RbejLinkExtractor)),
-                   ("xbmcnightlybuilds",
-                    BuildsURL("http://openelec.xbmcnightlybuilds.com",
-                              subdir=ARCH.split('.')[0])),
-                   ("MilhouseVH Builds",
+                   ("MilhouseVH Builds (RPi)",
                     BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
                   ))
 
