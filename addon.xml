@@ -14,6 +14,7 @@
     <platform>all</platform>
     <summary>Unofficial OpenELEC development build updater</summary>
     <description>This XBMC add-on downloads and extracts OpenELEC update files ready to be installed on the next reboot. Based on the source specified in the settings all builds for the relevant architecture will be displayed in a list.</description>
+    <disclaimer>Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
     <forum>http://openelec.tv/forum/128-addons/49855</forum>
     <website>http://ls80.github.io/script.openelec.devupdate</website>
   </extension>
