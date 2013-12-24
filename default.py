@@ -359,7 +359,24 @@ def maybe_schedule_extlinux_update():
     if (constants.ARCH != 'RPi.arm' and
         __addon__.getSetting('update_extlinux') == 'true'):
         open(os.path.join(__dir__, constants.UPDATE_EXTLINUX), 'w').close()
-    
+
+
+def maybe_run_backup():
+    backup = int(__addon__.getSetting('backup'))
+    if backup == 0:
+        do_backup = False
+    elif backup == 1:
+        do_backup = xbmcgui.Dialog().yesno("Backup",
+                                           "Run XBMC Backup now?",
+                                           "This is recommended")
+        utils.log("Backup requested")
+    elif backup == 2:
+        do_backup = True
+        utils.log("Backup always")
+
+    if do_backup:
+        xbmc.executebuiltin('RunScript(script.xbmcbackup, backup)')
+
 
 def notify(selected_build):
     utils.log("Skipped reboot")
@@ -447,5 +464,7 @@ verify(selected_build)
 maybe_disable_overclock()
 
 maybe_schedule_extlinux_update()
+
+maybe_run_backup()
 
 confirm(selected_build)

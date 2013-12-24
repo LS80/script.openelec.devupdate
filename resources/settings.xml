@@ -29,7 +29,9 @@
         <setting type="sep"/>
         <setting label="Set timeout" type="bool" id="set_timeout" default="false"/>
         <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
-        <setting type="sep"/>        
+        <setting type="sep"/>
+        <setting label="Backup" type="enum" id="backup" values="Never|Prompt every time|Always" default="1"/>       
+        <setting type="sep"/>
         <setting label="Debug" type="bool" id="debug" default="false"/>
      </category>
 </settings>
