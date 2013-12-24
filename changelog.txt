@@ -1,3 +1,7 @@
+2.17.1
+ - Use an alternative mirror for xbmcnightlybuilds as a temporary fix for
+   missing recent builds.
+
 2.17.0
  - Added an option to backup XBMC data when installing a new build,
    using the "XBMC Backup" add-on.
