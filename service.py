@@ -33,7 +33,11 @@ if init:
         utils.mount_readonly()
         xbmcvfs.delete(rpi_config_backup_file)
         if restart_countdown("Ready to reboot to re-enable overclocking."):
+            utils.log("Restarting")
             xbmc.restart()
+            sys.exit()
+        else:
+            utils.log("Restart cancelled")
 
     update_extlinux_file = os.path.join(__dir__, constants.UPDATE_EXTLINUX)
     if os.path.exists(update_extlinux_file):
@@ -55,17 +59,17 @@ if init:
         with open(notify_file) as f:
             build = f.read()
     except IOError:
-        # No new build installed
-        pass
+        utils.log("No installation notification")
     else:
         utils.log("Notifying that build {} was installed".format(build))
         if build == str(builds.INSTALLED_BUILD):
             xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} was installed successfully."
                                 ", 12000, {})".format(build, __icon__))
-    try:
-        os.remove(notify_file)
-    except:
-        pass
+        utils.log("Removing notification file")
+        try:
+            os.remove(notify_file)
+        except OSError:
+            pass # in case file was already deleted
 
 
 if check_enabled:
