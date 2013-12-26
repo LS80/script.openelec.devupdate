@@ -4,11 +4,6 @@ import urllib2
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-try:
-    from lib import builds
-except urllib2.URLError:
-    sys.exit(1)
-
 from lib import constants
 from lib import utils
 from lib.progress import restart_countdown
@@ -16,11 +11,6 @@ from lib.progress import restart_countdown
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
-
-
-check_enabled = __addon__.getSetting('check') == 'true'
-check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
-check_prompt = int(__addon__.getSetting('check_prompt'))
 
 init = not sys.argv[0]
 
@@ -47,7 +37,16 @@ if init:
         utils.mount_readonly()
         os.remove(update_extlinux_file)
 
-    
+try:
+    from lib import builds
+except urllib2.URLError:
+    sys.exit(1)
+
+check_enabled = __addon__.getSetting('check') == 'true'
+check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
+check_prompt = int(__addon__.getSetting('check_prompt'))
+
+if init:
     if not check_onbootonly:
         # Start a timer to check for a new build every hour.
         utils.log("Starting build check timer")
