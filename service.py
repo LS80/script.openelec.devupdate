@@ -47,12 +47,6 @@ check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
 check_prompt = int(__addon__.getSetting('check_prompt'))
 
 if init:
-    if not check_onbootonly:
-        # Start a timer to check for a new build every hour.
-        utils.log("Starting build check timer")
-        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),04:00:00,silent,loop)".format(__file__))
-
-
     notify_file = os.path.join(__dir__, constants.NOTIFY_FILE)
     try:
         with open(notify_file) as f:
@@ -69,6 +63,12 @@ if init:
             os.remove(notify_file)
         except OSError:
             pass # in case file was already deleted
+
+
+    if not check_onbootonly:
+        # Start a timer to check for a new build every hour.
+        utils.log("Starting build check timer")
+        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({}),04:00:00,silent,loop)".format(__file__))
 
 
 if check_enabled:
