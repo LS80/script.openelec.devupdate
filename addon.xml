@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.openelec.devupdate"
        name="OpenELEC Dev Update"
-       version="2.17.2"
+       version="2.17.3"
        provider-name="Leopold">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -18,5 +18,7 @@
     <disclaimer>Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
     <forum>http://openelec.tv/forum/128-addons/49855</forum>
     <website>http://ls80.github.io/script.openelec.devupdate</website>
+    <source>http://github.com/LS80/script.openelec.devupdate</source>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
   </extension>
 </addon>

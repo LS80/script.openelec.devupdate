@@ -357,6 +357,7 @@ URLS = OrderedDict((
                     BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
                   ))
 
+URLS["MilhouseVH Builds"] = URLS["MilhouseVH Builds (RPi)"] # temporary fix
 
 if __name__ == "__main__":
     import sys
