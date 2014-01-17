@@ -339,9 +339,12 @@ URLS = OrderedDict((
                               extractor=ReleaseLinkExtractor)),
                    ("Official Archive",
                     BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor)),
-                   ("xbmcnightlybuilds",
+                   ("XBMCNightlyBuilds (Nightly Builds)",
                     BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS",
                               subdir=ARCH.split('.')[0])),
+                   ("XBMCNightlyBuilds (Official Stable Builds Mirror)",
+                    BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS",
+                              extractor=ArchiveLinkExtractor)),
                    ("Chris Swan (RPi)",
                     BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                    ("Rbej Gotham Builds (RPi)",
@@ -358,6 +361,8 @@ URLS = OrderedDict((
                   ))
 
 URLS["MilhouseVH Builds"] = URLS["MilhouseVH Builds (RPi)"] # temporary fix
+URLS["xbmcnightlybuilds"] = URLS["XBMCNightlyBuilds (Nightly Builds)"] # temp fix to workaround repo rename
+
 
 if __name__ == "__main__":
     import sys
