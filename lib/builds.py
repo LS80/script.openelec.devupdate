@@ -333,7 +333,7 @@ else:
     
 URLS = OrderedDict((
                    ("Official Daily Builds",
-                    BuildsURL("http://sources.openelec.tv/tmp/image")),
+                    BuildsURL("http://snapshots.openelec.tv")),
                    ("Official Releases",
                     BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
                               extractor=ReleaseLinkExtractor)),
