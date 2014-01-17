@@ -1,3 +1,10 @@
+2.18.0
+ - Renamed xbmcnightlybuilds to XBMCNightlyBuilds (Nightly Builds) and
+   made this the default source.
+ - Added XBMCNightlyBuilds Official Stable Builds Mirror
+   as an alternative to the Official Archive source
+ - Updated the Official Daily Builds url to snapshots.openelec.tv
+
 2.17.4
  - Updated xbmcnightlybuilds to point to mirror site.
 
