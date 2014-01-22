@@ -33,15 +33,22 @@
       <section id="main_content" class="inner">
         <p><img src="https://raw.github.com/LS80/script.openelec.devupdate/master/icon.png" alt="Icon"></p>
 
-<p><strong>OpenELEC has a built-in update mechanism for official releases but not for development builds. For those of us willing to test new builds, report bugs, and follow through with the testing, this is an easy way to manually switch between builds, without leaving the XBMC interface. When a newer build is available at the specified source URL, a notification will be shown to enable you to install the update.</strong></p>
+<p><strong>This add-on makes it easy to upgrade/downgrade OpenELEC development builds from a variety of sources, without leaving the XBMC interface. When you run the add-on manually you get a list of available builds from the specified source URL (configured in the add-on settings). There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</strong></p>
 
-<p><strong>The add-on will download the (bzip compressed) tar file and extract the SYSTEM and KERNEL update images, and the associated md5 checksum files, into the /storage/.update folder.</strong></p>
+<p><strong>To perform an update the add-on will download the (possibly bzip compressed) tar file and extract the SYSTEM and KERNEL update images, and the associated md5 checksum files, into the /storage/.update folder. The update will then be installed on the next reboot. This is all documented on the <a href="http://wiki.openelec.tv/index.php/Updating_OpenELEC#Manually_Updating_OpenELEC">OpenELEC wiki</a></strong>.</p>
 
-<p><strong>PLEASE BE AWARE THAT DEVELOPMENT BUILDS OFTEN HAVE MAJOR BUGS. YOU MAY EXPERIENCE FREQUENT CRASHES OR OTHER PROBLEMS WHEN USING THESE BUILDS. IT IS ADVISED TO BACKUP THE USERDATA FOLDER BEFORE UPDATING.</strong></p>
+<p>Please note that this is not an "official" OpenELEC add-on. If you hit any problems with it, don't ask for support from the OpenELEC team, please post on this <a href="http://openelec.tv/forum/128-addons/49855">OpenELEC forum thread</a>. If you have any comments/questions/suggestions please also post there and I'll probably respond.</p>
 
-<p>Please note that this is not an official OpenELEC add-on, so don't ask for support from the OpenELEC team. If you have any comments or questions or suggestions for improvement, please post on this <a href="http://openelec.tv/forum/128-addons/49855">OpenELEC forum thread</a>.</p>
+<p>I would like to say a big thank you to the OpenELEC team for creating and maintaining an awesome product. Thanks also go out to the awesome people who create and host their own OpenELEC builds.</p>
 
-<hr><p><a href="https://raw.github.com/LS80/script.openelec.devupdate/master/changelog.txt">Changelog</a></p>
+<p>Now for some cautionary messages, in caps for extra impact!</p>
+
+<ul>
+<li><p><strong>PLEASE BE AWARE THAT DEVELOPMENT BUILDS OFTEN HAVE MAJOR BUGS. YOU MAY EXPERIENCE FREQUENT CRASHES OR OTHER PROBLEMS WHEN USING THESE BUILDS.</strong></p></li>
+<li><p><strong>DO NOT USE A DEVELOPMENT BUILDS UNLESS THERE IS A SPECIFIC NEED, OTHERWISE STICK TO THE OFFICIAL STABLE BUILDS.</strong></p></li>
+<li><p><strong>IT IS BEST TO DO A FRESH INSTALL WHEN SWITCHING FROM A STABLE TO A DEVELOPMENT BUILD, AND VICE VERSA. OTHERWISE THERE COULD BE SOME CONFIGURATION ISSUES.</strong></p></li>
+<li><p><strong>IT IS ADVISED TO BACKUP THE USERDATA FOLDER WHEN UPDATING. THIS STEP CAN NOW BE AUTOMATED, THANKS TO THE XBMC BACKUP ADD-ON.</strong></p></li>
+</ul><hr><p>Here is the latest <a href="https://raw.github.com/LS80/script.openelec.devupdate/master/changelog.txt">changelog</a>.</p>
 
 <h2>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
@@ -60,7 +67,7 @@
 <a href="http://sources.openelec.tv/tmp/image">Official Daily Builds</a> | <a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a> </li>
 <li><a href="http://archive.openelec.tv">Official Archive</a></li>
 <li><a href="http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS">XBMCNightlyBuilds (Nightly Builds)</a></li>
-<li><a>XBMCNightlyBuilds (Official Stable Builds Mirror)</a></li>
+<li><a href="http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS">XBMCNightlyBuilds (Official Stable Builds Mirror)</a></li>
 <li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
 <li>
 <a href="http://netlir.dk/rbej/builds/Gotham">Rbej Gotham builds (RPi)</a> | <a href="http://forum.xbmc.org/showthread.php?tid=169674">Forum</a>
