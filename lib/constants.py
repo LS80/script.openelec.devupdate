@@ -3,20 +3,20 @@ import os
 
 __scriptid__ = "script.openelec.devupdate"
 
-UPDATE_DIR = '/storage/.update'
-UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
-
-UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
-
 try:
     ARCH = open('/etc/arch').read().rstrip()
 except IOError:
     ARCH = 'RPi.arm'
 
-if ARCH.startswith('Virtual'):
-    # This just allows easier testing in a virtual machine
-    ARCH = 'RPi.arm'    
+UPDATE_DIR = '/storage/.update'
+
+if ARCH == 'ATV.i386':  
+    UPDATE_IMAGES = ('SYSTEM', 'MACH_KERNEL')
+else:
+    UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+
+UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
 HEADERS = {'User-agent': "Mozilla/5.0"}
 
