@@ -1,3 +1,6 @@
+2.18.1
+ - Fixed a problem with installing the latest ATV builds.
+
 2.18.0
  - Renamed xbmcnightlybuilds to XBMCNightlyBuilds (Nightly Builds) and
    made this the default source.
