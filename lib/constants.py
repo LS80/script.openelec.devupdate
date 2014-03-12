@@ -18,8 +18,6 @@ else:
 UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
 UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
 
-HEADERS = {'User-agent': "Mozilla/5.0"}
-
 NOTIFY_FILE = 'installed_build.txt'
 
 UPDATE_EXTLINUX = 'update_extlinux'

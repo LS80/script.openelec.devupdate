@@ -4,16 +4,17 @@ import time
 import re
 import os
 import urlparse
-import urllib2
 import socket
 from datetime import datetime
 from collections import OrderedDict
-import gzip
-from StringIO import StringIO
 
 from BeautifulSoup import BeautifulSoup, SoupStrainer
+try:
+    import requests2 as requests
+except ImportError:
+    import requests
 
-from constants import ARCH, HEADERS, __scriptid__
+from constants import ARCH, __scriptid__
 
 try:
     import xbmcaddon
@@ -81,8 +82,7 @@ class Release(Build):
     @classmethod
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
-            req = urllib2.Request("http://github.com/OpenELEC/OpenELEC.tv/tags", None, HEADERS)
-            html = urllib2.urlopen(req).read()
+            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags").text
             cls.tag_soup = BeautifulSoup(html,
                                          SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
       
@@ -155,10 +155,9 @@ class ReleaseLink(Release, BuildLinkBase):
         # Check if the link exists with or without the .bz2 extension.
         for f in (os.path.splitext(filename)[0], filename):
             url = urlparse.urljoin(self.BASEURL, f)
-            req = urllib2.Request(url, None, HEADERS)
             try:
-                urllib2.urlopen(req)
-            except (urllib2.HTTPError, socket.error):
+                requests.get(url)
+            except (requests.ConnectionError, socket.error):
                 self._exists = False
             else:
                 self._exists = True
@@ -193,18 +192,7 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         self._url = url
-
-        request = urllib2.Request(url, None, HEADERS)
-        request.add_header('Accept-encoding', "gzip")
-
-        self._response = urllib2.urlopen(request)
-
-        if self._response.info().get('Content-Encoding') == "gzip":
-            f = gzip.GzipFile(fileobj=StringIO(self._response.read()))
-        else:
-            f = self._response
-
-        html = f.read()
+        html = requests.get(url).text
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
                                                                self.CLASS,
                                                                href=self.HREF,
@@ -226,7 +214,7 @@ class BuildLinkExtractor(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._response.close()
+        pass
 
 
 class DropboxLinkExtractor(BuildLinkExtractor):
@@ -313,7 +301,7 @@ class BuildsURL(object):
 try:
     VERSION = open('/etc/version').read().rstrip()
 except IOError:
-    VERSION = '3.2.0'
+    VERSION = 'devel-20140220033549-r17742-g12768a5'
 
 m = re.search("devel-(\d+)-r(\d+)", VERSION)
 if m:
