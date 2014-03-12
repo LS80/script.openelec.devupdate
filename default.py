@@ -185,7 +185,7 @@ def download(selected_build):
     filename = selected_build.filename
 
     utils.log("Download URL = " + selected_build.url)
-    req = urllib2.Request(selected_build.url, None, constants.HEADERS)
+    req = urllib2.Request(selected_build.url, None)
 
     try:
         rf = urllib2.urlopen(req)

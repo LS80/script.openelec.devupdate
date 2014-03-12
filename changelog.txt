@@ -1,3 +1,6 @@
+2.18.3
+ - Fixed a downloading problem caused by the previous change. 
+
 2.18.2
  - Fixed a possible problem retrieving the build list from a custom URL.
 
