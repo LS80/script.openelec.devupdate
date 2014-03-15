@@ -23,6 +23,7 @@ import os
 import sys
 
 import xbmc, xbmcgui, xbmcaddon
+import requests2 as requests
 
 from lib import constants
 
@@ -113,13 +114,10 @@ class BuildList():
             # Get the list of build links.
             with build_url.extractor() as extractor:
                 links = sorted(set(extractor.get_links()), reverse=True)
-        except urllib2.HTTPError as e:
-            if e.code == 404:
-                utils.bad_url(e.geturl())
-            else:
-                utils.url_error(e.geturl(), str(e))
+        except builds.BuildURLError as e:
+            utils.bad_url(url, str(e))
             sys.exit(1)
-        except (urllib2.URLError, socket.error) as e:
+        except (requests.RequestException, socket.error) as e:
             utils.url_error(url, str(e))
             sys.exit(1)
         

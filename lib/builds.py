@@ -24,6 +24,8 @@ else:
     if xbmcaddon.Addon(__scriptid__).getSetting('set_arch') == 'true':
         ARCH = xbmcaddon.Addon(__scriptid__).getSetting('arch')
 
+class BuildURLError(Exception):
+    pass
 
 class Build(object):
     """Holds information about an OpenELEC build,
@@ -157,7 +159,7 @@ class ReleaseLink(Release, BuildLinkBase):
             url = urlparse.urljoin(self.BASEURL, f)
             try:
                 requests.get(url)
-            except (requests.ConnectionError, socket.error):
+            except (requests.RequestException, socket.error):
                 self._exists = False
             else:
                 self._exists = True
@@ -191,8 +193,12 @@ class BuildLinkExtractor(object):
     TEXT = None
 
     def __init__(self, url):
-        self._url = url
-        html = requests.get(url).text
+        self.url = url
+        response = requests.get(url)
+        if not response:
+            raise BuildURLError("Build URL error: status {}".format(response.status_code))
+
+        html = response.text
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
                                                                self.CLASS,
                                                                href=self.HREF,
@@ -208,7 +214,7 @@ class BuildLinkExtractor(object):
     def _create_link(self, link):
         href = link['href']
         datetime_str, revision = self.BUILD_RE.match(href).groups()[:2]
-        return BuildLink(self._url, href.strip(), revision, datetime_str)
+        return BuildLink(self.url, href.strip(), revision, datetime_str)
 
     def __enter__(self):
         return self
@@ -257,7 +263,7 @@ class ArchiveLinkExtractor(BuildLinkExtractor):
 
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
-        return ArchiveLink(version, self._url, link.strip())
+        return ArchiveLink(version, self.url, link.strip())
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
@@ -271,7 +277,7 @@ class RbejLinkExtractor(BuildLinkExtractor):
         datetime_str = m.group(2)
         desc = m.group(1).split('-')
         version = "{} {}".format(desc[0], desc[2])
-        return RbejBuildLink(self._url, href.strip(), version, datetime_str)    
+        return RbejBuildLink(self.url, href.strip(), version, datetime_str)
 
 
 
@@ -347,7 +353,8 @@ URLS = OrderedDict((
                     BuildsURL("http://netlir.dk/rbej/builds/Frodo",
                               extractor=RbejLinkExtractor)),
                    ("MilhouseVH Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
+                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")),
+                   ("404", BuildsURL("http://httpbin.org/status/404"))
                   ))
 
 URLS["MilhouseVH Builds"] = URLS["MilhouseVH Builds (RPi)"] # temporary fix
@@ -359,9 +366,14 @@ if __name__ == "__main__":
 
     def print_links(name, build_url):
         print name
-        with build_url.extractor() as parser:
-            for link in sorted(set(parser.get_links()), reverse=True):
-                print "\t{:25s} {}".format(str(link) + ' *' * (link > INSTALLED_BUILD), link.filename)
+        try:
+            with build_url.extractor() as parser:
+                for link in sorted(set(parser.get_links()), reverse=True):
+                    print "\t{:25s} {}".format(str(link) + ' *' * (link > INSTALLED_BUILD), link.filename)
+        except requests.RequestException as e:
+            print str(e)
+        except BuildURLError as e:
+            print str(e)
         print
 
     print "Installed build = {}".format(INSTALLED_BUILD)
