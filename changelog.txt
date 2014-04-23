@@ -1,3 +1,7 @@
+2.19.0
+ - Fixed a problem with the Official Releases source.
+ - Renamed Official Daily Builds to Official Snapshot Builds.
+
 2.18.4
  - Handle URL problems properly.
 
