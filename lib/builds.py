@@ -328,7 +328,7 @@ else:
     
     
 URLS = OrderedDict((
-                   ("Official Daily Builds",
+                   ("Official Snapshot Builds",
                     BuildsURL("http://snapshots.openelec.tv")),
                    ("Official Releases",
                     BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
@@ -359,6 +359,7 @@ URLS = OrderedDict((
 
 URLS["MilhouseVH Builds"] = URLS["MilhouseVH Builds (RPi)"] # temporary fix
 URLS["xbmcnightlybuilds"] = URLS["XBMCNightlyBuilds (Nightly Builds)"] # temp fix to workaround repo rename
+URLS["Official Daily Builds"] = URLS["Official Snapshot Builds"]
 
 
 if __name__ == "__main__":
