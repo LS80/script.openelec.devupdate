@@ -136,8 +136,8 @@ class BuildLink(Build, BuildLinkBase):
         self._set_info()
 
 
-class ArchiveLink(Release, BuildLinkBase):
-    ''' Class for links to official archive release downloads '''
+class ReleaseLink(Release, BuildLinkBase):
+    ''' Class for links to official release downloads '''
     
     def __init__(self, version, baseurl, filename):
         self.filename = filename
@@ -145,33 +145,6 @@ class ArchiveLink(Release, BuildLinkBase):
         self._set_info()
         
         Release.__init__(self, version)
-
-
-class ReleaseLink(Release, BuildLinkBase):
-    ''' Class for links to official release downloads '''
-
-    BASEURL = "http://releases.openelec.tv"
-    
-    def __init__(self, version):
-        filename = "OpenELEC-{}-{}.tar.bz2".format(ARCH, version)
-        # Check if the link exists with or without the .bz2 extension.
-        for f in (os.path.splitext(filename)[0], filename):
-            url = urlparse.urljoin(self.BASEURL, f)
-            try:
-                requests.get(url)
-            except (requests.RequestException, socket.error):
-                self._exists = False
-            else:
-                self._exists = True
-                self.filename = f
-                self.url = url
-                self._set_info()
-                break
-        
-        Release.__init__(self, version)
-        
-    def __nonzero__(self):
-        return self.is_valid() and self._exists
 
 
 class RbejBuildLink(RbejBuild, BuildLinkBase):
@@ -229,41 +202,13 @@ class DropboxLinkExtractor(BuildLinkExtractor):
         
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
-    
-    BUILD_RE = re.compile(".*OpenELEC.*i386 Version:([\d\.]+)")
-    TAG = 'tr'
-    TEXT = BUILD_RE
-    HREF = None
-    
-    #DATE_RE = re.compile("(\d{4}-\d{2}-\d{2})")
-
-    def get_links(self):
-        for link in self._links:
-            version = self.BUILD_RE.match(link).group(1)
-            #build_date = link.findNext(text=self.DATE_RE).strip()
-            
-            # Look for older releases.
-            version_parts = [int(i) for i in version.split('.')]
-            all_versions = []
-            start_minor = version_parts[-1]
-            for i in range(int(version_parts[1]), -1, -1):
-                for j in range(start_minor, -1, -1):
-                    all_versions.append('{}.{}.{}'.format(version_parts[0],i,j))
-                start_minor = 9
-            for v in all_versions:
-                rl = ReleaseLink(v)
-                if rl:
-                    yield rl
-
-
-class ArchiveLinkExtractor(BuildLinkExtractor):
 
     BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH), re.DOTALL)
     TEXT = BUILD_RE
 
     def _create_link(self, link):
         version = self.BUILD_RE.match(link).group(1)
-        return ArchiveLink(version, self.url, link.strip())
+        return ReleaseLink(version, self.url, link.strip())
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
@@ -278,7 +223,6 @@ class RbejLinkExtractor(BuildLinkExtractor):
         desc = m.group(1).split('-')
         version = "{} {}".format(desc[0], desc[2])
         return RbejBuildLink(self.url, href.strip(), version, datetime_str)
-
 
 
 
@@ -331,16 +275,16 @@ URLS = OrderedDict((
                    ("Official Snapshot Builds",
                     BuildsURL("http://snapshots.openelec.tv")),
                    ("Official Releases",
-                    BuildsURL("http://openelec.tv/get-openelec/viewcategory/8-generic-builds",
+                    BuildsURL("http://releases.openelec.tv",
                               extractor=ReleaseLinkExtractor)),
                    ("Official Archive",
-                    BuildsURL("http://archive.openelec.tv", extractor=ArchiveLinkExtractor)),
+                    BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
                    ("XBMCNightlyBuilds (Nightly Builds)",
                     BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS",
                               subdir=ARCH.split('.')[0])),
                    ("XBMCNightlyBuilds (Official Stable Builds Mirror)",
                     BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS",
-                              extractor=ArchiveLinkExtractor)),
+                              extractor=ReleaseLinkExtractor)),
                    ("Chris Swan (RPi)",
                     BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                    ("Rbej Gotham Builds (RPi)",
