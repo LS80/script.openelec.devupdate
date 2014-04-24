@@ -8,7 +8,7 @@
     <import addon="os.openelec.tv" version="2.0" optional="false"/>
     <import addon="script.module.beautifulsoup" version="3.2.0" optional="false"/>
     <import addon="script.module.requests2" version="2.2.1" optional="false"/>
-    <import addon="script.xbmcbackup" version="0.4.3" optional="false"/>
+    <import addon="script.xbmcbackup" version="0.5.2" optional="false"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py"/>
   <extension point="xbmc.service" library="service.py" start="startup"/>

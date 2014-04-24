@@ -373,7 +373,7 @@ def maybe_run_backup():
         utils.log("Backup always")
 
     if do_backup:
-        xbmc.executebuiltin('RunScript(script.xbmcbackup, backup)')
+        xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)')
 
 
 def notify(selected_build):
