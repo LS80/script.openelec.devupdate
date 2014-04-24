@@ -1,3 +1,7 @@
+2.19.1
+ - Fixed a problem with XBMC Backup showing a dialog
+   instead of just running the backup automatically.
+
 2.19.0
  - Fixed a problem with the Official Releases source.
  - Renamed Official Daily Builds to Official Snapshot Builds.
