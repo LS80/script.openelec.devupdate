@@ -23,9 +23,9 @@
         <setting label="Override installed build type" type="bool" id="set_arch" default="false"/>
         <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
-        <setting label="Disable overclocking during update (RPi only)" type="bool" id="disable_overclock" default="false"/>
+        <setting label="Disable overclocking during update" type="bool" id="disable_overclock" default="false" visible="System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
-        <setting label="Also update extlinux (not RPi)" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
+        <setting label="Also update extlinux" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
         <setting label="Set timeout" type="bool" id="set_timeout" default="false"/>
         <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
