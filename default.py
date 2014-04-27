@@ -259,9 +259,6 @@ def extract(selected_build):
         except script_exceptions.WriteError as e:
             utils.write_error(outfile, str(e))
             sys.exit(1)
-        else:
-            # Work around progress dialog bug (#13467) 
-            del extractor
 
     tf.close()
 
