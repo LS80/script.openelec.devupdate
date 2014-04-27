@@ -56,8 +56,7 @@ if init:
     else:
         utils.log("Notifying that build {} was installed".format(build))
         if build == str(builds.INSTALLED_BUILD):
-            xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} was installed successfully."
-                                ", 12000, {})".format(build, __icon__))
+            utils.notify("Build {} was installed successfully".format(build))
         utils.log("Removing notification file")
         try:
             os.remove(notify_file)
@@ -92,8 +91,7 @@ if check_enabled:
                 if latest > builds.INSTALLED_BUILD:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         utils.log("Notifying that new build {} is available".format(latest))
-                        xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} "
-                                            "is available., 7500, {})".format(latest, __icon__))
+                        utils.notify("Build {} is available".format(latest), 7500)
                     else:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
