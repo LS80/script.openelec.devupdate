@@ -375,13 +375,6 @@ def maybe_run_backup():
     if do_backup:
         xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)')
 
-
-def notify(selected_build):
-    utils.log("Skipped reboot")
-    xbmc.executebuiltin("Notification(OpenELEC Dev Update, Build {} will install "
-                        "on the next reboot., 12000, {})".format(selected_build,
-                                                                 __icon__))
-
 def confirm(selected_build):
     from lib import progress
 
@@ -395,12 +388,12 @@ def confirm(selected_build):
                                   .format(selected_build)):
             xbmc.restart() 
         else:
-            notify(selected_build)
+            utils.notify("Build {} will install on the next reboot".format(selected_build))
     else:
         if progress.restart_countdown("Build {} is ready to install.".format(selected_build)):
             xbmc.restart()
         else:
-            notify(selected_build)
+            utils.notify("Build {} will install on the next reboot".format(selected_build))
 
 
 

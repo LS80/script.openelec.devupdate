@@ -67,10 +67,12 @@ def remove_update_files():
         else:
             log("Removed " + f)
             return True
+        
+def notify(msg, time=12000):
+    xbmcgui.Dialog().notification("OpenELEC Dev Update", msg, __icon__, time)
             
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == 'cancel':
             if remove_update_files():
-                xbmc.executebuiltin("Notification(OpenELEC Dev Update, Pending update cancelled"
-                                    ", 12000, {})".format(__icon__))
+                notify("Pending update cancelled")
