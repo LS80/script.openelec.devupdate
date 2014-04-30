@@ -9,31 +9,50 @@ import xbmc, xbmcgui
 from script_exceptions import Canceled, WriteError, DecompressError
 from utils import size_fmt
 
-class FileProgress(xbmcgui.DialogProgress):
-    """Extends DialogProgress as a context manager to
+
+class Progress(xbmcgui.DialogProgress):
+    def update(self, percent, message=" "):
+        super(Progress, self).update(percent, line3=message)
+
+
+class ProgressBG(xbmcgui.DialogProgressBG):
+    def iscanceled(self):
+        return False
+
+    def create(self, heading, line1, line2):
+        super(ProgressBG, self).create(heading, line1)
+
+
+class FileProgress(object):
+    """Wraps DialogProgress(BG) as a context manager to
        handle the file progress"""
 
     BLOCK_SIZE = 131072
 
-    def __init__(self, heading, infile, outpath, size):
-        xbmcgui.DialogProgress.__init__(self)
-        self.create(heading, outpath, size_fmt(size))
-        self._size = size
+    def __init__(self, heading, infile, outpath, size, background=False):
+        self._heading = heading
         self._in_f = infile
-        try:
-            self._out_f = open(outpath, 'wb')
-        except IOError as e:
-            raise WriteError(e)
         self._outpath = outpath
+        self._size = size
+        if background:
+            self._progress = ProgressBG()
+        else:
+            self._progress = Progress()       
         self._done = 0
  
     def __enter__(self):
+        self._progress.create(self._heading, os.path.basename(self._outpath), size_fmt(self._size))
+        try:
+            self._out_f = open(self._outpath, 'wb')
+        except IOError as e:
+            raise WriteError(e)
+
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._in_f.close()
         self._out_f.close()
-        self.close()
+        self._progress.close()
 
         # If an exception occurred remove the incomplete file.
         if exc_type is not None:
@@ -42,7 +61,7 @@ class FileProgress(xbmcgui.DialogProgress):
     def start(self):
         start_time = time.time()
         while self._done < self._size:
-            if self.iscanceled():
+            if self._progress.iscanceled():
                 raise Canceled
             data = self._read()
             try:
@@ -51,7 +70,7 @@ class FileProgress(xbmcgui.DialogProgress):
                 raise WriteError(e)
             percent = int(self._done * 100 / self._size)
             bytes_per_second = self._done / (time.time() - start_time)
-            self.update(percent, line3="{0}/s".format(size_fmt(bytes_per_second)))
+            self._progress.update(percent, message="{0}/s".format(size_fmt(bytes_per_second)))
 
     def _getdata(self):
         return self._in_f.read(self.BLOCK_SIZE)
