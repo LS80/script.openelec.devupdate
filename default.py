@@ -199,7 +199,8 @@ def download(selected_build):
         else:
             # Do the download
             utils.log("Starting download of " + selected_build.url)
-            with progress.FileProgress("Downloading", rf, filename, bz2_size) as downloader:
+            with progress.FileProgress("Downloading",
+                                       rf, filename, bz2_size) as downloader:
                 downloader.start()
             utils.log("Completed download of " + selected_build.url)  
     except script_exceptions.Canceled:
@@ -217,7 +218,8 @@ def download(selected_build):
         try:
             bf = open(filename, 'rb')
             utils.log("Starting decompression of " + filename)
-            with progress.DecompressProgress("Decompressing", bf, tar_name, bz2_size) as decompressor:
+            with progress.DecompressProgress("Decompressing",
+                                             bf, tar_name, bz2_size) as decompressor:
                 decompressor.start()
             utils.log("Completed decompression of " + filename)
         except script_exceptions.Canceled:
@@ -245,7 +247,8 @@ def extract(selected_build):
         os.mkdir(constants.UPDATE_DIR)
     
     # Extract the update files from the tar file to the .update directory.
-    tar_members = (m for m in tf.getmembers() if os.path.basename(m.name) in constants.UPDATE_FILES)
+    tar_members = (m for m in tf.getmembers()
+                   if os.path.basename(m.name) in constants.UPDATE_FILES)
     for member in tar_members:
         ti = tf.extractfile(member)
         outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
@@ -264,18 +267,26 @@ def extract(selected_build):
 
 
 def maybe_copy_to_archive(source, selected_build):
+    from lib import progress
+    from lib import script_exceptions
+    
     if __addon__.getSetting('archive') == "true" and selected_build.archive is None:
         archive_dir = os.path.join(archive_root, source)
         archive_file = os.path.join(archive_dir, selected_build.tar_name)
-        progress = xbmcgui.DialogProgress()
-        msg = 'Copying tar file to archive'
-        progress.create('Archiving build', ' ', msg, ' ')
-        progress.update(0, ' ', msg, ' ')
-        xbmcvfs.mkdir(archive_dir)
-        success = xbmcvfs.copy(os.path.join(__dir__, selected_build.tar_name), archive_file)
-        if progress.iscanceled():
+
+        tarpath = os.path.join(__dir__, selected_build.tar_name)
+        tar = open(tarpath)
+        size = os.path.getsize(tarpath)
+
+        try:
+            with progress.FileProgress("Copying to archive",
+                                       tar, archive_file, size) as extractor:
+                extractor.start()
+        except script_exceptions.Canceled:
             xbmcvfs.delete(archive_file)
-        progress.close()
+        except script_exceptions.WriteError as e:
+            utils.write_error(archive_file, str(e))
+            xbmcvfs.delete(archive_file)
 
 
 def cleanup(selected_build):
@@ -293,16 +304,23 @@ def cleanup(selected_build):
 
 
 def copy_from_archive(selected_build):
+    from lib import progress
+    from lib import script_exceptions
+    
     utils.log("Skipping download and decompression")
-    progress = xbmcgui.DialogProgress()
-    msg = 'Retrieving tar file from archive'
-    progress.create('Retrieving build', ' ', msg, ' ')
-    progress.update(0, ' ', msg, ' ')
-    success = xbmcvfs.copy(selected_build.archive, os.path.join(__dir__, selected_build.tar_name))
-    if progress.iscanceled():
+
+    archive = xbmcvfs.File(selected_build.archive)
+    tarfile = os.path.join(__dir__, selected_build.tar_name)
+
+    try:
+        with progress.FileProgress("Retrieving tar file from archive",
+                                   archive, tarfile, archive.size()) as extractor:
+            extractor.start()
+    except script_exceptions.Canceled:
         cleanup(selected_build)
         sys.exit(0)
-    progress.close()    
+    except script_exceptions.WriteError as e:
+        sys.exit(1)
     
 
 def verify(selected_build):
