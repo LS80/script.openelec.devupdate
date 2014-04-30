@@ -323,23 +323,24 @@ def copy_from_archive(selected_build):
         sys.exit(1)
     
 
-def verify(selected_build):
-    # Verify the md5 sums.
-    os.chdir(constants.UPDATE_DIR)
-    for f in constants.UPDATE_IMAGES:
-        md5sum = open(f + '.md5').read().split()[0]
-        utils.log("{}.md5 file = {}".format(f, md5sum))
-
-        if not md5sum_verified(md5sum, f):
-            utils.log("{} md5 mismatch!".format(f))
-            xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
-                                "The {} image from".format(f),
-                                selected_build.filename,
-                                "is corrupt. The update files will be removed.")
-            utils.remove_update_files()
-            sys.exit(1)
-        else:
-            utils.log("{} md5 is correct".format(f))
+def maybe_verify(selected_build):
+    if __addon__.getSetting('verify_files') == "true":
+        # Verify the md5 sums.
+        os.chdir(constants.UPDATE_DIR)
+        for f in constants.UPDATE_IMAGES:
+            md5sum = open(f + '.md5').read().split()[0]
+            utils.log("{}.md5 file = {}".format(f, md5sum))
+    
+            if not md5sum_verified(md5sum, f):
+                utils.log("{} md5 mismatch!".format(f))
+                xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
+                                    "The {} image from".format(f),
+                                    selected_build.filename,
+                                    "is corrupt. The update files will be removed.")
+                utils.remove_update_files()
+                sys.exit(1)
+            else:
+                utils.log("{} md5 is correct".format(f))
 
             
 def maybe_disable_overclock():
@@ -465,7 +466,7 @@ maybe_copy_to_archive(source, selected_build)
 
 cleanup(selected_build)
 
-verify(selected_build)
+maybe_verify(selected_build)
 
 maybe_disable_overclock()
 
