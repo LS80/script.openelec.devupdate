@@ -4,7 +4,7 @@ import os
 import bz2
 import time
 
-import xbmc, xbmcgui
+import xbmc, xbmcgui, xbmcvfs
 
 from script_exceptions import Canceled, WriteError, DecompressError
 from utils import size_fmt
@@ -43,8 +43,8 @@ class FileProgress(object):
     def __enter__(self):
         self._progress.create(self._heading, os.path.basename(self._outpath), size_fmt(self._size))
         try:
-            self._out_f = open(self._outpath, 'wb')
-        except IOError as e:
+            self._out_f = xbmcvfs.File(self._outpath, 'w')
+        except Exception as e:
             raise WriteError(e)
 
         return self
@@ -56,7 +56,7 @@ class FileProgress(object):
 
         # If an exception occurred remove the incomplete file.
         if exc_type is not None:
-            os.remove(self._outpath)
+            xbmcvfs.delete(self._outpath)
 
     def start(self):
         start_time = time.time()
@@ -66,7 +66,7 @@ class FileProgress(object):
             data = self._read()
             try:
                 self._out_f.write(data)
-            except IOError as e:
+            except Exception as e:
                 raise WriteError(e)
             percent = int(self._done * 100 / self._size)
             bytes_per_second = self._done / (time.time() - start_time)
