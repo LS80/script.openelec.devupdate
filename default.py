@@ -176,6 +176,8 @@ class Main(object):
     def __init__(self):
         check_update_files()
         
+        self.background = __addon__.getSetting('background') == 'true'
+        
         if __addon__.getSetting('set_timeout') == 'true':
             self.timeout = int(__addon__.getSetting('timeout'))
         else:
@@ -210,34 +212,6 @@ class Main(object):
         maybe_run_backup()
 
         self.confirm()
-
-
-    def md5sum_verified(self, md5sum_compare, path):
-        verify_progress = progress.Progress()
-            
-        verify_progress.create("Verifying", " ", "Verifying {} md5".format(path))
-    
-        BLOCK_SIZE = 8192
-        
-        hasher = hashlib.md5()
-        f = open(path)
-        
-        done = 0
-        size = os.path.getsize(path)
-        while done < size:
-            if verify_progress.iscanceled():
-                verify_progress.close()
-                return True
-            data = f.read(BLOCK_SIZE)
-            done += len(data)
-            hasher.update(data)
-            percent = int(done * 100 / size)
-            verify_progress.update(percent)
-        verify_progress.close()
-            
-        md5sum = hasher.hexdigest()
-        utils.log("{} md5 hash = {}".format(path, md5sum))
-        return md5sum == md5sum_compare
 
     def select_build(self):
         # TODO - what if INSTALLED_BUILD is a release with no date? 
@@ -287,7 +261,8 @@ class Main(object):
                 # Do the download
                 utils.log("Starting download of " + self.selected_build.url)
                 with progress.FileProgress("Downloading",
-                                           rf, filename, bz2_size) as downloader:
+                                           rf, filename, bz2_size,
+                                           self.background) as downloader:
                     downloader.start()
                 utils.log("Completed download of " + self.selected_build.url)  
         except script_exceptions.Canceled:
@@ -298,8 +273,6 @@ class Main(object):
         except script_exceptions.WriteError as e:
             utils.write_error(os.path.join(__dir__, filename), str(e))
             sys.exit(1)
-        else:
-            del(downloader)
 
         # Do the decompression if necessary.
         if self.selected_build.compressed and not os.path.isfile(tar_name):
@@ -307,7 +280,8 @@ class Main(object):
                 bf = open(filename, 'rb')
                 utils.log("Starting decompression of " + filename)
                 with progress.DecompressProgress("Decompressing",
-                                                 bf, tar_name, bz2_size) as decompressor:
+                                                 bf, tar_name, bz2_size,
+                                                 self.background) as decompressor:
                     decompressor.start()
                 utils.log("Completed decompression of " + filename)
             except script_exceptions.Canceled:
@@ -335,7 +309,8 @@ class Main(object):
             ti = tf.extractfile(member)
             outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
             try:
-                with progress.FileProgress("Extracting", ti, outfile, ti.size) as extractor:
+                with progress.FileProgress("Extracting", ti, outfile, ti.size,
+                                           self.background) as extractor:
                     extractor.start()
                 utils.log("Extracted " + outfile)
             except script_exceptions.Canceled:
@@ -355,7 +330,8 @@ class Main(object):
 
         try:
             with progress.FileProgress("Retrieving tar file from archive",
-                                       archive, tarfile, archive.size()) as extractor:
+                                       archive, tarfile, archive.size(),
+                                       self.background) as extractor:
                 extractor.start()
         except script_exceptions.Canceled:
             self.cleanup()
@@ -375,7 +351,8 @@ class Main(object):
 
             try:
                 with progress.FileProgress("Copying to archive",
-                                           tar, archive_file, size) as extractor:
+                                           tar, archive_file, size,
+                                           self.background) as extractor:
                     extractor.start()
             except script_exceptions.Canceled:
                 utils.log("Archive copy canceled")
@@ -396,6 +373,35 @@ class Main(object):
         except OSError:
             pass
 
+    def md5sum_verified(self, md5sum_compare, path):
+        if self.background:
+            verify_progress = progress.ProgressBG()
+        else:
+            verify_progress = progress.Progress()
+            
+        verify_progress.create("Verifying", " ", "Verifying {} md5".format(path))
+    
+        BLOCK_SIZE = 8192
+        
+        hasher = hashlib.md5()
+        f = open(path)
+        
+        done = 0
+        size = os.path.getsize(path)
+        while done < size:
+            if verify_progress.iscanceled():
+                verify_progress.close()
+                return True
+            data = f.read(BLOCK_SIZE)
+            done += len(data)
+            hasher.update(data)
+            percent = int(done * 100 / size)
+            verify_progress.update(percent)
+        verify_progress.close()
+            
+        md5sum = hasher.hexdigest()
+        utils.log("{} md5 hash = {}".format(path, md5sum))
+        return md5sum == md5sum_compare
 
     def maybe_verify(self):
         if __addon__.getSetting('verify_files') == "true":
