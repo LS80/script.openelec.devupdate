@@ -30,7 +30,6 @@ import tarfile
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests2 as requests
 
-from lib import builds
 from lib import constants
 from lib import progress
 from lib import script_exceptions
@@ -109,7 +108,12 @@ def maybe_run_backup():
 
 
 class BuildList():
-    def create(self):        
+    def create(self):
+        from lib import builds
+        
+        self.arch = builds.ARCH
+        self.installed_build = builds.INSTALLED_BUILD
+           
         subdir = __addon__.getSetting('subdir')
     
         # Get the url from the settings.
@@ -175,20 +179,23 @@ class Main(object):
 
     def __init__(self):
         check_update_files()
-        
-        self.background = __addon__.getSetting('background') == 'true'
-        
-        if __addon__.getSetting('set_timeout') == 'true':
-            self.timeout = int(__addon__.getSetting('timeout'))
-        else:
-            self.timeout = None
-            
-        self.archive_root = __addon__.getSetting('archive_root')
-
-        cd_tmp_dir()
 
         with BuildList() as build_list:
+            self.background = __addon__.getSetting('background') == 'true'
+        
+            if __addon__.getSetting('set_timeout') == 'true':
+                self.timeout = int(__addon__.getSetting('timeout'))
+            else:
+                self.timeout = None
+            
+            self.archive_root = __addon__.getSetting('archive_root')
+
+            cd_tmp_dir()
+            
             self.source, self.links = build_list.create()
+            
+            self.arch = build_list.arch
+            self.installed_build = build_list.installed_build
             
         self.select_build()
 
@@ -217,18 +224,18 @@ class Main(object):
         # TODO - what if INSTALLED_BUILD is a release with no date? 
     
         # Ask which build to install.
-        i = xbmcgui.Dialog().select("{} {} (* = installed)".format(builds.ARCH, self.source),
-                                    [str(r) + ' *'*(r == builds.INSTALLED_BUILD) for r in self.links])
+        i = xbmcgui.Dialog().select("{} {} (* = installed)".format(self.arch, self.source),
+                                    [str(r) + ' *'*(r == self.installed_build) for r in self.links])
         if i == -1:
             sys.exit(0)
         selected_build = self.links[i]
         utils.log("Selected build " + str(selected_build))
     
         # Confirm the update.
-        msg = "{} -> {}?".format(builds.INSTALLED_BUILD, selected_build)
-        if selected_build < builds.INSTALLED_BUILD:
+        msg = "{} -> {}?".format(self.installed_build, selected_build)
+        if selected_build < self.installed_build:
             args = ("Confirm downgrade", "Downgrade", msg)
-        elif selected_build > builds.INSTALLED_BUILD:
+        elif selected_build > self.installed_build:
             args = ("Confirm upgrade", "Upgrade", msg)
         else:
             args = ("Confirm install",
