@@ -386,7 +386,7 @@ class Main(object):
         else:
             verify_progress = progress.Progress()
             
-        verify_progress.create("Verifying", " ", "Verifying {} md5".format(path))
+        verify_progress.create("Verifying", line2=path)
     
         BLOCK_SIZE = 8192
         
