@@ -2,7 +2,7 @@
 <settings>
     <category label="General">
         <setting type="lsep" label="Source"/>
-        <setting label="Source URL" type="select" id="source" values="XBMCNightlyBuilds (Nightly Builds)|XBMCNightlyBuilds (Official Stable Builds Mirror)|Official Snapshot Builds|Official Releases|Official Archive|Chris Swan (RPi)|Rbej Gotham Builds (RPi)|Rbej Gotham popcornmix Builds (RPi)|Rbej Frodo Builds (RPi)|MilhouseVH Builds (RPi)|Other" default="XBMCNightlyBuilds (Nightly Builds)"/>
+        <setting label="Source URL" type="select" id="source" values="XBMCNightlyBuilds (Nightly Builds)|XBMCNightlyBuilds (Official Stable Builds Mirror)|Official Snapshot Builds|Official Releases|Official Archive|Chris Swan (RPi)|Rbej Gotham Builds (RPi)|MilhouseVH Builds (RPi)|Other" default="XBMCNightlyBuilds (Nightly Builds)"/>
         <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,Other)" visible="eq(-1,Other)" subsetting="true"/>
         <setting label="URL subdirectory" type="text" id="subdir" enable="!eq(-2,Official Releases)+!eq(-2,Other)" visible="!eq(-2,Official Releases)+!eq(-2,Other)"/>
         <setting type="lsep" label="Archive"/>
