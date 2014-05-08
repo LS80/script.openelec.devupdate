@@ -130,7 +130,11 @@ class BuildList():
             build_url = builds.BuildsURL(url, subdir)
         else:
             # Defined URL
-            build_url = builds.URLS[source]
+            try:
+                build_url = builds.URLS[source]
+            except KeyError:
+                utils.bad_source(source)
+                sys.exit(1)
             url = build_url.url
         
         utils.log("Full URL = " + url)
