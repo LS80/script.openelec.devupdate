@@ -9,6 +9,14 @@ except IOError:
     ARCH = 'RPi.arm'
 
 UPDATE_DIR = '/storage/.update'
+# Enables testing on other platforms
+if not os.path.isdir(UPDATE_DIR):
+    try:
+        import xbmc
+    except ImportError:
+        pass
+    else:
+        UPDATE_DIR = xbmc.translatePath("special://temp/")
 
 if ARCH == 'ATV.i386':  
     UPDATE_IMAGES = ('SYSTEM', 'MACH_KERNEL')
