@@ -11,7 +11,14 @@ from utils import size_fmt
 
 
 class Progress(xbmcgui.DialogProgress):
-    def update(self, percent, message=" "):
+    def create(self, heading, line1=None, line2=None):
+        if line1 is None:
+            line1 = " "
+        if line2 is None:
+            line2 = " "
+        super(Progress, self).create(heading, line1, line2)
+
+    def update(self, percent, message=None):
         super(Progress, self).update(percent, line3=message)
 
 
@@ -19,8 +26,15 @@ class ProgressBG(xbmcgui.DialogProgressBG):
     def iscanceled(self):
         return False
 
-    def create(self, heading, line1, line2):
-        super(ProgressBG, self).create(heading, line1)
+    def create(self, heading, line1=None, line2=None):
+        if line1 is None:
+            message = line2
+        else:
+            message = line1
+        super(ProgressBG, self).create(heading, message)
+
+    def update(self, percent, message=None):
+        super(ProgressBG, self).update(percent)
 
 
 class FileProgress(object):
@@ -33,6 +47,9 @@ class FileProgress(object):
         self._heading = heading
         self._in_f = infile
         self._outpath = outpath
+        self._outfile = os.path.basename(outpath)
+        self._out_f = None
+        
         self._size = size
         if background:
             self._progress = ProgressBG()
@@ -41,17 +58,13 @@ class FileProgress(object):
         self._done = 0
  
     def __enter__(self):
-        self._progress.create(self._heading, os.path.basename(self._outpath), size_fmt(self._size))
-        try:
-            self._out_f = xbmcvfs.File(self._outpath, 'w')
-        except Exception as e:
-            raise WriteError(e)
-
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self._in_f.close()
-        self._out_f.close()
+        if self._out_f is not None:
+            self._out_f.close()
+
         self._progress.close()
 
         # If an exception occurred remove the incomplete file.
@@ -59,6 +72,12 @@ class FileProgress(object):
             xbmcvfs.delete(self._outpath)
 
     def start(self):
+        self._progress.create(self._heading, self._outfile, size_fmt(self._size))
+        try:
+            self._out_f = xbmcvfs.File(self._outpath, 'w')
+        except Exception as e:
+            raise WriteError(e)        
+        
         start_time = time.time()
         while self._done < self._size:
             if self._progress.iscanceled():
@@ -70,7 +89,7 @@ class FileProgress(object):
                 raise WriteError(e)
             percent = int(self._done * 100 / self._size)
             bytes_per_second = self._done / (time.time() - start_time)
-            self._progress.update(percent, message="{0}/s".format(size_fmt(bytes_per_second)))
+            self._progress.update(percent, "{0}/s".format(size_fmt(bytes_per_second)))
 
     def _getdata(self):
         return self._in_f.read(self.BLOCK_SIZE)
