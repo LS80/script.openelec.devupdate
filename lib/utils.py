@@ -24,6 +24,11 @@ def bad_url(url, msg="URL not found."):
     xbmcgui.Dialog().ok("URL Error", msg, url,
                         "Please check the URL in the addon settings.")
     __addon__.openSettings()
+
+def bad_source(source, msg="Source not found."):
+    xbmcgui.Dialog().ok("URL Error", msg, source,
+                        "Please set the source.")
+    __addon__.openSettings()
     
 def url_error(url, msg):
     log_exception()
