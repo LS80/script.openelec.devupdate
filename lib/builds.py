@@ -290,20 +290,9 @@ URLS = OrderedDict((
                    ("Rbej Gotham Builds (RPi)",
                     BuildsURL("http://netlir.dk/rbej/builds/Gotham",
                               extractor=RbejLinkExtractor)),
-                   ("Rbej Gotham popcornmix Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/Gotham%20Popcornmix/",
-                              extractor=RbejLinkExtractor)),
-                   ("Rbej Frodo Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/Frodo",
-                              extractor=RbejLinkExtractor)),
                    ("MilhouseVH Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")),
-                   ("404", BuildsURL("http://httpbin.org/status/404"))
+                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
                   ))
-
-URLS["MilhouseVH Builds"] = URLS["MilhouseVH Builds (RPi)"] # temporary fix
-URLS["xbmcnightlybuilds"] = URLS["XBMCNightlyBuilds (Nightly Builds)"] # temp fix to workaround repo rename
-URLS["Official Daily Builds"] = URLS["Official Snapshot Builds"]
 
 
 if __name__ == "__main__":
