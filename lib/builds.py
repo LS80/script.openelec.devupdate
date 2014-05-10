@@ -4,7 +4,6 @@ import time
 import re
 import os
 import urlparse
-import socket
 from datetime import datetime
 from collections import OrderedDict
 
@@ -247,28 +246,29 @@ class BuildsURL(object):
             self.url += '/'
 
 
+def get_installed_build():
 # Create an INSTALLED_BUILD object for comparison
-try:
-    VERSION = open('/etc/version').read().rstrip()
-except IOError:
-    VERSION = 'devel-20140220033549-r17742-g12768a5'
-
-m = re.search("devel-(\d+)-r(\d+)", VERSION)
-if m:
-    if ARCH == 'RPi.arm':
-        mm = re.search('Rbej (Frodo|Gotham)', open('/usr/lib/xbmc/xbmc.bin').read())
-        if mm:
-            version = "Rbej {}".format(mm.group(1))
-            # Rbej builds do not have a time as part of the name
-            datetime_str = m.group(1)[:8] + '0'*6
-            INSTALLED_BUILD = Build(datetime_str, version)
+    try:
+        version = open('/etc/version').read().rstrip()
+    except IOError:
+        version = 'devel-20140220033549-r17742-g12768a5'
+    
+    m = re.search("devel-(\d+)-r(\d+)", version)
+    if m:
+        if ARCH == 'RPi.arm':
+            mm = re.search('Rbej (Frodo|Gotham)', open('/usr/lib/xbmc/xbmc.bin').read())
+            if mm:
+                version = "Rbej {}".format(mm.group(1))
+                # Rbej builds do not have a time as part of the name
+                datetime_str = m.group(1)[:8] + '0'*6
+                return Build(datetime_str, version)
+            else:
+                return Build(*m.groups())
         else:
-            INSTALLED_BUILD = Build(*m.groups())
+            return Build(*m.groups())
     else:
-        INSTALLED_BUILD = Build(*m.groups())
-else:
-    # A full release is installed.
-    INSTALLED_BUILD = Release(VERSION)
+        # A full release is installed.
+        return Release(version)
     
     
 URLS = OrderedDict((
@@ -297,20 +297,22 @@ URLS = OrderedDict((
 
 if __name__ == "__main__":
     import sys
+    
+    installed_build = get_installed_build()
 
     def print_links(name, build_url):
         print name
         try:
             with build_url.extractor() as parser:
                 for link in sorted(set(parser.get_links()), reverse=True):
-                    print "\t{:25s} {}".format(str(link) + ' *' * (link > INSTALLED_BUILD), link.filename)
+                    print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build), link.filename)
         except requests.RequestException as e:
             print str(e)
         except BuildURLError as e:
             print str(e)
         print
 
-    print "Installed build = {}".format(INSTALLED_BUILD)
+    print "Installed build = {}".format(installed_build)
     print
 
     if len(sys.argv) > 1:

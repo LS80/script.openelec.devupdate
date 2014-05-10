@@ -111,7 +111,12 @@ class BuildList():
         from lib import builds
         
         self.arch = builds.ARCH
-        self.installed_build = builds.INSTALLED_BUILD
+        
+        try:
+            self.installed_build = builds.get_installed_build()
+        except requests.ConnectionError as e:
+            utils.connection_error(str(e))
+            sys.exit(1)
            
         subdir = __addon__.getSetting('subdir')
     
@@ -142,6 +147,9 @@ class BuildList():
             # Get the list of build links.
             with build_url.extractor() as extractor:
                 links = sorted(set(extractor.get_links()), reverse=True)
+        except requests.ConnectionError as e:
+            utils.connection_error(str(e))
+            sys.exit(1)
         except builds.BuildURLError as e:
             utils.bad_url(url, str(e))
             sys.exit(1)
