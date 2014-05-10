@@ -21,8 +21,6 @@ from __future__ import division
 
 import os
 import sys
-import urllib2
-import socket
 import urlparse
 import hashlib
 import tarfile
@@ -255,12 +253,10 @@ class Main(object):
         filename = self.selected_build.filename
 
         utils.log("Download URL = " + self.selected_build.url)
-        req = urllib2.Request(self.selected_build.url, None)
-
         try:
-            rf = urllib2.urlopen(req)
+            resp = requests.get(self.selected_build.url, stream=True)
             utils.log("Opened URL " + self.selected_build.url)
-            bz2_size = int(rf.headers.getheader('Content-Length'))
+            bz2_size = int(resp.headers['Content-Length'])
             utils.log("Size of file = " + utils.size_fmt(bz2_size))
 
             if (os.path.isfile(filename) and
@@ -272,13 +268,13 @@ class Main(object):
                 # Do the download
                 utils.log("Starting download of " + self.selected_build.url)
                 with progress.FileProgress("Downloading",
-                                           rf, filename, bz2_size,
+                                           resp.raw, filename, bz2_size,
                                            self.background) as downloader:
                     downloader.start()
                 utils.log("Completed download of " + self.selected_build.url)  
         except script_exceptions.Canceled:
             sys.exit(0)
-        except (urllib2.HTTPError, socket.error) as e:
+        except requests.RequestException as e:
             utils.url_error(self.selected_build.url, str(e))
             sys.exit(1)
         except script_exceptions.WriteError as e:
