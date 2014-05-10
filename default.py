@@ -193,12 +193,6 @@ class Main(object):
 
         with BuildList() as build_list:
             self.background = __addon__.getSetting('background') == 'true'
-        
-            if __addon__.getSetting('set_timeout') == 'true':
-                self.timeout = int(__addon__.getSetting('timeout'))
-            else:
-                self.timeout = None
-            
             self.archive_root = __addon__.getSetting('archive_root')
 
             cd_tmp_dir()
