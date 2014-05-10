@@ -18,10 +18,17 @@ from constants import ARCH, __scriptid__
 try:
     import xbmcaddon
 except:
-    pass
+    timeout = None
 else:
-    if xbmcaddon.Addon(__scriptid__).getSetting('set_arch') == 'true':
+    __addon__ = xbmcaddon.Addon(__scriptid__)
+    if __addon__.getSetting('set_arch') == 'true':
         ARCH = xbmcaddon.Addon(__scriptid__).getSetting('arch')
+
+    if __addon__.getSetting('set_timeout') == 'true':
+        timeout = int(__addon__.getSetting('timeout'))
+    else:
+        timeout = None
+
 
 class BuildURLError(Exception):
     pass
@@ -83,7 +90,7 @@ class Release(Build):
     @classmethod
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
-            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags").text
+            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags", timeout=timeout).text
             cls.tag_soup = BeautifulSoup(html,
                                          SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
       
@@ -166,7 +173,7 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         self.url = url
-        response = requests.get(url)
+        response = requests.get(url, timeout=timeout)
         if not response:
             raise BuildURLError("Build URL error: status {}".format(response.status_code))
 
