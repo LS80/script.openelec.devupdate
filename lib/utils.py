@@ -20,6 +20,10 @@ def log_exception():
     import traceback
     log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
     
+def connection_error(msg):
+    xbmcgui.Dialog().ok("Connection Error", msg,
+                        "Please check you have a connection to the internet.")  
+    
 def bad_url(url, msg="URL not found."):
     xbmcgui.Dialog().ok("URL Error", msg, url,
                         "Please check the URL in the addon settings.")

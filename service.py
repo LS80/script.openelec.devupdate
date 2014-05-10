@@ -1,6 +1,5 @@
 import os
 import sys
-import urllib2
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
@@ -37,9 +36,11 @@ if init:
         utils.mount_readonly()
         os.remove(update_extlinux_file)
 
+from lib import builds
+
 try:
-    from lib import builds
-except urllib2.URLError:
+    installed_build = builds.get_installed_build()
+except:
     sys.exit(1)
 
 check_enabled = __addon__.getSetting('check') == 'true'
@@ -55,7 +56,7 @@ if init:
         utils.log("No installation notification")
     else:
         utils.log("Notifying that build {} was installed".format(build))
-        if build == str(builds.INSTALLED_BUILD):
+        if build == str(installed_build):
             utils.notify("Build {} was installed successfully".format(build))
         utils.log("Removing notification file")
         try:
@@ -72,7 +73,7 @@ if init:
 
 if check_enabled:
     source = __addon__.getSetting('source')
-    if isinstance(builds.INSTALLED_BUILD, builds.Release) and source == "Official Releases":
+    if isinstance(installed_build, builds.Release) and source == "Official Releases":
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
@@ -88,7 +89,7 @@ if check_enabled:
             utils.log("Checking {}".format(url))
             with build_url.extractor() as parser:
                 latest = sorted(parser.get_links(), reverse=True)[0]
-                if latest > builds.INSTALLED_BUILD:
+                if latest > installed_build:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         utils.log("Notifying that new build {} is available".format(latest))
                         utils.notify("Build {} is available".format(latest), 7500)
@@ -96,7 +97,7 @@ if check_enabled:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
                         if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
                                                   "A more recent build is available:   {}".format(latest),
-                                                  "Current build:   {}".format(builds.INSTALLED_BUILD),
+                                                  "Current build:   {}".format(installed_build),
                                                   "Show builds available to install?"):
                             xbmc.executebuiltin("RunAddon({})".format(constants.__scriptid__))
         except:
