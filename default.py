@@ -26,7 +26,6 @@ import hashlib
 import tarfile
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
-import requests2 as requests
 
 from lib import constants
 from lib import progress
@@ -107,6 +106,8 @@ def maybe_run_backup():
 
 class BuildList():
     def create(self):
+        import requests2 as requests
+
         from lib import builds
         
         self.arch = builds.ARCH
@@ -249,6 +250,8 @@ class Main(object):
         self.selected_build = selected_build
 
     def download(self):
+        import requests2 as requests
+
         tar_name = self.selected_build.tar_name
         filename = self.selected_build.filename
 
