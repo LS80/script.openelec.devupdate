@@ -10,8 +10,8 @@ import constants
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
 
-def log(txt, level=xbmc.LOGDEBUG):
-    if not (__addon__.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
+def log(txt, level=xbmc.LOGNOTICE):
+    if __addon__.getSetting('debug') == 'true':
         msg = '{} v{}: {}'.format(__addon__.getAddonInfo('name'),
                                   __addon__.getAddonInfo('version'), txt)
         xbmc.log(msg, level)
