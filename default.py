@@ -194,6 +194,7 @@ class Main(object):
         with BuildList() as build_list:
             self.background = __addon__.getSetting('background') == 'true'
             self.archive_root = __addon__.getSetting('archive_root')
+            self.verify_files = __addon__.getSetting('verify_files') == 'true'
 
             cd_tmp_dir()
             
@@ -208,10 +209,9 @@ class Main(object):
             self.copy_from_archive()
         else:
             self.download()
+            self.maybe_copy_to_archive()
 
-        self.extract()
-
-        self.maybe_copy_to_archive()
+        self.maybe_extract()
 
         self.cleanup()
 
@@ -305,34 +305,39 @@ class Main(object):
                 utils.decompress_error(os.path.join(__dir__, filename), str(e))
                 sys.exit(1)
 
-    def extract(self):
-        tf = tarfile.open(self.selected_build.tar_name, 'r')
-        utils.log("Starting extraction from tar file " + self.selected_build.tar_name)
-        
-        # Create the .update directory if necessary.
-        if not os.path.exists(constants.UPDATE_DIR):
-            utils.log("Creating {} directory".format(constants.UPDATE_DIR))
-            os.mkdir(constants.UPDATE_DIR)
-        
-        # Extract the update files from the tar file to the .update directory.
-        tar_members = (m for m in tf.getmembers()
-                       if os.path.basename(m.name) in constants.UPDATE_FILES)
-        for member in tar_members:
-            ti = tf.extractfile(member)
-            outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
-            try:
-                with progress.FileProgress("Extracting", ti, outfile, ti.size,
-                                           self.background) as extractor:
-                    extractor.start()
-                utils.log("Extracted " + outfile)
-            except script_exceptions.Canceled:
-                utils.remove_update_files()
-                sys.exit(0)
-            except script_exceptions.WriteError as e:
-                utils.write_error(outfile, str(e))
-                sys.exit(1)
-
-        tf.close()
+    def maybe_extract(self):
+        if self.verify_files:
+            tf = tarfile.open(self.selected_build.tar_name, 'r')
+            utils.log("Starting extraction from tar file " + self.selected_build.tar_name)
+            
+            # Create the .update directory if necessary.
+            if not os.path.exists(constants.UPDATE_DIR):
+                utils.log("Creating {} directory".format(constants.UPDATE_DIR))
+                os.mkdir(constants.UPDATE_DIR)
+            
+            # Extract the update files from the tar file to the .update directory.
+            tar_members = (m for m in tf.getmembers()
+                           if os.path.basename(m.name) in constants.UPDATE_FILES)
+            for member in tar_members:
+                ti = tf.extractfile(member)
+                outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
+                try:
+                    with progress.FileProgress("Extracting", ti, outfile, ti.size,
+                                               self.background) as extractor:
+                        extractor.start()
+                    utils.log("Extracted " + outfile)
+                except script_exceptions.Canceled:
+                    utils.remove_update_files()
+                    sys.exit(0)
+                except script_exceptions.WriteError as e:
+                    utils.write_error(outfile, str(e))
+                    sys.exit(1)
+    
+            tf.close()
+        else:
+            # Just move the tar file to the update directory.
+            os.rename(self.selected_build.tar_name,
+                      os.path.join(constants.UPDATE_DIR, self.selected_build.tar_name))
 
     def copy_from_archive(self):
         utils.log("Skipping download and decompression")
@@ -416,7 +421,7 @@ class Main(object):
         return md5sum == md5sum_compare
 
     def maybe_verify(self):
-        if __addon__.getSetting('verify_files') == "true":
+        if self.verify_files:
             # Verify the md5 sums.
             os.chdir(constants.UPDATE_DIR)
             for f in constants.UPDATE_IMAGES:
