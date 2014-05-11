@@ -3,9 +3,9 @@ import sys
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-from lib import constants
-from lib import utils
-from lib.progress import restart_countdown
+from resources.lib import constants
+from resources.lib import utils
+from resources.lib.progress import restart_countdown
 
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
 __icon__ = __addon__.getAddonInfo('icon')
@@ -36,7 +36,7 @@ if init:
         utils.mount_readonly()
         os.remove(update_extlinux_file)
 
-from lib import builds
+from resources.lib import builds
 
 try:
     installed_build = builds.get_installed_build()
