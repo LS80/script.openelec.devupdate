@@ -27,10 +27,10 @@ import tarfile
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-from lib import constants
-from lib import progress
-from lib import script_exceptions
-from lib import utils
+from resources.lib import constants
+from resources.lib import progress
+from resources.lib import script_exceptions
+from resources.lib import utils
 
 __addon__ = xbmcaddon.Addon()
 __icon__ = __addon__.getAddonInfo('icon')
@@ -108,7 +108,7 @@ class BuildList():
     def create(self):
         import requests2 as requests
 
-        from lib import builds
+        from resources.lib import builds
         
         self.arch = builds.ARCH
         
