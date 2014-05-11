@@ -81,9 +81,10 @@ class Release(Build):
             Build.__init__(self, tag.find('local-time')['title'][:-6], version)
         else:
             self._has_date = False
+        self.release = [int(p) for p in version.split('.')]
         
     def is_valid(self):
-        return self._has_date
+        return self._has_date and self.release >= [3,95,0]
     
     __nonzero__ = is_valid
         
