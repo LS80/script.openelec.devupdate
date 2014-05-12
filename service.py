@@ -78,17 +78,27 @@ if check_enabled:
         utils.log("Skipping build check - official release")
     else:
         try:
+            if __addon__.getSetting('set_arch') == 'true':
+                arch = __addon__.getSetting('arch')
+            else:
+                arch = constants.ARCH
+
             subdir = __addon__.getSetting('subdir')
             if source == "Other":
                 url = __addon__.getSetting('custom_url')
                 build_url = builds.BuildsURL(url, subdir)
             else:
-                build_url = builds.URLS[source]
+                build_url = builds.sources(arch)[source]
                 url = build_url.url
+
+            if __addon__.getSetting('set_timeout') == 'true':
+                timeout = int(__addon__.getSetting('timeout'))
+            else:
+                timeout = None
     
             utils.log("Checking {}".format(url))
             with build_url.extractor() as parser:
-                latest = sorted(parser.get_links(), reverse=True)[0]
+                latest = sorted(parser.get_links(arch, timeout), reverse=True)[0]
                 if latest > installed_build:
                     if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
                         utils.log("Notifying that new build {} is available".format(latest))
