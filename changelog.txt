@@ -1,3 +1,10 @@
+3.0.0
+ - Now requires OpenELEC 4.0
+ - Added an option to run a background progress dialog.
+ - Added an option to disable update file verification
+   which also means extraction is not required.
+ - Show progress of copy to archive.
+
 2.19.1
  - Fixed a problem with XBMC Backup showing a dialog
    instead of just running the backup automatically.
