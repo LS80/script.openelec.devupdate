@@ -64,7 +64,7 @@ class Release(Build):
         tag = self.tag_soup.find('a', href=re.compile(version))
         if tag is not None:
             self._has_date = True
-            Build.__init__(self, tag.find('local-time')['title'][:-6], version)
+            Build.__init__(self, tag.find('time')['title'], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
