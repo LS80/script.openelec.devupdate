@@ -13,21 +13,7 @@ try:
 except ImportError:
     import requests
 
-from constants import ARCH, __scriptid__
-
-try:
-    import xbmcaddon
-except:
-    timeout = None
-else:
-    __addon__ = xbmcaddon.Addon(__scriptid__)
-    if __addon__.getSetting('set_arch') == 'true':
-        ARCH = xbmcaddon.Addon(__scriptid__).getSetting('arch')
-
-    if __addon__.getSetting('set_timeout') == 'true':
-        timeout = int(__addon__.getSetting('timeout'))
-    else:
-        timeout = None
+import constants
 
 
 class BuildURLError(Exception):
@@ -91,7 +77,7 @@ class Release(Build):
     @classmethod
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
-            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags", timeout=timeout).text
+            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags").text
             cls.tag_soup = BeautifulSoup(html,
                                          SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
       
@@ -166,26 +152,28 @@ class RbejBuildLink(RbejBuild, BuildLinkBase):
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+).tar(|.bz2)$".format(ARCH))
+    BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+)\.tar(|\.bz2)$"
     TAG = 'a'
     CLASS = None
-    HREF = BUILD_RE
     TEXT = None
 
     def __init__(self, url):
         self.url = url
-        response = requests.get(url, timeout=timeout)
-        if not response:
-            raise BuildURLError("Build URL error: status {}".format(response.status_code))
 
-        html = response.text
+    def get_links(self, arch, timeout=None):
+        self.build_re = re.compile(self.BUILD_RE.format(arch))
+
+        self._response = requests.get(self.url, timeout=timeout)
+        if not self._response:
+            raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
+
+        html = self._response.text
         soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
                                                                self.CLASS,
-                                                               href=self.HREF,
+                                                               href=self.build_re,
                                                                text=self.TEXT))
         self._links = soup.contents
 
-    def get_links(self):
         for link in self._links:
             l = self._create_link(link)
             if l:
@@ -193,14 +181,14 @@ class BuildLinkExtractor(object):
 
     def _create_link(self, link):
         href = link['href']
-        datetime_str, revision = self.BUILD_RE.match(href).groups()[:2]
+        datetime_str, revision = self.build_re.match(href).groups()[:2]
         return BuildLink(self.url, href.strip(), revision, datetime_str)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        pass
+        self._response.close()
 
 
 class DropboxLinkExtractor(BuildLinkExtractor):
@@ -210,22 +198,21 @@ class DropboxLinkExtractor(BuildLinkExtractor):
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-([\d\.]+).tar(|.bz2)".format(ARCH), re.DOTALL)
-    TEXT = BUILD_RE
+    BUILD_RE = ".*OpenELEC.*-{0}-([\d\.]+)\.tar(|\.bz2)"
 
     def _create_link(self, link):
-        version = self.BUILD_RE.match(link).group(1)
-        return ReleaseLink(version, self.url, link.strip())
+        filename = link['href']
+        version = self.build_re.match(filename).group(1)
+        return ReleaseLink(version, self.url, filename)
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
 
-    BUILD_RE = re.compile(".*OpenELEC.*-{0}-(.*?)\((.*?)\).tar(|.bz2)".format(ARCH))
-    HREF = BUILD_RE
+    BUILD_RE = ".*OpenELEC.*-{0}-(.*?)\((.*?)\)\.tar(|\.bz2)"
 
     def _create_link(self, link):
         href = link['href']
-        m = self.BUILD_RE.match(href)
+        m = self.build_re.match(href)
         datetime_str = m.group(2)
         desc = m.group(1).split('-')
         version = "{} {}".format(desc[0], desc[2])
@@ -263,7 +250,7 @@ def get_installed_build():
     
     m = re.search("devel-(\d+)-r(\d+)", version)
     if m:
-        if ARCH == 'RPi.arm':
+        if constants.ARCH == 'RPi.arm':
             mm = re.search('Rbej (Frodo|Gotham)', open('/usr/lib/xbmc/xbmc.bin').read())
             if mm:
                 version = "Rbej {}".format(mm.group(1))
@@ -277,30 +264,31 @@ def get_installed_build():
     else:
         # A full release is installed.
         return Release(version)
-    
-    
-URLS = OrderedDict((
-                   ("Official Snapshot Builds",
-                    BuildsURL("http://snapshots.openelec.tv")),
-                   ("Official Releases",
-                    BuildsURL("http://releases.openelec.tv",
-                              extractor=ReleaseLinkExtractor)),
-                   ("Official Archive",
-                    BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
-                   ("XBMCNightlyBuilds (Nightly Builds)",
-                    BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS",
-                              subdir=ARCH.split('.')[0])),
-                   ("XBMCNightlyBuilds (Official Stable Builds Mirror)",
-                    BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS",
-                              extractor=ReleaseLinkExtractor)),
-                   ("Chris Swan (RPi)",
-                    BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
-                   ("Rbej Gotham Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/Gotham",
-                              extractor=RbejLinkExtractor)),
-                   ("MilhouseVH Builds (RPi)",
-                    BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
-                  ))
+
+
+def sources(arch):
+    return OrderedDict((
+                       ("Official Snapshot Builds",
+                        BuildsURL("http://snapshots.openelec.tv")),
+                       ("Official Releases",
+                        BuildsURL("http://releases.openelec.tv",
+                                  extractor=ReleaseLinkExtractor)),
+                       ("Official Archive",
+                        BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
+                       ("XBMCNightlyBuilds (Nightly Builds)",
+                        BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS",
+                                  subdir=arch.split('.')[0])),
+                       ("XBMCNightlyBuilds (Official Stable Builds Mirror)",
+                        BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS",
+                                  extractor=ReleaseLinkExtractor)),
+                       ("Chris Swan (RPi)",
+                        BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
+                       ("Rbej Gotham Builds (RPi)",
+                        BuildsURL("http://netlir.dk/rbej/builds/Gotham",
+                                  extractor=RbejLinkExtractor)),
+                       ("MilhouseVH Builds (RPi)",
+                        BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
+                      ))
 
 
 if __name__ == "__main__":
@@ -308,11 +296,11 @@ if __name__ == "__main__":
     
     installed_build = get_installed_build()
 
-    def print_links(name, build_url):
+    def print_links(name, build_url, arch):
         print name
         try:
             with build_url.extractor() as parser:
-                for link in sorted(set(parser.get_links()), reverse=True):
+                for link in sorted(set(parser.get_links(arch)), reverse=True):
                     print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build), link.filename)
         except requests.RequestException as e:
             print str(e)
@@ -323,12 +311,14 @@ if __name__ == "__main__":
     print "Installed build = {}".format(installed_build)
     print
 
+    urls = sources(constants.ARCH)
+
     if len(sys.argv) > 1:
         name = sys.argv[1]
-        if name not in URLS:
+        if name not in urls:
             print '"{}" not in URL list'.format(name)
         else:
-            print_links(name, URLS[name])
+            print_links(name, urls[name], constants.ARCH)
     else:
-        for name, build_url in URLS.items():
-            print_links(name, build_url)
+        for name, build_url in urls.items():
+            print_links(name, build_url, constants.ARCH)

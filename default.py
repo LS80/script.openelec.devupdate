@@ -105,13 +105,14 @@ def maybe_run_backup():
 
 
 class BuildList():
+    def __init__(self, arch):
+        self._arch = arch
+
     def create(self):
         import requests2 as requests
 
         from resources.lib import builds
-        
-        self.arch = builds.ARCH
-        
+
         try:
             self.installed_build = builds.get_installed_build()
         except requests.ConnectionError as e:
@@ -135,18 +136,23 @@ class BuildList():
         else:
             # Defined URL
             try:
-                build_url = builds.URLS[source]
+                build_url = builds.sources(self._arch)[source]
             except KeyError:
                 utils.bad_source(source)
                 sys.exit(1)
             url = build_url.url
         
         utils.log("Full URL = " + url)
+
+        if __addon__.getSetting('set_timeout') == 'true':
+            timeout = int(__addon__.getSetting('timeout'))
+        else:
+            timeout = None
     
         try:
             # Get the list of build links.
             with build_url.extractor() as extractor:
-                links = sorted(set(extractor.get_links()), reverse=True)
+                links = sorted(set(extractor.get_links(self._arch, timeout)), reverse=True)
         except requests.ConnectionError as e:
             utils.connection_error(str(e))
             sys.exit(1)
@@ -173,7 +179,7 @@ class BuildList():
                     link.set_archive(archive_dir)
 
         if not links:
-            utils.bad_url(url, "No builds were found for {}.".format(constants.ARCH))
+            utils.bad_url(url, "No builds were found for {}.".format(self._arch))
             sys.exit(1)
             
         return source, links
@@ -191,7 +197,12 @@ class Main(object):
     def __init__(self):
         check_update_files()
 
-        with BuildList() as build_list:
+        if __addon__.getSetting('set_arch') == 'true':
+            self.arch = __addon__.getSetting('arch')
+        else:
+            self.arch = constants.ARCH
+
+        with BuildList(self.arch) as build_list:
             self.background = __addon__.getSetting('background') == 'true'
             self.archive_root = __addon__.getSetting('archive_root')
             self.verify_files = __addon__.getSetting('verify_files') == 'true'
@@ -199,8 +210,7 @@ class Main(object):
             cd_tmp_dir()
             
             self.source, self.links = build_list.create()
-            
-            self.arch = build_list.arch
+
             self.installed_build = build_list.installed_build
             
         self.select_build()
