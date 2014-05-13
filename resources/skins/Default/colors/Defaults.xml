@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<colors>
+	<color name="Highlight-NF">af33b5e5</color>
+	<color name="Highlight">ff33b5e5</color>
+	<color name="PanelBG">ff181818</color>
+	<color name="PanelFG">ffdddddd</color>
+	<color name="PanelFG-NF">9fdddddd</color>
+</colors>

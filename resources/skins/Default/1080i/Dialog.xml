@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <animation effect="slide" start="-1920" end="0" time="500" tween="cubic" easing="out">WindowOpen</animation>
+    <controls>
+        <control type="group">
+            <width>1100</width>
+            <height>960</height>
+            <centerleft>960</centerleft>
+            <centertop>540</centertop>
+            
+            <control type="group">
+                <control type="image">
+                    <width>680</width>
+                    <texture colordiffuse="f0111111">white.png</texture>
+                    <!--
+                    <bordertexture colordiffuse="ffb2afa8">white.png</bordertexture>
+                    <colordiffuse>f0111111</colordiffuse>
+                    <bordersize>2</bordersize>
+                    -->
+                </control>
+                <control type="image">
+                    <top>30</top>
+                    <left>100</left>
+                    <texture>logotype.png</texture>
+                    <aspectratio>keep</aspectratio>
+                    <height>152</height>
+                    <width>482</width>
+                </control>
+                          
+                <control type="label" id="400">
+                    <top>220</top>
+                    <left>65</left>
+                    <width>550</width>
+                    <height>200</height>
+                    <aligny>center</aligny>
+                    <textcolor>ffb2afa8</textcolor>
+                </control>
+            </control>
+
+            <control type="group">
+                <left>680</left>
+
+                <control type="image">
+                    <texture border="5">white.png</texture>
+                    <colordiffuse>f02b2b2b</colordiffuse>
+                </control>
+                
+                <control type="scrollbar" id="600">
+                    <left>412</left>
+                    <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
+                    <showonepage>false</showonepage>
+                </control>
+    
+                <control type="list" id="500">
+                    <left>0</left>
+                    <top>25</top>
+                    <width>420</width>
+                    <height>910</height>
+                    <pagecontrol>600</pagecontrol>
+                    
+                    <itemlayout height="65" width="420">
+                        <control type="label">
+                            <width>420</width>
+                            <left>60</left>
+                            <aligny>center</aligny>
+                            <textcolor>ffb2afa8</textcolor>
+                            <info>ListItem.Label</info>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout height="65" width="420">
+                        <control type="image">
+                            <!-- #88bde1 -->
+                            <texture border="12">highlight.png</texture>
+                        </control>
+
+                        <control type="label">
+                            <width>420</width>
+                            <left>60</left>
+                            <aligny>center</aligny>
+                            <textcolor>ffffffff</textcolor>
+                            <info>ListItem.Label</info>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+        </control>	
+    </controls>
+</window>
