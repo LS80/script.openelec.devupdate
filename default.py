@@ -237,13 +237,21 @@ class Main(object):
 
     def select_build(self):
         # TODO - what if INSTALLED_BUILD is a release with no date? 
-    
-        # Ask which build to install.
-        i = xbmcgui.Dialog().select("{} {} (* = installed)".format(self.arch, self.source),
-                                    [str(r) + ' *'*(r == self.installed_build) for r in self.links])
-        if i == -1:
+
+        from resources.lib import gui
+
+        build_select = gui.BuildSelect(self.arch)
+        
+        build_select.setSource(self.source)
+
+        build_select.setBuilds([str(r) + ' *'*(r == self.installed_build) for r in self.links])
+
+        build_select.doModal()
+
+        if not build_select:
             sys.exit(0)
-        selected_build = self.links[i]
+
+        selected_build = self.links[build_select.selected]
         utils.log("Selected build " + str(selected_build))
     
         # Confirm the update.
