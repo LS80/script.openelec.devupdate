@@ -7,7 +7,7 @@ import urlparse
 from datetime import datetime
 from collections import OrderedDict
 
-from BeautifulSoup import BeautifulSoup, SoupStrainer
+from bs4 import BeautifulSoup, SoupStrainer
 try:
     import requests2 as requests
 except ImportError:
@@ -63,7 +63,7 @@ class Release(Build):
         tag = self.tag_soup.find('span', 'tag-name', text=version)
         if tag is not None:
             self._has_date = True
-            Build.__init__(self, tag.findPrevious('time')['title'][:19], version)
+            Build.__init__(self, tag.find_previous('time')['title'][:19], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
@@ -77,8 +77,8 @@ class Release(Build):
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
             html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/releases").text
-            cls.tag_soup = BeautifulSoup(html,
-                                         parseOnlyThese=SoupStrainer(['span', 'time']))
+            cls.tag_soup = BeautifulSoup(html, 'html.parser',
+                                         parse_only=SoupStrainer(['span', 'time']))
 
 
 class RbejBuild(Build):
@@ -169,8 +169,8 @@ class BuildLinkExtractor(object):
         if self.CLASS is not None:
             args.append(self.CLASS)
             
-        soup = BeautifulSoup(html,
-                             parseOnlyThese=SoupStrainer(*args, href=self.build_re))
+        soup = BeautifulSoup(html, 'html.parser',
+                             parse_only=SoupStrainer(*args, href=self.build_re))
                         
         self._links = soup.contents
 
