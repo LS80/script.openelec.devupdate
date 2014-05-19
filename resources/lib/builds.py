@@ -57,14 +57,13 @@ class Build(object):
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
     tag_soup = None
-    latest = None
 
     def __init__(self, version):        
         self.maybe_get_tags()
-        tag = self.tag_soup.find('a', href=re.compile(version))
+        tag = self.tag_soup.find('span', 'tag-name', text=version)
         if tag is not None:
             self._has_date = True
-            Build.__init__(self, tag.find('time')['title'], version)
+            Build.__init__(self, tag.findPrevious('time')['title'][:19], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
@@ -77,10 +76,10 @@ class Release(Build):
     @classmethod
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
-            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/tags").text
+            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/releases").text
             cls.tag_soup = BeautifulSoup(html,
-                                         SoupStrainer('a', href=re.compile("/OpenELEC/OpenELEC.tv/releases")))
-      
+                                         parseOnlyThese=SoupStrainer(['span', 'time']))
+
 
 class RbejBuild(Build):
     DATETIME_FMT = '%d.%m.%Y'
