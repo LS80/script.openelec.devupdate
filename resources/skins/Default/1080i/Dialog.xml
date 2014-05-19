@@ -58,7 +58,6 @@
                     <width>420</width>
                     <height>910</height>
                     <pagecontrol>600</pagecontrol>
-                    
                     <itemlayout height="65" width="420">
                         <control type="label">
                             <width>420</width>
@@ -69,17 +68,21 @@
                         </control>
                     </itemlayout>
                     <focusedlayout height="65" width="420">
-                        <control type="image">
-                            <!-- #88bde1 -->
-                            <texture border="12">highlight.png</texture>
-                        </control>
+                        <control type="group">
+                            <animation effect="slide" start="0,35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(500).OnPrevious">Focus</animation>
+                            <animation effect="slide" start="0,-35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(500).OnNext">Focus</animation>
+                            <control type="image">
+                                <!-- #88bde1 -->
+                                <texture border="12">highlight.png</texture>
+                            </control>
 
-                        <control type="label">
-                            <width>420</width>
-                            <left>60</left>
-                            <aligny>center</aligny>
-                            <textcolor>ffffffff</textcolor>
-                            <info>ListItem.Label</info>
+                            <control type="label">
+                                <width>420</width>
+                                <left>60</left>
+                                <aligny>center</aligny>
+                                <textcolor>ffffffff</textcolor>
+                                <info>ListItem.Label</info>
+                            </control>
                         </control>
                     </focusedlayout>
                 </control>
