@@ -152,9 +152,7 @@ class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
     BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+)\.tar(|\.bz2)$"
-    TAG = 'a'
     CLASS = None
-    TEXT = None
 
     def __init__(self, url):
         self.url = url
@@ -167,10 +165,13 @@ class BuildLinkExtractor(object):
             raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
 
         html = self._response.text
-        soup = BeautifulSoup(html, parseOnlyThese=SoupStrainer(self.TAG,
-                                                               self.CLASS,
-                                                               href=self.build_re,
-                                                               text=self.TEXT))
+        args = ['a']
+        if self.CLASS is not None:
+            args.append(self.CLASS)
+            
+        soup = BeautifulSoup(html,
+                             parseOnlyThese=SoupStrainer(*args, href=self.build_re))
+                        
         self._links = soup.contents
 
         for link in self._links:
