@@ -33,8 +33,7 @@ class BuildSelect(xbmcgui.WindowXMLDialog):
         self._list = self.getControl(self.LIST_ID)
         self._list.addItems(self._builds)
         
-        label = "{0}[CR][CR]{1}[CR][CR] * = currently installed build".format(self._arch,
-                                                                              self._source)
+        label = "{0}[CR][CR]{1}[CR][CR]".format(self._arch, self._source)
         self.getControl(self.LABEL_ID).setLabel(label)
         
         self.setFocusId(self.LIST_ID)

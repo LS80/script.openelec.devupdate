@@ -35,6 +35,26 @@
                     <aligny>center</aligny>
                     <textcolor>ffb2afa8</textcolor>
                 </control>
+                
+                <control type="group">
+                    <top>450</top>
+                    <left>65</left>
+                    <width>550</width>
+                    <height>200</height>
+                    <control type="image">
+                        <top>0</top>
+                        <width>50</width>
+                        <height>50</height>
+                        <texture>installed.png</texture>
+                    </control>
+                    <control type="label" id="300">
+                        <top>0</top>
+                        <left>60</left>
+                        <textcolor>ffb2afa8</textcolor>
+                        <label>= currently installed build</label>
+                    </control>
+                </control>
+                
             </control>
 
             <control type="group">
@@ -61,16 +81,24 @@
                     <itemlayout height="65" width="420">
                         <control type="label">
                             <width>420</width>
-                            <left>60</left>
+                            <left>50</left>
                             <aligny>center</aligny>
                             <textcolor>ffb2afa8</textcolor>
                             <info>ListItem.Label</info>
+                        </control>
+                        <control type="image">
+                            <left>330</left>
+                            <top>8</top>
+                            <height>50</height>
+                            <width>50</width>
+                            <info>ListItem.Icon</info>
                         </control>
                     </itemlayout>
                     <focusedlayout height="65" width="420">
                         <control type="group">
                             <animation effect="slide" start="0,35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(500).OnPrevious">Focus</animation>
                             <animation effect="slide" start="0,-35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(500).OnNext">Focus</animation>
+
                             <control type="image">
                                 <!-- #88bde1 -->
                                 <texture border="12">highlight.png</texture>
@@ -78,10 +106,18 @@
 
                             <control type="label">
                                 <width>420</width>
-                                <left>60</left>
+                                <left>50</left>
                                 <aligny>center</aligny>
                                 <textcolor>ffffffff</textcolor>
                                 <info>ListItem.Label</info>
+                            </control>
+
+                            <control type="image">
+                                <left>330</left>
+                                <top>8</top>
+                                <height>50</height>
+                                <width>50</width>
+                                <info>ListItem.Icon</info>
                             </control>
                         </control>
                     </focusedlayout>

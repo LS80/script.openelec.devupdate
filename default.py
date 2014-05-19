@@ -209,7 +209,7 @@ class Main(object):
 
             cd_tmp_dir()
             
-            self.source, self.links = build_list.create()
+            self.source, self.links = build_list.create()            
 
             self.installed_build = build_list.installed_build
             
@@ -244,7 +244,18 @@ class Main(object):
         
         build_select.setSource(self.source)
 
-        build_select.setBuilds([str(r) + ' *'*(r == self.installed_build) for r in self.links])
+        build_list = []
+        for build in self.links:
+            li = xbmcgui.ListItem(str(build))
+            if build > self.installed_build:
+                icon = 'upgrade'
+            elif build < self.installed_build:
+                icon = 'downgrade'
+            else:
+                icon = 'installed'
+            li.setIconImage("{}.png".format(icon))
+            build_list.append(li)
+        build_select.setBuilds(build_list)
 
         build_select.doModal()
 

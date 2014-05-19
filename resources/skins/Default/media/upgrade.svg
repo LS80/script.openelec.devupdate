@@ -9,12 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="34.285713"
-   height="34.285713"
+   width="50"
+   height="50"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="back.svg">
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="upgrade.svg"
+   inkscape:export-filename="/home/lee/addons/script.openelec.devupdate/resources/skins/Default/media/upgrade.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -24,21 +27,21 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="-69.943103"
-     inkscape:cy="91.426082"
+     inkscape:zoom="11.313708"
+     inkscape:cx="17.796156"
+     inkscape:cy="27.644626"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1045"
-     inkscape:window-height="779"
-     inkscape:window-x="268"
-     inkscape:window-y="786"
-     inkscape:window-maximized="0"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:window-width="1600"
+     inkscape:window-height="834"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -47,7 +50,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -55,16 +58,14 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-205.71428,-383.79074)">
-    <rect
-       style="fill:#707475;fill-opacity:1;stroke:none"
-       id="rect2985"
-       width="34.285713"
-       height="34.285713"
-       x="205.71428"
-       y="383.79074"
-       inkscape:export-xdpi="2.6249995"
-       inkscape:export-ydpi="2.6249995"
-       inkscape:export-filename="/scratch/zero/script.openelec.devupdate/resources/media/back.png" />
+     transform="translate(-358.04381,-349.9375)">
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:none"
+       d="m 388.23912,388.9375 0,-14.08203 8.80469,0 -14,-13.91797 -14,13.91797 8.80469,0 0,14.08203 10.39062,0 z"
+       id="rect3769"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/lee/addons/script.openelec.devupdate/resources/skins/Default/media/upgrade.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>
