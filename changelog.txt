@@ -1,3 +1,8 @@
+3.1.0
+ - Added a custom dialog to select builds.
+ - Fixed a script error when using official releases.
+ - Fixed a problem finding builds when using the Official Archive source.
+
 3.0.0
  - Now requires OpenELEC 4.0
  - Added an option to run a background progress dialog.
