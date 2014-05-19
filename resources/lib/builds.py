@@ -60,10 +60,10 @@ class Release(Build):
 
     def __init__(self, version):        
         self.maybe_get_tags()
-        tag = self.tag_soup.find('span', 'tag-name', text=version)
+        tag = self.tag_soup.find('span', text=version)
         if tag is not None:
             self._has_date = True
-            Build.__init__(self, tag.find_previous('time')['title'][:19], version)
+            Build.__init__(self, tag.previous_sibling['title'][:19], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
@@ -72,13 +72,18 @@ class Release(Build):
         return self._has_date and self.release >= [3,95,0]
     
     __nonzero__ = is_valid
+
+    @classmethod
+    def tag_match(cls, tag, attrs):
+        return (tag == 'time' or
+               ('class' in attrs and attrs['class'] == 'tag-name'))
         
     @classmethod
     def maybe_get_tags(cls):
         if cls.tag_soup is None:
             html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/releases").text
             cls.tag_soup = BeautifulSoup(html, 'html.parser',
-                                         parse_only=SoupStrainer(['span', 'time']))
+                                         parse_only=SoupStrainer(cls.tag_match))
 
 
 class RbejBuild(Build):
