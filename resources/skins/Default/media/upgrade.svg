@@ -9,13 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="50"
-   height="50"
+   width="48"
+   height="48"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="upgrade.svg"
-   inkscape:export-filename="/home/lee/addons/script.openelec.devupdate/resources/skins/Default/media/upgrade.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -27,9 +26,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.313708"
-     inkscape:cx="17.796156"
-     inkscape:cy="27.644626"
+     inkscape:zoom="2.828427"
+     inkscape:cx="33.798277"
+     inkscape:cy="12.581338"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -37,11 +36,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1600"
-     inkscape:window-height="834"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="688"
+     inkscape:window-height="660"
+     inkscape:window-x="618"
+     inkscape:window-y="165"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -50,7 +49,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -58,10 +57,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-358.04381,-349.9375)">
+     transform="translate(-358.04381,-351.9375)">
     <path
        style="fill:#ffffff;fill-opacity:1;stroke:none"
-       d="m 388.23912,388.9375 0,-14.08203 8.80469,0 -14,-13.91797 -14,13.91797 8.80469,0 0,14.08203 10.39062,0 z"
+       d="m 387.23912,389.9375 0,-14.08203 8.80469,0 -14,-13.91797 -14,13.91797 8.80469,0 0,14.08203 10.39062,0 z"
        id="rect3769"
        inkscape:connector-curvature="0"
        inkscape:export-filename="/home/lee/addons/script.openelec.devupdate/resources/skins/Default/media/upgrade.png"
