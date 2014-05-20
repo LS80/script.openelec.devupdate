@@ -18,6 +18,7 @@
                     <bordersize>2</bordersize>
                     -->
                 </control>
+
                 <control type="image">
                     <top>30</top>
                     <left>100</left>
@@ -41,12 +42,14 @@
                     <left>65</left>
                     <width>550</width>
                     <height>200</height>
+
                     <control type="image">
                         <top>0</top>
                         <width>50</width>
                         <height>50</height>
                         <texture>installed.png</texture>
                     </control>
+
                     <control type="label" id="300">
                         <top>0</top>
                         <left>60</left>
@@ -54,7 +57,6 @@
                         <label>= currently installed build</label>
                     </control>
                 </control>
-                
             </control>
 
             <control type="group">
@@ -64,7 +66,7 @@
                     <texture border="5">white.png</texture>
                     <colordiffuse>f02b2b2b</colordiffuse>
                 </control>
-                
+
                 <control type="scrollbar" id="600">
                     <left>412</left>
                     <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
@@ -79,6 +81,7 @@
                     <height>910</height>
                     <pagecontrol>600</pagecontrol>
                     <itemlayout height="65" width="420">
+
                         <control type="label">
                             <width>420</width>
                             <left>50</left>
@@ -86,11 +89,12 @@
                             <textcolor>ffb2afa8</textcolor>
                             <info>ListItem.Label</info>
                         </control>
+
                         <control type="image">
                             <left>330</left>
-                            <top>8</top>
-                            <height>50</height>
-                            <width>50</width>
+                            <top>10</top>
+                            <height>48</height>
+                            <width>48</width>
                             <info>ListItem.Icon</info>
                         </control>
                     </itemlayout>
@@ -114,9 +118,9 @@
 
                             <control type="image">
                                 <left>330</left>
-                                <top>8</top>
-                                <height>50</height>
-                                <width>50</width>
+                                <top>10</top>
+                                <height>48</height>
+                                <width>48</width>
                                 <info>ListItem.Icon</info>
                             </control>
                         </control>
