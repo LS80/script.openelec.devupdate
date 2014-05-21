@@ -1,3 +1,6 @@
+3.2.1
+ - Use an improved OpenELEC icon.
+
 3.2.0
  - Added icons to indicate upgrades and downgrades.
 
