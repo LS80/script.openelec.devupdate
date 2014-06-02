@@ -55,7 +55,7 @@ class Build(object):
 
 
 class Release(Build):
-    DATETIME_FMT = '%Y-%m-%d %H:%M:%S'
+    DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
     tag_soup = None
 
     def __init__(self, version):        
@@ -63,7 +63,7 @@ class Release(Build):
         tag = self.tag_soup.find('span', text=version)
         if tag is not None:
             self._has_date = True
-            Build.__init__(self, tag.previous_sibling['title'][:19], version)
+            Build.__init__(self, tag.previous_sibling['datetime'][:19], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
