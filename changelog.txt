@@ -1,3 +1,6 @@
+3.2.3
+ - Include the LICENSE.txt file.
+
 3.2.2
  - Fixed another script error when using official releases.
 
