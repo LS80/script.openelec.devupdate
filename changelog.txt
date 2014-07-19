@@ -1,3 +1,6 @@
+3.2.4
+ - Fixed a script error when using XBMCNightlyBuilds.
+
 3.2.3
  - Include the LICENSE.txt file.
 
