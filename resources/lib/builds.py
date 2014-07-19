@@ -161,6 +161,7 @@ class BuildLinkExtractor(object):
 
     def __init__(self, url):
         self.url = url
+        self._response = None
 
     def get_links(self, arch, timeout=None):
         self.build_re = re.compile(self.BUILD_RE.format(arch))
@@ -193,7 +194,8 @@ class BuildLinkExtractor(object):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._response.close()
+        if self._response is not None:
+            self._response.close()
 
 
 class DropboxLinkExtractor(BuildLinkExtractor):
