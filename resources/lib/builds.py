@@ -232,14 +232,14 @@ class BuildsURL(object):
         self.url = url
         self._add_slash()
         if subdir:
-            self._add_subdir(subdir)
+            self.add_subdir(subdir)
         
         self._extractor = extractor
         
     def extractor(self):
         return self._extractor(self.url)
         
-    def _add_subdir(self, subdir):
+    def add_subdir(self, subdir):
         self.url = urlparse.urljoin(self.url, subdir)
         self._add_slash()
 

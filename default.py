@@ -140,6 +140,10 @@ class BuildList():
             except KeyError:
                 utils.bad_source(source)
                 sys.exit(1)
+            else:
+                if subdir:
+                    utils.log("Using subdirectory = " + subdir)
+                    build_url.add_subdir(subdir)
             url = build_url.url
         
         utils.log("Full URL = " + url)
