@@ -340,14 +340,14 @@ class Main(object):
                 sys.exit(1)
 
     def maybe_extract(self):
+        # Create the .update directory if necessary.
+        if not os.path.exists(constants.UPDATE_DIR):
+            utils.log("Creating {} directory".format(constants.UPDATE_DIR))
+            os.mkdir(constants.UPDATE_DIR)
+
         if self.verify_files:
             tf = tarfile.open(self.selected_build.tar_name, 'r')
             utils.log("Starting extraction from tar file " + self.selected_build.tar_name)
-            
-            # Create the .update directory if necessary.
-            if not os.path.exists(constants.UPDATE_DIR):
-                utils.log("Creating {} directory".format(constants.UPDATE_DIR))
-                os.mkdir(constants.UPDATE_DIR)
             
             # Extract the update files from the tar file to the .update directory.
             tar_members = (m for m in tf.getmembers()
