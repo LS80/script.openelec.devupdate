@@ -2,6 +2,7 @@ from __future__ import division
 import subprocess
 import os
 import sys
+import glob
 
 import xbmc, xbmcaddon, xbmcgui
 
@@ -67,15 +68,14 @@ def update_extlinux():
     subprocess.call(['/usr/bin/extlinux', '--update', '/flash'])
     
 def remove_update_files():
-    for f in constants.UPDATE_PATHS:
+    tar_files = tuple(glob.glob(os.path.join(constants.UPDATE_DIR, '*tar')))
+    for f in constants.UPDATE_PATHS + tar_files:
         try:
             os.remove(f)
         except OSError:
             log("Could not remove " + f)
-            return False
         else:
             log("Removed " + f)
-            return True
         
 def notify(msg, time=12000):
     xbmcgui.Dialog().notification("OpenELEC Dev Update", msg, __icon__, time)

@@ -24,6 +24,7 @@ import sys
 import urlparse
 import hashlib
 import tarfile
+import glob
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
@@ -39,7 +40,8 @@ __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 
 def check_update_files():
     # Check if the update files are already in place.
-    if all(os.path.isfile(f) for f in constants.UPDATE_PATHS):
+    if (all(os.path.isfile(f) for f in constants.UPDATE_PATHS) or
+        glob.glob(os.path.join(constants.UPDATE_DIR, '*tar'))):
         if xbmcgui.Dialog().yesno("Confirm reboot",
                                   "The update files are already in place.",
                                   "Reboot now to install the update",
@@ -47,6 +49,8 @@ def check_update_files():
                                   "Continue",
                                   "Reboot"):
             xbmc.restart()
+        else:
+            utils.remove_update_files()
 
 def cd_tmp_dir():
     # Move to the download directory.
