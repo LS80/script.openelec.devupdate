@@ -92,7 +92,20 @@ class RbejBuild(Build):
 
 class BuildLinkBase(object):
 
-    def _set_info(self):
+    def __init__(self, baseurl, link):
+        link = link.strip()
+        scheme, netloc, path = urlparse.urlparse(link)[:3]
+        if not scheme:
+            # Construct the full url
+            self.url = urlparse.urljoin(baseurl, link)
+        else:
+            if netloc == "www.dropbox.com":
+                # Fix Dropbox url
+                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
+            self.url = link
+
+        # Extract the file name part
+        self.filename = os.path.basename(path)
 
         name, ext = os.path.splitext(self.filename)
         if ext == '.tar':
@@ -114,43 +127,23 @@ class BuildLinkBase(object):
 class BuildLink(Build, BuildLinkBase):
     """Holds information about a link to an OpenELEC build."""
 
-    def __init__(self, baseurl, link, revision, datetime_str):
+    def __init__(self, baseurl, link, datetime_str, revision):
+        BuildLinkBase.__init__(self, baseurl, link)
         Build.__init__(self, datetime_str, version=revision)
-
-        scheme, netloc, path = urlparse.urlparse(link)[:3]
-        if not scheme:
-            # Construct the full url
-            self.url = urlparse.urljoin(baseurl, link)
-        else:
-            if netloc == "www.dropbox.com":
-                # Fix Dropbox url
-                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
-            self.url = link
-
-        # Extract the file name part
-        self.filename = os.path.basename(link)
-
-        self._set_info()
 
 
 class ReleaseLink(Release, BuildLinkBase):
     ''' Class for links to official release downloads '''
     
-    def __init__(self, version, baseurl, filename):
-        self.filename = filename
-        self.url = urlparse.urljoin(baseurl, filename)
-        self._set_info()
-        
-        Release.__init__(self, version)
+    def __init__(self, baseurl, link, release):
+        BuildLinkBase.__init__(self, baseurl, link)
+        Release.__init__(self, release)
 
 
 class RbejBuildLink(RbejBuild, BuildLinkBase):
     def __init__(self, baseurl, link, version, datetime_str):
+        BuildLinkBase.__init__(baseurl, link)
         RbejBuild.__init__(self, datetime_str, version)
-        self.filename = os.path.basename(link)
-        self.url = urlparse.urljoin(baseurl, link)
-        
-        self._set_info()
 
 
 class BuildLinkExtractor(object):
@@ -187,8 +180,7 @@ class BuildLinkExtractor(object):
 
     def _create_link(self, link):
         href = link['href']
-        datetime_str, revision = self.build_re.match(href).groups()[:2]
-        return BuildLink(self.url, href.strip(), revision, datetime_str)
+        return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
 
     def __enter__(self):
         return self
@@ -208,9 +200,8 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
     BUILD_RE = ".*OpenELEC.*-{0}-([\d\.]+)\.tar(|\.bz2)"
 
     def _create_link(self, link):
-        filename = link['href']
-        version = self.build_re.match(filename).group(1)
-        return ReleaseLink(version, self.url, filename)
+        href = link['href']
+        return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
 
 class RbejLinkExtractor(BuildLinkExtractor):
