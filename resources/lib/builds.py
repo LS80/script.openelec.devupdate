@@ -133,7 +133,7 @@ class BuildLink(Build, BuildLinkBase):
 
 
 class ReleaseLink(Release, BuildLinkBase):
-    ''' Class for links to official release downloads '''
+    """Class for links to official release downloads."""
     
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
@@ -150,7 +150,7 @@ class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
     BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+)\.tar(|\.bz2)$"
-    CLASS = None
+    CSS_CLASS = None
 
     def __init__(self, url):
         self.url = url
@@ -165,8 +165,8 @@ class BuildLinkExtractor(object):
 
         html = self._response.text
         args = ['a']
-        if self.CLASS is not None:
-            args.append(self.CLASS)
+        if self.CSS_CLASS is not None:
+            args.append(self.CSS_CLASS)
             
         soup = BeautifulSoup(html, 'html.parser',
                              parse_only=SoupStrainer(*args, href=self.build_re))
@@ -190,9 +190,9 @@ class BuildLinkExtractor(object):
             self._response.close()
 
 
-class DropboxLinkExtractor(BuildLinkExtractor):
+class DropboxBuildLinkExtractor(BuildLinkExtractor):
 
-    CLASS = 'filename-link'
+    CSS_CLASS = 'filename-link'
         
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
@@ -204,7 +204,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
         return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
 
-class RbejLinkExtractor(BuildLinkExtractor):
+class RbejBuildLinkExtractor(BuildLinkExtractor):
 
     BUILD_RE = ".*OpenELEC.*-{0}-(.*?)\((.*?)\)\.tar(|\.bz2)"
 
@@ -216,6 +216,10 @@ class RbejLinkExtractor(BuildLinkExtractor):
         version = "{} {}".format(desc[0], desc[2])
         return RbejBuildLink(self.url, href.strip(), version, datetime_str)
 
+
+class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
+
+    BUILD_RE = ".*OpenELEC-{0}.DA-([\d\.]+)\.tar(|\.bz2)"
 
 
 class BuildsURL(object):
@@ -283,9 +287,12 @@ def sources(arch):
                         BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                        ("Rbej Gotham Builds (RPi)",
                         BuildsURL("http://netlir.dk/rbej/builds/Gotham",
-                                  extractor=RbejLinkExtractor)),
+                                  extractor=RbejBuildLinkExtractor)),
                        ("MilhouseVH Builds (RPi)",
-                        BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH"))
+                        BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")),
+                       ("DarkAngel2401 Dual Audio Builds",
+                        BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio", subdir=arch,
+                                  extractor=DualAudioReleaseLinkExtractor))
                       ))
 
 
