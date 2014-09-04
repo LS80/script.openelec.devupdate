@@ -292,7 +292,8 @@ class Main(object):
 
         utils.log("Download URL = " + self.selected_build.url)
         try:
-            resp = requests.get(self.selected_build.url, stream=True)
+            resp = requests.get(self.selected_build.url, stream=True,
+                                headers={'Accept-Encoding': None})
             utils.log("Opened URL " + self.selected_build.url)
             bz2_size = int(resp.headers['Content-Length'])
             utils.log("Size of file = " + utils.size_fmt(bz2_size))
