@@ -113,7 +113,7 @@ class BuildList():
         self._arch = arch
 
     def create(self):
-        import requests2 as requests
+        import requests
 
         from resources.lib import builds
 
@@ -289,7 +289,7 @@ class Main(object):
         self.selected_build = selected_build
 
     def download(self):
-        import requests2 as requests
+        import requests
 
         tar_name = self.selected_build.tar_name
         filename = self.selected_build.filename

@@ -7,7 +7,7 @@
     <import addon="xbmc.python" version="2.13.0"/>
     <import addon="os.openelec.tv" version="4.0" optional="false"/>
     <import addon="script.module.beautifulsoup4" version="4.3.2" optional="false"/>
-    <import addon="script.module.requests2" version="2.2.1" optional="false"/>
+    <import addon="script.module.requests" version="2.3.0" optional="false"/>
     <import addon="script.xbmcbackup" version="0.5.2" optional="false"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py"/>

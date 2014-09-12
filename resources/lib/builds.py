@@ -8,10 +8,7 @@ from datetime import datetime
 from collections import OrderedDict
 
 from bs4 import BeautifulSoup, SoupStrainer
-try:
-    import requests2 as requests
-except ImportError:
-    import requests
+import requests
 
 import constants
 
