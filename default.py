@@ -440,9 +440,10 @@ class Main(object):
     
             tf.close()
         else:
-            # Just move the tar file to the update directory.
-            os.rename(self.selected_build.tar_name,
-                      os.path.join(constants.UPDATE_DIR, self.selected_build.tar_name))
+            # Just move the tar file to the .update directory.
+            dest = os.path.join(constants.UPDATE_DIR, self.selected_build.tar_name)
+            utils.log("Moving to " + dest)
+            os.rename(self.selected_build.tar_name, dest)
 
     def copy_from_archive(self):
         if self.archive:
@@ -567,7 +568,10 @@ class Main(object):
                 utils.notify("Build {} will install on the next reboot".format(self.selected_build))
 
 
+utils.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1 and sys.argv[1] == "check":
+    utils.log("Checking for a new build")
+    
     check_prompt = int(__addon__.getSetting('check_prompt'))
     check_official = __addon__.getSetting('check_official') == 'true'
     
