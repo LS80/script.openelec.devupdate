@@ -175,7 +175,7 @@ class BuildList():
             # Look in archive area for local build files.
             archive_root = __addon__.getSetting('archive_root')
             archive_dir = os.path.join(archive_root, source)
-            if not xbmcvfs.mkdirs(archive_dir):
+            if not xbmcvfs.exists(archive_dir):
                 xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(archive_root),
                                     "Check the archive directory in the addon settings.")
                 __addon__.openSettings()
@@ -203,6 +203,7 @@ class BuildList():
 class Main(object):
 
     def __init__(self):
+        utils.log("Starting")
         check_update_files()
 
         if __addon__.getSetting('set_arch') == 'true':

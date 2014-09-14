@@ -9,13 +9,14 @@ except IOError:
     ARCH = 'RPi.arm'
 
 UPDATE_DIR = '/storage/.update'
-# Enables testing on other platforms
-if not os.path.isdir(UPDATE_DIR):
+if not os.path.isfile('/etc/openelec-release'):
     try:
         import xbmc
     except ImportError:
+        # When testing build sources as stand alone script
         pass
     else:
+        # Enables testing on non OpenELEC xbmc
         UPDATE_DIR = xbmc.translatePath("special://temp/")
 
 if ARCH == 'ATV.i386':  
