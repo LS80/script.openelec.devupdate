@@ -222,7 +222,6 @@ class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
 class BuildsURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
         self.url = url
-        self._add_slash()
         if subdir:
             self.add_subdir(subdir)
         
@@ -288,7 +287,7 @@ def sources(arch):
                        ("MilhouseVH Builds (RPi)",
                         BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")),
                        ("DarkAngel2401 Dual Audio Builds",
-                        BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio", subdir=arch,
+                        BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/", subdir=arch,
                                   extractor=DualAudioReleaseLinkExtractor))
                       ))
 
