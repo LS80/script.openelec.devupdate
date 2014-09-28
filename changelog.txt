@@ -1,3 +1,6 @@
+3.3.5
+ - Fixed a problem with DarkAngel2401 builds due to a change on the server.
+
 3.3.4
  - Fixed a problem with the service part failing on some systems.
 
