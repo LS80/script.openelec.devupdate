@@ -3,8 +3,7 @@ import sys
 
 # This is required to work around the ImportError exception
 # "Failed to import _strptime because the import lock is held by another thread."
-from datetime import datetime
-datetime.strptime('2001-01-01', '%Y-%m-%d')
+import _strptime
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
