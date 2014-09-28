@@ -292,19 +292,23 @@ class Main(object):
     def download(self):
         import requests
 
+        try:
+            remote_file = self.selected_build.remote_file()
+        except requests.RequestException as e:
+            utils.url_error(self.selected_build.url, str(e))
+            sys.exit(1)
+
         tar_name = self.selected_build.tar_name
         filename = self.selected_build.filename
+        size = self.selected_build.size
 
         utils.log("Download URL = " + self.selected_build.url)
-        try:
-            resp = requests.get(self.selected_build.url, stream=True,
-                                headers={'Accept-Encoding': None})
-            utils.log("Opened URL " + self.selected_build.url)
-            bz2_size = int(resp.headers['Content-Length'])
-            utils.log("Size of file = " + utils.size_fmt(bz2_size))
+        utils.log("File name = " + filename)
+        utils.log("File size = " + utils.size_fmt(size))
 
+        try:
             if (os.path.isfile(filename) and
-                os.path.getsize(filename) == bz2_size):
+                os.path.getsize(filename) == size):
                 # Skip the download if the file exists with the correct size.
                 utils.log("Skipping download")
                 pass
@@ -312,7 +316,7 @@ class Main(object):
                 # Do the download
                 utils.log("Starting download of " + self.selected_build.url)
                 with progress.FileProgress("Downloading",
-                                           resp.raw, filename, bz2_size,
+                                           remote_file, filename, size,
                                            self.background) as downloader:
                     downloader.start()
                 utils.log("Completed download of " + self.selected_build.url)  
@@ -331,7 +335,7 @@ class Main(object):
                 bf = open(filename, 'rb')
                 utils.log("Starting decompression of " + filename)
                 with progress.DecompressProgress("Decompressing",
-                                                 bf, tar_name, bz2_size,
+                                                 bf, tar_name, size,
                                                  self.background) as decompressor:
                     decompressor.start()
                 utils.log("Completed decompression of " + filename)

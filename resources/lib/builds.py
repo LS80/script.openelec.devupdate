@@ -90,6 +90,7 @@ class RbejBuild(Build):
 class BuildLinkBase(object):
 
     def __init__(self, baseurl, link):
+        # Set the absolute URL
         link = link.strip()
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
@@ -100,9 +101,19 @@ class BuildLinkBase(object):
                 # Fix Dropbox url
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
             self.url = link
+            
+        self.archive = None
 
-        # Extract the file name part
-        self.filename = os.path.basename(path)
+    def remote_file(self):
+        resp = requests.get(self.url, stream=True,
+                            headers={'Accept-Encoding': None})
+        try:
+            self.size = int(resp.headers['Content-Length'])
+        except KeyError:
+            self.size = 0
+
+        # Get the actual filename
+        self.filename = os.path.basename(resp.url)
 
         name, ext = os.path.splitext(self.filename)
         if ext == '.tar':
@@ -114,8 +125,8 @@ class BuildLinkBase(object):
             self.compressed = True
         else:
             self.compressed = False
-
-        self.archive = None
+            
+        return resp.raw
 
     def set_archive(self, path):
         self.archive = os.path.join(path, self.tar_name)
@@ -302,7 +313,7 @@ if __name__ == "__main__":
         try:
             with build_url.extractor() as parser:
                 for link in sorted(set(parser.get_links(arch)), reverse=True):
-                    print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build), link.filename)
+                    print "\t{:25s}".format(str(link) + ' *' * (link > installed_build))
         except requests.RequestException as e:
             print str(e)
         except BuildURLError as e:
