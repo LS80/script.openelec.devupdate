@@ -1,10 +1,16 @@
 import os
 import sys
 
+# This is required to work around the ImportError exception
+# "Failed to import _strptime because the import lock is held by another thread."
+from datetime import datetime
+datetime.strptime('2001-01-01', '%Y-%m-%d')
+
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
 from resources.lib import constants
 from resources.lib import utils
+from resources.lib import builds
 from resources.lib.progress import restart_countdown
 
 __addon__ = xbmcaddon.Addon(constants.__scriptid__)
@@ -36,11 +42,10 @@ if init:
         utils.mount_readonly()
         os.remove(update_extlinux_file)
 
-from resources.lib import builds
-
 try:
     installed_build = builds.get_installed_build()
 except:
+    utils.log("Unable to get installed build so exiting")
     sys.exit(1)
 
 check_enabled = __addon__.getSetting('check') == 'true'
