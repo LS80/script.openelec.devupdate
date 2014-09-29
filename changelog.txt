@@ -1,3 +1,6 @@
+3.4.1
+ - Fixed a problem with the archiving of the tar files.
+
 3.4.0
  - Removed the XBMCNightlyBuilds source which has not worked for some time.
  - Official Snapshot Builds is now the default source.
