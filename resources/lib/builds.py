@@ -101,8 +101,6 @@ class BuildLinkBase(object):
                 # Fix Dropbox url
                 link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
             self.url = link
-            
-        self.archive = None
 
     def remote_file(self):
         resp = requests.get(self.url, stream=True,
@@ -127,9 +125,6 @@ class BuildLinkBase(object):
             self.compressed = False
             
         return resp.raw
-
-    def set_archive(self, path):
-        self.archive = os.path.join(path, self.tar_name)
 
 
 class BuildLink(Build, BuildLinkBase):

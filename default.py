@@ -109,8 +109,9 @@ def maybe_run_backup():
 
 
 class BuildList():
-    def __init__(self, arch):
+    def __init__(self, arch, source):
         self._arch = arch
+        self._source = source
 
     def create(self):
         import requests
@@ -126,9 +127,8 @@ class BuildList():
         subdir = __addon__.getSetting('subdir')
     
         # Get the url from the settings.
-        source = __addon__.getSetting('source')
-        utils.log("Source = " +  source)
-        if source == "Other":
+        utils.log("Source = " +  self._source)
+        if self._source == "Other":
             # Custom URL
             url = __addon__.getSetting('custom_url')
             scheme, netloc = urlparse.urlparse(url)[:2]
@@ -140,9 +140,9 @@ class BuildList():
         else:
             # Defined URL
             try:
-                build_url = builds.sources(self._arch)[source]
+                build_url = builds.sources(self._arch)[self._source]
             except KeyError:
-                utils.bad_source(source)
+                utils.bad_source(self._source)
                 sys.exit(1)
             else:
                 if subdir:
@@ -170,27 +170,12 @@ class BuildList():
         except requests.RequestException as e:
             utils.url_error(url, str(e))
             sys.exit(1)
-        
-        if __addon__.getSetting('archive') == "true":
-            # Look in archive area for local build files.
-            archive_root = __addon__.getSetting('archive_root')
-            archive_dir = os.path.join(archive_root, source)
-            if not xbmcvfs.exists(archive_dir):
-                xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(archive_root),
-                                    "Check the archive directory in the addon settings.")
-                __addon__.openSettings()
-                sys.exit(1)
-
-            files = xbmcvfs.listdir(archive_dir)[1]
-            for link in links:
-                if link.tar_name in files:
-                    link.set_archive(archive_dir)
 
         if not links:
             utils.bad_url(url, "No builds were found for {}.".format(self._arch))
             sys.exit(1)
             
-        return source, links
+        return links
         
     def __enter__(self):
         xbmc.executebuiltin("ActivateWindow(busydialog)")
@@ -210,25 +195,42 @@ class Main(object):
             self.arch = __addon__.getSetting('arch')
         else:
             self.arch = constants.ARCH
+            
+        self.source = __addon__.getSetting('source')
 
-        with BuildList(self.arch) as build_list:
+        with BuildList(self.arch, self.source) as build_list:
             self.background = __addon__.getSetting('background') == 'true'
+            self.archive = __addon__.getSetting('archive') == 'true'
             self.archive_root = __addon__.getSetting('archive_root')
             self.verify_files = __addon__.getSetting('verify_files') == 'true'
+            
+            if self.archive:
+                self.archive_tar_path = None
+                self.archive_dir = os.path.join(self.archive_root, self.source)
+                utils.log("Archive builds to " + self.archive_dir)
+                if not xbmcvfs.exists(self.archive_root):
+                    utils.log("Unable to access archive")
+                    xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(self.archive_root),
+                                        "Check the archive directory in the addon settings.")
+                    __addon__.openSettings()
+                    sys.exit(1)
+                elif not xbmcvfs.mkdir(self.archive_dir):
+                    utils.log("Unable to create directory in archive")
+                    xbmcgui.Dialog().ok("Directory Error", "Unable to create {}.".format(self.archive_dir),
+                                        "Check the archive directory permissions.")
+                    sys.exit(1)
 
             cd_tmp_dir()
             
-            self.source, self.links = build_list.create()            
+            self.links = build_list.create()            
 
             self.installed_build = build_list.installed_build
             
         self.select_build()
 
-        if self.selected_build.archive is not None:
-            self.copy_from_archive()
-        else:
-            self.download()
-            self.maybe_copy_to_archive()
+        self.maybe_download()
+        
+        self.maybe_copy_to_archive()
 
         self.maybe_extract()
 
@@ -289,7 +291,7 @@ class Main(object):
             
         self.selected_build = selected_build
 
-    def download(self):
+    def maybe_download(self):
         import requests
 
         try:
@@ -305,29 +307,33 @@ class Main(object):
         utils.log("Download URL = " + self.selected_build.url)
         utils.log("File name = " + filename)
         utils.log("File size = " + utils.size_fmt(size))
-
-        try:
-            if (os.path.isfile(filename) and
-                os.path.getsize(filename) == size):
-                # Skip the download if the file exists with the correct size.
-                utils.log("Skipping download")
-                pass
-            else:
-                # Do the download
-                utils.log("Starting download of " + self.selected_build.url)
-                with progress.FileProgress("Downloading",
-                                           remote_file, filename, size,
-                                           self.background) as downloader:
-                    downloader.start()
-                utils.log("Completed download of " + self.selected_build.url)  
-        except script_exceptions.Canceled:
-            sys.exit(0)
-        except requests.RequestException as e:
-            utils.url_error(self.selected_build.url, str(e))
-            sys.exit(1)
-        except script_exceptions.WriteError as e:
-            utils.write_error(os.path.join(__dir__, filename), str(e))
-            sys.exit(1)
+        
+        if self.archive:
+            self.archive_tar_path = os.path.join(self.archive_dir, self.selected_build.tar_name)
+        
+        if not self.copy_from_archive():
+            try:
+                if (os.path.isfile(filename) and
+                    os.path.getsize(filename) == size):
+                    # Skip the download if the file exists with the correct size.
+                    utils.log("Skipping download")
+                    pass
+                else:
+                    # Do the download
+                    utils.log("Starting download of " + self.selected_build.url)
+                    with progress.FileProgress("Downloading",
+                                               remote_file, filename, size,
+                                               self.background) as downloader:
+                        downloader.start()
+                    utils.log("Completed download of " + self.selected_build.url)  
+            except script_exceptions.Canceled:
+                sys.exit(0)
+            except requests.RequestException as e:
+                utils.url_error(self.selected_build.url, str(e))
+                sys.exit(1)
+            except script_exceptions.WriteError as e:
+                utils.write_error(os.path.join(__dir__, filename), str(e))
+                sys.exit(1)
 
         # Do the decompression if necessary.
         if self.selected_build.compressed and not os.path.isfile(tar_name):
@@ -383,27 +389,31 @@ class Main(object):
                       os.path.join(constants.UPDATE_DIR, self.selected_build.tar_name))
 
     def copy_from_archive(self):
-        utils.log("Skipping download and decompression")
-
-        archive = xbmcvfs.File(self.selected_build.archive)
-        tarfile = os.path.join(__dir__, self.selected_build.tar_name)
-
-        try:
-            with progress.FileProgress("Retrieving tar file from archive",
-                                       archive, tarfile, archive.size(),
-                                       self.background) as extractor:
-                extractor.start()
-        except script_exceptions.Canceled:
-            self.cleanup()
-            sys.exit(0)
-        except script_exceptions.WriteError:
-            sys.exit(1)
+        if self.archive:
+            if xbmcvfs.exists(self.archive_tar_path):
+                utils.log("Skipping download and decompression")
+        
+                archive = xbmcvfs.File(self.archive_tar_path)
+                tarfile = os.path.join(__dir__, self.selected_build.tar_name)
+        
+                try:
+                    with progress.FileProgress("Retrieving tar file from archive",
+                                               archive, tarfile, archive.size(),
+                                               self.background) as extractor:
+                        extractor.start()
+                except script_exceptions.Canceled:
+                    self.cleanup()
+                    sys.exit(0)
+                except script_exceptions.WriteError:
+                    sys.exit(1)
+                
+                return True
+        
+        return False
 
     def maybe_copy_to_archive(self):
-        if __addon__.getSetting('archive') == "true" and self.selected_build.archive is None:
-            archive_dir = os.path.join(self.archive_root, self.source)
-            archive_file = os.path.join(archive_dir, self.selected_build.tar_name)
-            utils.log("Archiving tar file to {}".format(archive_file))
+        if self.archive and not xbmcvfs.exists(self.archive_tar_path):
+            utils.log("Archiving tar file to {}".format(self.archive_tar_path))
 
             tarpath = os.path.join(__dir__, self.selected_build.tar_name)
             tar = open(tarpath)
@@ -411,24 +421,24 @@ class Main(object):
 
             try:
                 with progress.FileProgress("Copying to archive",
-                                           tar, archive_file, size,
+                                           tar, self.archive_tar_path, size,
                                            self.background) as extractor:
                     extractor.start()
             except script_exceptions.Canceled:
                 utils.log("Archive copy canceled")
-                xbmcvfs.delete(archive_file)
+                xbmcvfs.delete(self.archive_tar_path)
             except script_exceptions.WriteError as e:
-                utils.write_error(archive_file, str(e))
-                xbmcvfs.delete(archive_file)
+                utils.write_error(self.archive_tar_path, str(e))
+                xbmcvfs.delete(self.archive_tar_path)
 
     def cleanup(self):
         # Clean up the temporary files.
         try:
             if self.selected_build.compressed:
-                utils.log("Deleting {}".format(self.selected_build.filename))
+                utils.log("Deleting temporary {}".format(self.selected_build.filename))
                 os.remove(self.selected_build.filename)
 
-            utils.log("Deleting {}".format(self.selected_build.tar_name))
+            utils.log("Deleting temporary {}".format(self.selected_build.tar_name))
             os.remove(self.selected_build.tar_name)
         except OSError:
             pass
