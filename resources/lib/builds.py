@@ -111,7 +111,7 @@ class BuildLinkBase(object):
             self.size = 0
 
         # Get the actual filename
-        self.filename = os.path.basename(resp.url)
+        self.filename = os.path.basename(urlparse.urlparse(resp.url).path)
 
         name, ext = os.path.splitext(self.filename)
         if ext == '.tar':
