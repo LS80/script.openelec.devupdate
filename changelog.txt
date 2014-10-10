@@ -1,3 +1,7 @@
+3.5.0
+ - Added an option to enable notifications of new official releases.
+ - Fixed the cancel pending update action.
+
 3.4.2
  - Fixed a problem with DarkAngel2401 builds due to a change on the server.
 
