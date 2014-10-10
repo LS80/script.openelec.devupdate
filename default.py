@@ -354,6 +354,8 @@ class Main(object):
                 utils.decompress_error(os.path.join(__dir__, filename), str(e))
                 sys.exit(1)
 
+        __addon__.setSetting('update_pending', 'true')
+
     def maybe_extract(self):
         # Create the .update directory if necessary.
         if not os.path.exists(constants.UPDATE_DIR):

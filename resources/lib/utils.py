@@ -68,20 +68,32 @@ def update_extlinux():
     subprocess.call(['/usr/bin/extlinux', '--update', '/flash'])
     
 def remove_update_files():
-    tar_files = tuple(glob.glob(os.path.join(constants.UPDATE_DIR, '*tar')))
-    for f in constants.UPDATE_PATHS + tar_files:
-        try:
-            os.remove(f)
-        except OSError:
-            log("Could not remove " + f)
-        else:
-            log("Removed " + f)
-        
+    update_files = glob.glob(os.path.join(constants.UPDATE_DIR, '*'))
+    success = None
+    log(update_files)
+    for f in update_files:
+        if f in constants.UPDATE_FILES or f.endswith("tar"):
+            try:
+                os.remove(f)
+            except OSError:
+                log("Could not remove " + f)
+                success = False
+                break
+            else:
+                log("Removed " + f)
+                success = True
+    if success or success is None:
+        __addon__.setSetting('update_pending', 'false')
+    return success
+
 def notify(msg, time=12000):
     xbmcgui.Dialog().notification("OpenELEC Dev Update", msg, __icon__, time)
             
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == 'cancel':
-            if remove_update_files():
-                notify("Pending update cancelled")
+            success = remove_update_files()
+            if success:
+                notify("Deleted update files(s)")
+            elif success is not None:
+                notify("Update file(s) not deleted")

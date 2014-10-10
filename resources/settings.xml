@@ -20,7 +20,8 @@
         <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-2,true)" subsetting="true" default="1"/>
     </category>
     <category label="Actions">
-        <setting label="Cancel pending update" type="action" action="RunScript($CWD/lib/utils.py, cancel)"/>
+        <setting type="bool" id="update_pending" visible="false"/>
+        <setting label="Cancel pending update" type="action" action="RunScript($CWD/resources/lib/utils.py, cancel)" enable="eq(-1,true)"/>
     </category>
     <category label="Advanced">
         <setting label="Override installed build type" type="bool" id="set_arch" default="false"/>
