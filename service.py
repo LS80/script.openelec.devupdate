@@ -50,6 +50,7 @@ except:
 check_enabled = __addon__.getSetting('check') == 'true'
 check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
 check_prompt = int(__addon__.getSetting('check_prompt'))
+check_official = __addon__.getSetting('check_official') == 'true'
 
 if init:
     notify_file = os.path.join(__dir__, constants.NOTIFY_FILE)
@@ -77,7 +78,8 @@ if init:
 
 if check_enabled:
     source = __addon__.getSetting('source')
-    if isinstance(installed_build, builds.Release) and source == "Official Releases":
+    if (isinstance(installed_build, builds.Release) and source == "Official Releases"
+        and not check_official):
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
