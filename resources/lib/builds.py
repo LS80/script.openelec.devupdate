@@ -255,7 +255,11 @@ def get_installed_build():
     m = re.search("devel-(\d+)-r(\d+)", version)
     if m:
         if constants.ARCH == 'RPi.arm':
-            mm = re.search('Rbej (Frodo|Gotham)', open('/usr/lib/xbmc/xbmc.bin').read())
+            try:
+                f = open('/usr/lib/xbmc/xbmc.bin')
+            except IOError:
+                f = open('/usr/lib/kodi/kodi.bin')
+            mm = re.search('Rbej (Frodo|Gotham)', f.read())
             if mm:
                 version = "Rbej {}".format(mm.group(1))
                 # Rbej builds do not have a time as part of the name
