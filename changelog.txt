@@ -1,3 +1,6 @@
+3.5.1
+ - Fixed a script error caused by the Kodi rebrand.
+
 3.5.0
  - Added an option to enable notifications of new official releases.
  - Fixed the cancel pending update action.
