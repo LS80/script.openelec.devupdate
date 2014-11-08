@@ -1,3 +1,6 @@
+3.6.0
+ - Added Cuboxi.arm and imx6.arm build type overrides.
+
 3.5.1
  - Fixed a script error caused by the Kodi rebrand.
 
