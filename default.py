@@ -496,7 +496,7 @@ class Main(object):
 
     def confirm(self):
         with open(os.path.join(__dir__, constants.NOTIFY_FILE), 'w') as f:
-            f.write(str(self.selected_build))
+            f.write(self.selected_build.version)
 
         if __addon__.getSetting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno("Confirm reboot",
@@ -513,8 +513,60 @@ class Main(object):
                 utils.notify("Build {} will install on the next reboot".format(self.selected_build))
 
 
-Main()
+if len(sys.argv) > 1 and sys.argv[1] == "check":
+    from resources.lib import builds
+    
+    check_prompt = int(__addon__.getSetting('check_prompt'))
+    check_official = __addon__.getSetting('check_official') == 'true'
+    
+    try:
+        installed_build = builds.get_installed_build()
+    except:
+        utils.log("Unable to get installed build so exiting")
+        sys.exit(1)
 
+    source = __addon__.getSetting('source')
+    if (isinstance(installed_build, builds.Release) and source == "Official Releases"
+        and not check_official):
+        # Don't do the job of the official auto-update system.
+        utils.log("Skipping build check - official release")
+    else:
+        try:
+            if __addon__.getSetting('set_arch') == 'true':
+                arch = __addon__.getSetting('arch')
+            else:
+                arch = constants.ARCH
 
+            subdir = __addon__.getSetting('subdir')
+            if source == "Other":
+                url = __addon__.getSetting('custom_url')
+                build_url = builds.BuildsURL(url, subdir)
+            else:
+                build_url = builds.sources(arch)[source]
+                url = build_url.url
 
+            if __addon__.getSetting('set_timeout') == 'true':
+                timeout = int(__addon__.getSetting('timeout'))
+            else:
+                timeout = None
+    
+            utils.log("Checking {}".format(url))
+            with build_url.extractor() as parser:
+                latest = sorted(parser.get_links(arch, timeout), reverse=True)[0]
+                if latest > installed_build:
+                    if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
+                        utils.log("Notifying that new build {} is available".format(latest))
+                        utils.notify("Build {} is available".format(latest), 7500)
+                    else:
+                        utils.log("New build {} is available, prompting to show build list".format(latest))
+                        if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
+                                                  "A more recent build is available:   {}".format(latest),
+                                                  "Current build:   {}".format(installed_build),
+                                                  "Show builds available to install?"):
+                            Main()
+        except:
+            pass
+
+else:
+    Main()
 
