@@ -50,6 +50,10 @@ class Build(object):
         return '{} ({})'.format(self._version,
                                 self._datetime.strftime('%d %b %y'))
 
+    @property    
+    def version(self):
+        return self._version
+
 
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
