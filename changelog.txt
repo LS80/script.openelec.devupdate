@@ -1,3 +1,6 @@
+3.7.0
+ - Fixed the issue with the new build check service failing with Helix builds.
+
 3.6.0
  - Added Cuboxi.arm and imx6.arm build type overrides.
 
