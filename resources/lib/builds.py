@@ -254,7 +254,7 @@ def get_installed_build():
     try:
         version = open('/etc/version').read().rstrip()
     except IOError:
-        version = 'devel-20140403222729-r18089-gb97d61d'
+        version = 'devel-20141031232437-r19505-g98f5c23'
     
     m = re.search("devel-(\d+)-r(\d+)", version)
     if m:
