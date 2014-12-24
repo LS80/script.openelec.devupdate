@@ -1,3 +1,6 @@
+3.8.1
+ - Fixed a problem with the Milhouse builds.
+
 3.8.0
  - Updated the Milhouse builds URL.
  - Removed the Rbej Gotham builds.
