@@ -99,6 +99,8 @@ class BuildLinkBase(object):
         scheme, netloc, path = urlparse.urlparse(link)[:3]
         if not scheme:
             # Construct the full url
+            if not baseurl.endswith('/'):
+                baseurl += '/'
             self.url = urlparse.urljoin(baseurl, link)
         else:
             if netloc == "www.dropbox.com":
