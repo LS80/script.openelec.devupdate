@@ -299,7 +299,7 @@ def sources(arch):
                         BuildsURL("http://netlir.dk/rbej/builds/Gotham",
                                   extractor=RbejBuildLinkExtractor)),
                        ("MilhouseVH Builds (RPi)",
-                        BuildsURL("http://netlir.dk/rbej/builds/MilhouseVH")),
+                        BuildsURL("http://milhouse.openelec.tv/builds/master")),
                        ("DarkAngel2401 Dual Audio Builds",
                         BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/", subdir=arch,
                                   extractor=DualAudioReleaseLinkExtractor))
