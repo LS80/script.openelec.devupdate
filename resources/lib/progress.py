@@ -7,7 +7,7 @@ import time
 import xbmc, xbmcgui, xbmcvfs
 
 from script_exceptions import Canceled, WriteError, DecompressError
-from utils import size_fmt
+from funcs import size_fmt
 
 
 class Progress(xbmcgui.DialogProgress):

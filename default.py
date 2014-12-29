@@ -32,6 +32,7 @@ from resources.lib import constants
 from resources.lib import progress
 from resources.lib import script_exceptions
 from resources.lib import utils
+from resources.lib.funcs import size_fmt
 
 __addon__ = xbmcaddon.Addon()
 __icon__ = __addon__.getAddonInfo('icon')
@@ -306,7 +307,7 @@ class Main(object):
 
         utils.log("Download URL = " + self.selected_build.url)
         utils.log("File name = " + filename)
-        utils.log("File size = " + utils.size_fmt(size))
+        utils.log("File size = " + size_fmt(size))
         
         if self.archive:
             self.archive_tar_path = os.path.join(self.archive_dir, self.selected_build.tar_name)
