@@ -8,13 +8,13 @@ try:
 except IOError:
     ARCH = 'RPi.arm'
 
-UPDATE_DIR = '/storage/.update'
+UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
 if not os.path.isfile('/etc/openelec-release'):
     try:
         import xbmc
     except ImportError:
-        # When testing build sources as stand alone script
-        pass
+        # Enables testing outside xbmc
+        UPDATE_DIR = os.path.expanduser('~')
     else:
         # Enables testing on non OpenELEC xbmc
         UPDATE_DIR = xbmc.translatePath("special://temp/")
