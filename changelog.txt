@@ -1,3 +1,7 @@
+3.11.0
+ - Add RPi.arm and RPi2.arm as build types for the override option, to enable
+   switching between the two with the same SD card.
+
 3.10.0
  - Support Milhouse builds for RPi2.
 
