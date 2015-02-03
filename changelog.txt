@@ -1,3 +1,6 @@
+3.10.0
+ - Support Milhouse builds for RPi2.
+
 3.9.0
  - Updated the Milhouse URL.
  - Added a download.py script to download updates on the command line.
