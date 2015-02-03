@@ -243,6 +243,7 @@ class BuildsURL(object):
         return self._extractor(self.url)
         
     def add_subdir(self, subdir):
+        self._add_slash()
         self.url = urlparse.urljoin(self.url, subdir)
         self._add_slash()
 
@@ -298,7 +299,7 @@ def sources(arch):
                        ("Chris Swan (RPi)",
                         BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                        ("MilhouseVH Builds (RPi)",
-                        BuildsURL("http://milhouse.openelec.tv/builds/master/RPi")),
+                        BuildsURL("http://milhouse.openelec.tv/builds/master", subdir=arch.split('.')[0])),
                        ("DarkAngel2401 Dual Audio Builds",
                         BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/", subdir=arch,
                                   extractor=DualAudioReleaseLinkExtractor))
