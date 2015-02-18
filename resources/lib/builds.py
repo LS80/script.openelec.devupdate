@@ -87,10 +87,6 @@ class Release(Build):
                                          parse_only=SoupStrainer(cls.tag_match))
 
 
-class RbejBuild(Build):
-    DATETIME_FMT = '%d.%m.%Y'
-
-
 class BuildLinkBase(object):
 
     def __init__(self, baseurl, link):
@@ -147,12 +143,6 @@ class ReleaseLink(Release, BuildLinkBase):
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
         Release.__init__(self, release)
-
-
-class RbejBuildLink(RbejBuild, BuildLinkBase):
-    def __init__(self, baseurl, link, version, datetime_str):
-        BuildLinkBase.__init__(baseurl, link)
-        RbejBuild.__init__(self, datetime_str, version)
 
 
 class BuildLinkExtractor(object):
@@ -213,19 +203,6 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
         return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
 
 
-class RbejBuildLinkExtractor(BuildLinkExtractor):
-
-    BUILD_RE = ".*OpenELEC.*-{0}-(.*?)\((.*?)\)\.tar(|\.bz2)"
-
-    def _create_link(self, link):
-        href = link['href']
-        m = self.build_re.match(href)
-        datetime_str = m.group(2)
-        desc = m.group(1).split('-')
-        version = "{} {}".format(desc[0], desc[2])
-        return RbejBuildLink(self.url, href.strip(), version, datetime_str)
-
-
 class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
 
     BUILD_RE = ".*OpenELEC-{0}.DA-([\d\.]+)\.tar(|\.bz2)"
@@ -261,21 +238,7 @@ def get_installed_build():
     
     m = re.search("devel-(\d+)-r(\d+)", version)
     if m:
-        if constants.ARCH == 'RPi.arm':
-            try:
-                f = open('/usr/lib/xbmc/xbmc.bin')
-            except IOError:
-                f = open('/usr/lib/kodi/kodi.bin')
-            mm = re.search('Rbej (Frodo|Gotham)', f.read())
-            if mm:
-                version = "Rbej {}".format(mm.group(1))
-                # Rbej builds do not have a time as part of the name
-                datetime_str = m.group(1)[:8] + '0'*6
-                return Build(datetime_str, version)
-            else:
-                return Build(*m.groups())
-        else:
-            return Build(*m.groups())
+        return Build(*m.groups())
     else:
         # A full release is installed.
         return Release(version)
