@@ -148,7 +148,7 @@ class ReleaseLink(Release, BuildLinkBase):
 class BuildLinkExtractor(object):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-r(\d+)(|-g[0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-(?:r|%23)(\d+)(|-g[0-9a-z]+)\.tar(|\.bz2)"
     CSS_CLASS = None
 
     def __init__(self, url):
@@ -236,7 +236,7 @@ def get_installed_build():
     except IOError:
         version = 'devel-20141031232437-r19505-g98f5c23'
     
-    m = re.search("devel-(\d+)-r(\d+)", version)
+    m = re.search("devel-(\d+)-[r#](\d+)", version)
     if m:
         return Build(*m.groups())
     else:
