@@ -200,7 +200,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
 
     def _create_link(self, link):
         href = link['href']
-        return ReleaseLink(self.url, href, self.build_re.match(href).group(1))
+        return ReleaseLink("http://releases.openelec.tv", href, self.build_re.match(href).group(1))
 
 
 class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
@@ -249,7 +249,7 @@ def sources(arch):
                        ("Official Snapshot Builds",
                         BuildsURL("http://snapshots.openelec.tv")),
                        ("Official Releases",
-                        BuildsURL("http://releases.openelec.tv",
+                        BuildsURL("http://openelec.mirrors.uk2.net",
                                   extractor=ReleaseLinkExtractor)),
                        ("Official Archive",
                         BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
