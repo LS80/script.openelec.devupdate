@@ -1,3 +1,6 @@
+3.14.0
+ - Support Milhouse builds with a letter suffix, e.g. #0308b.
+
 3.13.0
  - Fixed Official Release downloads.
 
