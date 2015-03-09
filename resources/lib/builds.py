@@ -6,6 +6,7 @@ import os
 import urlparse
 from datetime import datetime
 from collections import OrderedDict
+from urllib2 import unquote
 
 from bs4 import BeautifulSoup, SoupStrainer
 import requests
@@ -113,7 +114,7 @@ class BuildLinkBase(object):
             self.size = 0
 
         # Get the actual filename
-        self.filename = os.path.basename(urlparse.urlparse(resp.url).path)
+        self.filename = unquote(os.path.basename(urlparse.urlparse(resp.url).path))
 
         name, ext = os.path.splitext(self.filename)
         if ext == '.tar':
