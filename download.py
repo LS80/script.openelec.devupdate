@@ -22,6 +22,7 @@ from resources.lib import constants
 parser = ArgumentParser(description='Download an OpenELEC update')
 parser.add_argument('-a', '--arch', help='Set the build type (e.g. Generic.x86_64, RPi.arm)')
 parser.add_argument('-s', '--source', help='Set the build source')
+parser.add_argument('-r', '--releases', action='store_true', help='Look for unofficial releases instead of development builds')
 
 args = parser.parse_args()
 
@@ -61,7 +62,10 @@ if args.source:
     except KeyError:
         parsed = urlparse(args.source)
         if parsed.scheme in ('http', 'https') and parsed.netloc:
-            build_url = builds.BuildsURL(args.source)
+            if args.releases:
+                build_url = builds.BuildsURL(args.source, extractor=builds.ReleaseLinkExtractor)
+            else:
+                build_url = builds.BuildsURL(args.source)
         else:
             print '"{}" is not in the list of available sources and is not a valid HTTP URL'.format(args.source)
             print 'Valid options are:\n\t{}'.format("\n\t".join(urls.keys()))

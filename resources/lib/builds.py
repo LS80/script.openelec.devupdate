@@ -191,21 +191,24 @@ class BuildLinkExtractor(object):
 
 
 class DropboxBuildLinkExtractor(BuildLinkExtractor):
-
     CSS_CLASS = 'filename-link'
         
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
-
     BUILD_RE = ".*OpenELEC.*-{0}-([\d\.]+)\.tar(|\.bz2)"
+    BASE_URL = None
 
     def _create_link(self, link):
         href = link['href']
-        return ReleaseLink("http://releases.openelec.tv", href, self.build_re.match(href).group(1))
+        baseurl = self.BASE_URL if self.BASE_URL is not None else self.url
+        return ReleaseLink(baseurl, href, self.build_re.match(href).group(1))
+
+
+class OfficialReleaseLinkExtractor(ReleaseLinkExtractor):
+    BASE_URL = "http://releases.openelec.tv"
 
 
 class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
-
     BUILD_RE = ".*OpenELEC-{0}.DA-([\d\.]+)\.tar(|\.bz2)"
 
 
@@ -251,7 +254,7 @@ def sources(arch):
                         BuildsURL("http://snapshots.openelec.tv")),
                        ("Official Releases",
                         BuildsURL("http://openelec.mirrors.uk2.net",
-                                  extractor=ReleaseLinkExtractor)),
+                                  extractor=OfficialReleaseLinkExtractor)),
                        ("Official Archive",
                         BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
                        ("XBMCNightlyBuilds (Nightly Builds)",
