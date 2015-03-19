@@ -4,6 +4,7 @@ import sys
 import os
 import time
 from argparse import ArgumentParser
+from urlparse import urlparse
 
 addons = os.path.join(os.path.expanduser('~'), '.kodi', 'addons')
 if os.path.isdir(addons):
@@ -57,10 +58,14 @@ urls = builds.sources(arch)
 if args.source:
     try:
         build_url = urls[args.source]
-    except:
-        print '"{}" is not in the URL list'.format(args.source)
-        print 'Valid options are:\n\t{}'.format("\n\t".join(urls.keys()))
-        sys.exit(1)
+    except KeyError:
+        parsed = urlparse(args.source)
+        if parsed.scheme in ('http', 'https') and parsed.netloc:
+            build_url = builds.BuildsURL(args.source)
+        else:
+            print '"{}" is not in the list of available sources and is not a valid HTTP URL'.format(args.source)
+            print 'Valid options are:\n\t{}'.format("\n\t".join(urls.keys()))
+            sys.exit(1)
 else:
     source = get_choice(urls.keys())
     build_url = urls[source]
