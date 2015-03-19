@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="General">
-        <setting type="lsep" label="Source"/>
-        <setting label="Source URL" type="select" id="source" values="Official Snapshot Builds|Official Releases|Official Archive|Chris Swan (RPi)|MilhouseVH Builds (RPi)|DarkAngel2401 Dual Audio Builds|Other" default="Official Snapshot Builds"/>
-        <setting label="Custom URL" type="text" id="custom_url" enable="eq(-1,Other)" visible="eq(-1,Other)" subsetting="true"/>
-        <setting label="URL subdirectory" type="text" id="subdir" enable="!eq(-2,Official Releases)+!eq(-2,Other)" visible="!eq(-2,Official Releases)+!eq(-2,Other)"/>
+        <setting label="Selected source name" type="text" id="source_name" default="Official Snapshot Builds" visible="false"/>
+        <setting type="lsep" label="Custom source"/>
+        <setting label="Name" type="text" id="custom_source"/>
+        <setting label="URL" type="text" id="custom_url" enable="!eq(-1,)"/>
+        <setting label="Build type" type="enum" id="build_type" values="Development|Release" enable="!eq(-2,)"/>
         <setting type="lsep" label="Archive"/>
         <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
         <setting label="Archive directory" type="folder" id="archive_root" default="/storage" enable="eq(-1,true)"/>

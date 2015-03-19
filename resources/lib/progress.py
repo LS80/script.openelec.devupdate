@@ -122,7 +122,8 @@ def restart_countdown(message, timeout=10):
         progress.update(int((timeout - seconds) / timeout * 100),
                         message,
                         "Rebooting{}{}...".format((seconds > 0) * " in {} second".format(seconds),
-                                                  "s" * (seconds > 1)))
+                                                  "s" * (seconds > 1)),
+                        " ")
         xbmc.sleep(1000)
         if progress.iscanceled():
             restart = False

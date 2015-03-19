@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import glob
+import functools
 
 import xbmc, xbmcaddon, xbmcgui
 
@@ -27,13 +28,7 @@ def connection_error(msg):
     
 def bad_url(url, msg="URL not found."):
     xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the URL in the addon settings.")
-    __addon__.openSettings()
-
-def bad_source(source, msg="Source not found."):
-    xbmcgui.Dialog().ok("URL Error", msg, source,
-                        "Please set the source.")
-    __addon__.openSettings()
+                        "Please check the URL.")
     
 def url_error(url, msg):
     log_exception()
@@ -82,6 +77,22 @@ def remove_update_files():
 
 def notify(msg, time=12000):
     xbmcgui.Dialog().notification("OpenELEC Dev Update", msg, __icon__, time)
+    
+def busy():
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
+
+def not_busy():
+    xbmc.executebuiltin("Dialog.Close(busydialog)")
+    
+def showbusy(f):
+    @functools.wraps(f)
+    def busy_wrapper(*args, **kwargs):
+        busy()
+        try:
+            return f(*args, **kwargs)
+        finally:
+            not_busy()
+    return busy_wrapper    
             
 if __name__ == "__main__":
     if len(sys.argv) > 1:

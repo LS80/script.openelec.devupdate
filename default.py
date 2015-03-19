@@ -21,22 +21,25 @@ from __future__ import division
 
 import os
 import sys
-import urlparse
 import hashlib
 import tarfile
 import glob
+from urlparse import urlparse
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
+import requests
 
 from resources.lib import constants
 from resources.lib import progress
 from resources.lib import script_exceptions
 from resources.lib import utils
 from resources.lib.funcs import size_fmt
+from resources.lib import builds
 
 __addon__ = xbmcaddon.Addon()
 __icon__ = __addon__.getAddonInfo('icon')
 __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
+__path__ = xbmc.translatePath(__addon__.getAddonInfo('path'))
 
 
 def check_update_files():
@@ -107,127 +110,171 @@ def maybe_run_backup():
 
     if do_backup:
         xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)')
-
-
-class BuildList():
-    def __init__(self, arch, source):
-        self._arch = arch
-        self._source = source
-
-    def create(self):
-        import requests
-
-        from resources.lib import builds
-
-        try:
-            self.installed_build = builds.get_installed_build()
-        except requests.ConnectionError as e:
-            utils.connection_error(str(e))
-            sys.exit(1)
-           
-        subdir = __addon__.getSetting('subdir')
-    
-        # Get the url from the settings.
-        utils.log("Source = " +  self._source)
-        if self._source == "Other":
-            # Custom URL
-            url = __addon__.getSetting('custom_url')
-            scheme, netloc = urlparse.urlparse(url)[:2]
-            if not (scheme and netloc):
-                utils.bad_url(url, "Invalid URL")
-                sys.exit(1)
-            
-            build_url = builds.BuildsURL(url, subdir)
-        else:
-            # Defined URL
-            try:
-                build_url = builds.sources(self._arch)[self._source]
-            except KeyError:
-                utils.bad_source(self._source)
-                sys.exit(1)
-            else:
-                if subdir:
-                    utils.log("Using subdirectory = " + subdir)
-                    build_url.add_subdir(subdir)
-            url = build_url.url
         
-        utils.log("Full URL = " + url)
 
-        if __addon__.getSetting('set_timeout') == 'true':
-            timeout = int(__addon__.getSetting('timeout'))
-        else:
-            timeout = None
-    
-        try:
-            # Get the list of build links.
-            with build_url.extractor() as extractor:
-                links = sorted(set(extractor.get_links(self._arch, timeout)), reverse=True)
-        except requests.ConnectionError as e:
-            utils.connection_error(str(e))
-            sys.exit(1)
-        except builds.BuildURLError as e:
-            utils.bad_url(url, str(e))
-            sys.exit(1)
-        except requests.RequestException as e:
-            utils.url_error(url, str(e))
-            sys.exit(1)
-
+@utils.showbusy 
+def get_build_links(build_url, arch, timeout):
+    links = []
+    try:
+        # Get the list of build links.
+        with build_url.extractor() as extractor:
+            links = sorted(set(extractor.get_links(arch, timeout)), reverse=True)
+    except requests.ConnectionError as e:
+        utils.connection_error(str(e))
+    except builds.BuildURLError as e:
+        utils.bad_url(build_url.url, str(e))
+    except requests.RequestException as e:
+        utils.url_error(build_url.url, str(e))
+    else:
         if not links:
-            utils.bad_url(url, "No builds were found for {}.".format(self._arch))
-            sys.exit(1)
-            
-        return links
-        
-    def __enter__(self):
-        xbmc.executebuiltin("ActivateWindow(busydialog)")
-        return self
+            utils.bad_url(build_url.url, "No builds were found for {}.".format(arch))
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        xbmc.executebuiltin("Dialog.Close(busydialog)")
+    return links
+        
+        
+class BuildSelectDialog(xbmcgui.WindowXMLDialog):
+    LABEL_ID = 100
+    BUILD_LIST_ID = 20
+    SOURCE_LIST_ID = 10
+    
+    def __new__(cls, _1):
+        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", __path__)
+    
+    def __init__(self, installed_build):
+        self._installed_build = installed_build
+
+        if __addon__.getSetting('set_arch') == 'true':
+            self._arch = __addon__.getSetting('arch')
+        else:
+            self._arch = constants.ARCH
+            
+        if __addon__.getSetting('set_timeout') == 'true':
+            self._timeout = int(__addon__.getSetting('timeout'))
+        else:
+            self._timeout = None
+        
+        self._sources = builds.sources(self._arch)
+        custom_name = __addon__.getSetting('custom_source')
+        if custom_name:
+            custom_url = __addon__.getSetting('custom_url')
+            scheme, netloc = urlparse(custom_url)[:2]
+            if not scheme in ('http', 'https') or not netloc:
+                utils.bad_url(custom_url, "Invalid URL")
+            else:
+                custom_extractor = (builds.BuildLinkExtractor, builds.ReleaseLinkExtractor)[int(__addon__.getSetting('build_type'))]
+                self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)   
+               
+        self._initial_source = __addon__.getSetting('source_name')
+        try:
+            build_url = self._sources[self._initial_source]
+        except KeyError:
+            build_url = self._sources.itervalues().next()
+            self._initial_source = self._sources.iterkeys().next()
+        self._builds = get_build_links(build_url, self._arch, self._timeout)
+
+    def __nonzero__(self):
+        return self._selected_build is not None
+
+    def onInit(self):
+        self._selected_build = None
+
+        self._sources_list = self.getControl(self.SOURCE_LIST_ID)
+        self._sources_list.addItems(self._sources.keys())
+        
+        self._build_list = self.getControl(self.BUILD_LIST_ID)
+        
+        label = "Arch: {0}".format(self._arch)
+        self.getControl(self.LABEL_ID).setLabel(label)
+
+        if self._builds:
+            self._selected_source_position = self._sources.keys().index(self._initial_source)
+
+            self._set_builds(self._builds)
+            self.setFocusId(self.BUILD_LIST_ID)
+        else:
+            self._selected_source_position = 0
+            self._initial_source = self._sources.iterkeys().next()
+            self.setFocusId(self.SOURCE_LIST_ID)
+
+        self._selected_source = self._initial_source
+
+        self._sources_list.selectItem(self._selected_source_position)
+
+        self._selected_source_item = self._sources_list.getListItem(self._selected_source_position)
+        self._selected_source_item.setLabel2('selected')
+
+    @property
+    def selected_build(self):
+        return self._selected_build
+
+    @property
+    def selected_source(self):
+        return self._selected_source
+
+    def onClick(self, controlID):
+        if controlID == self.BUILD_LIST_ID:
+            self._selected_build = self._builds[self._build_list.getSelectedPosition()]
+            self.close()
+        elif controlID == self.SOURCE_LIST_ID:
+            build_url = self._get_build_url()
+            builds = get_build_links(build_url, self._arch, self._timeout)
+
+            if builds:
+                self._selected_source_item.setLabel2('')
+                self._selected_source_item = self._sources_list.getSelectedItem()
+                self._selected_source_position = self._sources_list.getSelectedPosition()
+                self._selected_source_item.setLabel2('selected')
+                self._selected_source = self._selected_source_item.getLabel()
+
+                self._set_builds(builds)
+                self.setFocusId(self.BUILD_LIST_ID)
+            else:
+                self._sources_list.selectItem(self._selected_source_position)
+
+    def _get_build_url(self):
+        source = self._sources_list.getSelectedItem().getLabel()     
+        build_url = self._sources[source]
+
+        #subdir = __addon__.getSetting('subdir')
+        #if subdir:
+        #    utils.log("Using subdirectory = " + subdir)
+        #    build_url.add_subdir(subdir)
+
+        utils.log("Full URL = " + build_url.url)
+        return build_url
+
+    def _set_builds(self, builds):
+        self._builds = builds
+        self._build_list.reset()
+        for build in builds:
+            li = xbmcgui.ListItem(str(build))
+            if build > self._installed_build:
+                icon = 'upgrade'
+            elif build < self._installed_build:
+                icon = 'downgrade'
+            else:
+                icon = 'installed'
+            li.setIconImage("{}.png".format(icon))
+            self._build_list.addItem(li)
 
 
 class Main(object):
-
     def __init__(self):
         utils.log("Starting")
         check_update_files()
 
-        if __addon__.getSetting('set_arch') == 'true':
-            self.arch = __addon__.getSetting('arch')
-        else:
-            self.arch = constants.ARCH
-            
-        self.source = __addon__.getSetting('source')
+        self.background = __addon__.getSetting('background') == 'true'
+        self.archive = __addon__.getSetting('archive') == 'true'
+        self.archive_root = __addon__.getSetting('archive_root')
+        self.verify_files = __addon__.getSetting('verify_files') == 'true'
+        
+        self.installed_build = self.get_installed_build()
 
-        with BuildList(self.arch, self.source) as build_list:
-            self.background = __addon__.getSetting('background') == 'true'
-            self.archive = __addon__.getSetting('archive') == 'true'
-            self.archive_root = __addon__.getSetting('archive_root')
-            self.verify_files = __addon__.getSetting('verify_files') == 'true'
-            
-            if self.archive:
-                self.archive_tar_path = None
-                self.archive_dir = os.path.join(self.archive_root, self.source)
-                utils.log("Archive builds to " + self.archive_dir)
-                if not xbmcvfs.exists(self.archive_root):
-                    utils.log("Unable to access archive")
-                    xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(self.archive_root),
-                                        "Check the archive directory in the addon settings.")
-                    __addon__.openSettings()
-                    sys.exit(1)
-                elif not xbmcvfs.mkdir(self.archive_dir):
-                    utils.log("Unable to create directory in archive")
-                    xbmcgui.Dialog().ok("Directory Error", "Unable to create {}.".format(self.archive_dir),
-                                        "Check the archive directory permissions.")
-                    sys.exit(1)
-
-            cd_tmp_dir()
-            
-            self.links = build_list.create()            
-
-            self.installed_build = build_list.installed_build
+        cd_tmp_dir()
             
         self.select_build()
+
+        self.check_archive()
 
         self.maybe_download()
         
@@ -247,35 +294,43 @@ class Main(object):
 
         self.confirm()
 
+    def get_installed_build(self):        
+        try:
+            return builds.get_installed_build()
+        except requests.ConnectionError as e:
+            utils.connection_error(str(e))
+            sys.exit(1)
+
+    def check_archive(self):
+        if self.archive:
+            self.archive_tar_path = None
+            self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
+            utils.log("Archive builds to " + self.archive_dir)
+            if not xbmcvfs.exists(self.archive_root):
+                utils.log("Unable to access archive")
+                xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(self.archive_root),
+                                    "Check the archive directory in the addon settings.")
+                __addon__.openSettings()
+                sys.exit(1)
+            elif not xbmcvfs.mkdir(self.archive_dir):
+                utils.log("Unable to create directory in archive")
+                xbmcgui.Dialog().ok("Directory Error", "Unable to create {}.".format(self.archive_dir),
+                                    "Check the archive directory permissions.")
+                sys.exit(1)
+
     def select_build(self):
-        # TODO - what if INSTALLED_BUILD is a release with no date? 
-
-        from resources.lib import gui
-
-        build_select = gui.BuildSelect(self.arch)
-        
-        build_select.setSource(self.source)
-
-        build_list = []
-        for build in self.links:
-            li = xbmcgui.ListItem(str(build))
-            if build > self.installed_build:
-                icon = 'upgrade'
-            elif build < self.installed_build:
-                icon = 'downgrade'
-            else:
-                icon = 'installed'
-            li.setIconImage("{}.png".format(icon))
-            build_list.append(li)
-        build_select.setBuilds(build_list)
-
+        build_select = BuildSelectDialog(self.installed_build)
         build_select.doModal()
-
+        
+        self.selected_source = build_select.selected_source
+        __addon__.setSetting('source_name', self.selected_source)
+        utils.log("Selected source: " + str(self.selected_source))
+        
         if not build_select:
             sys.exit(0)
 
-        selected_build = self.links[build_select.selected]
-        utils.log("Selected build " + str(selected_build))
+        selected_build = build_select.selected_build
+        utils.log("Selected build: " + str(selected_build))
     
         # Confirm the update.
         msg = "{} -> {}?".format(self.installed_build, selected_build)
@@ -293,8 +348,6 @@ class Main(object):
         self.selected_build = selected_build
 
     def maybe_download(self):
-        import requests
-
         try:
             remote_file = self.selected_build.remote_file()
         except requests.RequestException as e:
@@ -515,8 +568,6 @@ class Main(object):
 
 
 if len(sys.argv) > 1 and sys.argv[1] == "check":
-    from resources.lib import builds
-    
     check_prompt = int(__addon__.getSetting('check_prompt'))
     check_official = __addon__.getSetting('check_official') == 'true'
     

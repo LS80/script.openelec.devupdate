@@ -220,6 +220,9 @@ class BuildsURL(object):
         
         self._extractor = extractor
         
+    def __str__(self):
+        return self.url
+        
     def extractor(self):
         return self._extractor(self.url)
         
@@ -257,12 +260,6 @@ def sources(arch):
                                   extractor=OfficialReleaseLinkExtractor)),
                        ("Official Archive",
                         BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
-                       ("XBMCNightlyBuilds (Nightly Builds)",
-                        BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS",
-                                  subdir=arch.split('.')[0])),
-                       ("XBMCNightlyBuilds (Official Stable Builds Mirror)",
-                        BuildsURL("http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS",
-                                  extractor=ReleaseLinkExtractor)),
                        ("Chris Swan (RPi)",
                         BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
                        ("MilhouseVH Builds (RPi)",
