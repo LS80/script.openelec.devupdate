@@ -16,10 +16,10 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/LS80/script.openelec.devupdate">View on GitHub</a>
+            <a id="forkme_banner" href="https://github.com/LS80/script.openelec.devupdate">View on GitHub</a>
 
-          <h1 id="project_title">OpenELEC Dev Update</h1>
-          <h2 id="project_tagline">Unofficial update add-on for OpenELEC</h2>
+            <h1 id="project_title">OpenELEC Dev Update</h1>
+            <h2 id="project_tagline">Unofficial update add-on for OpenELEC</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/LS80/script.openelec.devupdate/zipball/master">Download this project as a .zip file</a>
@@ -31,13 +31,52 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p><img src="https://raw.github.com/LS80/script.openelec.devupdate/master/icon.png" alt="Icon"></p>
 
-<p><strong>OpenELEC Dev Update makes it easy to upgrade/downgrade OpenELEC development builds from a variety of sources, without leaving the XBMC interface.</strong></p>
+            <img class="thumbnail" src="https://raw.github.com/LS80/script.openelec.devupdate/master/icon.png" alt="Icon">
+<h3>Usage</h3>
+<p>OpenELEC Dev Update makes it easy to upgrade/downgrade OpenELEC development builds by downloading directly from websites which host them.</p>
 
-<p><strong>When you run the add-on manually you get a list of available builds from the specified source URL (configured in the add-on settings). There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</strong></p>
+<p>The add-on shows a list of available build sources and a list of builds available at the currently selected source. There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/notification.png" alt="Notification"></p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/builds.png" alt="Build list"></p>
 
-<p>To perform an update the add-on will download the (possibly bzip compressed) tar file and extract the SYSTEM and KERNEL update images, and the associated md5 checksum files, into the /storage/.update folder. The update will then be installed on the next reboot. This process is documented on the <a href="http://wiki.openelec.tv/index.php/Updating_OpenELEC#Manually_Updating_OpenELEC">OpenELEC wiki</a>.</p>
+<p>To perform an update the add-on will download the (possibly bzip compressed) tar file into the /storage/.update folder. The update will then be installed on the next reboot. This process is as documented on the <a href="http://wiki.openelec.tv/index.php/Updating_OpenELEC#Manually_Updating_OpenELEC">OpenELEC wiki</a>.</p>
+
+<h3><a name="sources" class="anchor" href="#sources"><span class="octicon octicon-link"></span></a>Sources</h3>
+<ul>
+<li>Official Releases</li>
+<li><a href="http://snapshots.openelec.tv">Official Daily Builds</a> [<a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a>] </li>
+<li><a href="http://archive.openelec.tv">Official Archive</a></li>
+<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
+<li><a href="http://milhouse.openelec.tv/builds/master">MilhouseVH builds (RPi)</a> [<a href="http://forum.kodi.tv/showthread.php?tid=211501s">Forum</a>]</li>
+</ul>
+
+<h3><a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<ol>
+<li>Install my repository from <a href="http://goo.gl/csQU8h">xbmc.repo.leopold.zip</a>.</li>
+<li>Install <strong>OpenELEC Dev Update</strong> from <strong>Leopold's Add-ons</strong> under <strong>Program Add-ons</strong>.</li>
+</ol><p>Installing this way will ensure that the add-on is kept up-to-date as I push out updates to the repository.</p>
+
+<p>Here is the latest <a href="https://raw.github.com/LS80/script.openelec.devupdate/master/changelog.txt">changelog</a>.</p>
+
+<h3>Frequently asked questions</h3>
+<ol>
+<li>
+<strong>Can I use a URL other than those provided?</strong>
+Yes, an additional custom URL can be configured in the add-on settings.
+</li>
+
+<li>
+<strong>Is there a way to run it from the command line?</strong>
+Yes you can log in via ssh and run 
+<pre>
+chmod +x .kodi/addons/script.openelec.devupdate/download.py
+ln -s .kodi/addons/script.openelec.devupdate/download.py
+download.py --help
+</pre>
+</li>
+</ol>
 
 <hr><p>Please note that this is not an "official" OpenELEC add-on. If you hit any problems with it, don't ask for support from the OpenELEC team, please post on this <a href="http://openelec.tv/forum/128-addons/49855">OpenELEC forum thread</a> or raise an <a href="https://github.com/LS80/script.openelec.devupdate/issues/new">issue</a>. If you have any comments/questions/suggestions please also post on the thread.</p>
 
@@ -45,18 +84,9 @@
 <li><p><strong>Please be aware that development builds often have major bugs. you may experience frequent crashes or other problems when using these builds. stick to the official stable builds where possible. Do not use a development build unless there is a specific need.</strong></p></li>
 <li><p><strong>To avoid potential issues with configuration, it is best to do a fresh install when switching from a stable to a development build, and vice versa.</strong></p></li>
 <li><p><strong>It is advised to backup the userdata folder when updating. This step can now be automated by the add-on, thanks to <a href="http://wiki.xbmc.org/index.php?title=Add-on:XBMC_Backup">XBMC Backup</a>.</strong></p></li>
-</ul><h2>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+</ul>
 
-<ol>
-<li>Install my XBMC repository from <a href="http://goo.gl/csQU8h">xbmc.repo.leopold.zip</a>.</li>
-<li>Install <strong>OpenELEC Dev Update</strong> from <strong>Leopold's Add-ons</strong> under <strong>Program Add-ons</strong>.</li>
-</ol><p>Installing this way will ensure that the add-on is kept up-to-date as I push out updates to the repository.</p>
-
-<p>Here is the latest <a href="https://raw.github.com/LS80/script.openelec.devupdate/master/changelog.txt">changelog</a>.</p>
-
-<h2>
-<a name="reporting-issues" class="anchor" href="#reporting-issues"><span class="octicon octicon-link"></span></a>Reporting Issues</h2>
+<h3><a name="reporting-issues" class="anchor" href="#reporting-issues"><span class="octicon octicon-link"></span></a>Reporting Issues</h3>
 
 <p>If you get a script error or other problem please raise an <a href="https://github.com/LS80/script.openelec.devupdate/issues/new">issue</a> or post on the <a href="http://openelec.tv/forum/128-addons/49855">OpenELEC forum thread</a>. If you can reproduce the problem then please include a debug log, by following these steps:</p>
 
@@ -71,29 +101,17 @@
 <li>Use the add-on "XBMC Log Uploader".</li>
 </ol>
 </li>
-</ul><h2>
-<a name="sources" class="anchor" href="#sources"><span class="octicon octicon-link"></span></a>Sources</h2>
+</ul>
 
-<ul>
-<li>Official Releases</li>
-<li>
-<a href="http://sources.openelec.tv/tmp/image">Official Daily Builds</a> [<a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a>] </li>
-<li><a href="http://archive.openelec.tv">Official Archive</a></li>
-<li><a href="http://mirrors.xbmcnightlybuilds.com/OpenELEC_DEV_BUILDS">XBMCNightlyBuilds (Nightly Builds)</a></li>
-<li><a href="http://mirrors.xbmcnightlybuilds.com/OpenELEC_STABLE_BUILDS">XBMCNightlyBuilds (Official Stable Builds Mirror)</a></li>
-<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
-<li>
-<a href="http://netlir.dk/rbej/builds/Gotham">Rbej Gotham builds (RPi)</a> [<a href="http://forum.xbmc.org/showthread.php?tid=169674">Forum</a>]</li>
-<li>
-<a href="http://netlir.dk/rbej/builds/MilhouseVH">MilhouseVH builds (RPi)</a> [<a href="http://forum.xbmc.org/showthread.php?tid=169674">Forum</a>]</li>
-</ul><h2>
-<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h2>
+<h3><a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
 
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/settings.png" alt="Settings"></p>
 
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/builds.png" alt="Build list"></p>
 
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/downloading.png" alt="Downloading"></p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/retrieving_background.png" alt="Retrieving from archive"></p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/rebooting.png" alt="Rebooting"></p>
       </section>
     </div>
 
