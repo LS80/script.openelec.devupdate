@@ -10,11 +10,11 @@
         <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
         <setting label="Archive directory" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)"/>
         <setting type="lsep" label="Misc"/>
-        <setting label="Run in background" type="bool" id="background" default="false"/>
-        <setting label="Verify files" type="bool" id="verify_files" default="true"/>
+        <setting label="Run in background" type="bool" id="background" default="true"/>
+        <setting label="Verify files" type="bool" id="verify_files" default="false"/>
     </category>
     <category label="Notifications">
-        <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="true"/>
+        <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="false"/>
         <setting type="sep"/>
         <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
