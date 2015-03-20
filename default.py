@@ -264,8 +264,6 @@ class Main(object):
         check_update_files()
 
         self.background = __addon__.getSetting('background') == 'true'
-        self.archive = __addon__.getSetting('archive') == 'true'
-        self.archive_root = __addon__.getSetting('archive_root')
         self.verify_files = __addon__.getSetting('verify_files') == 'true'
         
         self.installed_build = self.get_installed_build()
@@ -302,7 +300,10 @@ class Main(object):
             sys.exit(1)
 
     def check_archive(self):
+        self.archive = __addon__.getSetting('archive') == 'true'
         if self.archive:
+            archive_root = __addon__.getSetting('archive_root')
+            self.archive_root = archive_root if archive_root.endswith('/') else archive_root + '/'
             self.archive_tar_path = None
             self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
             utils.log("Archive builds to " + self.archive_dir)
