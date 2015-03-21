@@ -585,7 +585,7 @@ def check_for_new_build():
         utils.log("Unable to get installed build so exiting")
         sys.exit(1)
 
-    source = __addon__.getSetting('source')
+    source = __addon__.getSetting('source_name')
     if (isinstance(installed_build, builds.Release) and source == "Official Releases"
         and not check_official):
         # Don't do the job of the official auto-update system.
@@ -597,13 +597,8 @@ def check_for_new_build():
             else:
                 arch = constants.ARCH
 
-            subdir = __addon__.getSetting('subdir')
-            if source == "Other":
-                url = __addon__.getSetting('custom_url')
-                build_url = builds.BuildsURL(url, subdir)
-            else:
-                build_url = builds.sources(arch)[source]
-                url = build_url.url
+            build_url = builds.sources(arch)[source]
+            url = build_url.url
 
             if __addon__.getSetting('set_timeout') == 'true':
                 timeout = int(__addon__.getSetting('timeout'))
