@@ -615,8 +615,8 @@ def check_for_new_build():
                     else:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
                         if xbmcgui.Dialog().yesno(__name__,
-                                                  "A more recent build is available:   {}".format(latest),
-                                                  "Current build:   {}".format(installed_build),
+                                                  "A more recent build is available:   [COLOR lightskyblue]{}[/COLOR]".format(latest),
+                                                  "Current build:   [COLOR lightskyblue]{}[/COLOR]".format(installed_build),
                                                   "Show builds available to install?",
                                                   autoclose=autoclose_ms):
                             Main()
