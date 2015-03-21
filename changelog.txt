@@ -1,3 +1,7 @@
+4.2.0
+ - Added a setting to control the new build check interval.
+ - Bug fixes.
+
 4.1.0
  - Fixed a problem with the default archive directory due to a missing trailing slash.
  - Flipped some default settings.
