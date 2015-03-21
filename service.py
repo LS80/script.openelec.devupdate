@@ -60,10 +60,12 @@ else:
 
 
 check_enabled = __addon__.getSetting('check') == 'true'
-check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
 if check_enabled:
     xbmc.executebuiltin("RunScript({},check)".format(constants.__scriptid__))
+    check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
+    check_interval = int(__addon__.getSetting('check_interval'))
     if not check_onbootonly:
         # Start a timer to check for a new build every 3 hours.    
         utils.log("Starting build check timer")
-        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),03:00:00,silent,loop)".format(constants.__scriptid__))
+        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.__scriptid__,
+                                                                                                                check_interval))

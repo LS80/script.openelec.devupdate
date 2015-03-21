@@ -18,8 +18,9 @@
         <setting type="sep"/>
         <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
-        <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-2,true)" subsetting="true" default="1"/>
-        <setting label="Enable for official releases" type="bool" id="check_official" enable="eq(-3,true)" subsetting="true" default="false"/>
+        <setting label="Check interval in hours (requires restart)" type="slider" id="check_interval" enable="eq(-2,true) + eq(-1,false)" subsetting="true" default="3" range="1,1,24" option="int"/>
+        <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-3,true)" subsetting="true" default="1"/>
+        <setting label="Enable for official releases" type="bool" id="check_official" enable="eq(-4,true)" subsetting="true" default="false"/>
     </category>
     <category label="Actions">
         <setting type="bool" id="update_pending" visible="false"/>

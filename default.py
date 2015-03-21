@@ -37,6 +37,7 @@ from resources.lib.funcs import size_fmt
 from resources.lib import builds
 
 __addon__ = xbmcaddon.Addon()
+__name__ = __addon__.getAddonInfo('name')
 __icon__ = __addon__.getAddonInfo('icon')
 __dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
 __path__ = xbmc.translatePath(__addon__.getAddonInfo('path'))
@@ -569,12 +570,14 @@ class Main(object):
                 utils.notify("Build {} will install on the next reboot".format(self.selected_build))
 
 
-utils.log("Script arguments: {}".format(sys.argv))
-if len(sys.argv) > 1 and sys.argv[1] == "check":
+def check_for_new_build():
     utils.log("Checking for a new build")
     
     check_prompt = int(__addon__.getSetting('check_prompt'))
     check_official = __addon__.getSetting('check_official') == 'true'
+    check_interval = int(__addon__.getSetting('check_interval'))
+
+    autoclose_ms = check_interval * 3540000 # check interval in ms - 1 min
     
     try:
         installed_build = builds.get_installed_build()
@@ -616,14 +619,19 @@ if len(sys.argv) > 1 and sys.argv[1] == "check":
                         utils.notify("Build {} is available".format(latest), 7500)
                     else:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
-                        if xbmcgui.Dialog().yesno("OpenELEC Dev Update",
+                        if xbmcgui.Dialog().yesno(__name__,
                                                   "A more recent build is available:   {}".format(latest),
                                                   "Current build:   {}".format(installed_build),
-                                                  "Show builds available to install?"):
+                                                  "Show builds available to install?",
+                                                  autoclose=autoclose_ms):
                             Main()
         except:
             pass
 
+
+utils.log("Script arguments: {}".format(sys.argv))
+if len(sys.argv) > 1 and sys.argv[1] == "check":
+    check_for_new_build()
 else:
     Main()
 
