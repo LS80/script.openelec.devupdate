@@ -597,15 +597,21 @@ def check_for_new_build():
             else:
                 arch = constants.ARCH
 
-            build_url = builds.sources(arch)[source]
+            build_sources = builds.sources(arch)
+            try:
+                build_url = build_sources[source]
+            except KeyError:
+                utils.log("{} is not a valid source".format(source))
+                return
+
             url = build_url.url
+            utils.log("Checking {}".format(url))
 
             if __addon__.getSetting('set_timeout') == 'true':
                 timeout = int(__addon__.getSetting('timeout'))
             else:
                 timeout = None
-    
-            utils.log("Checking {}".format(url))
+
             with build_url.extractor() as parser:
                 latest = sorted(parser.get_links(arch, timeout), reverse=True)[0]
                 if latest > installed_build:

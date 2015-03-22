@@ -256,9 +256,9 @@ def sources(arch):
     sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv")
 
     if arch.startswith("RPi"):
-        sources_dict["Chris Swan Builds (RPi)"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
-        sources_dict["MilhouseVH Builds (RPi)"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
+        sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                             subdir=arch.split('.')[0])
+        sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
 
     sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
                                                   extractor=OfficialReleaseLinkExtractor)
