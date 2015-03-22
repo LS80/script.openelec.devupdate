@@ -252,23 +252,21 @@ def get_installed_build():
 
 
 def sources(arch):
-    return OrderedDict((
-                       ("Official Snapshot Builds",
-                        BuildsURL("http://snapshots.openelec.tv")),
-                       ("Official Releases",
-                        BuildsURL("http://openelec.mirrors.uk2.net",
-                                  extractor=OfficialReleaseLinkExtractor)),
-                       ("Official Archive",
-                        BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)),
-                       ("Chris Swan (RPi)",
-                        BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")),
-                       ("MilhouseVH Builds (RPi)",
-                        BuildsURL("http://milhouse.openelec.tv/builds/master", subdir=arch.split('.')[0])),
-                       ("DarkAngel2401 Dual Audio Builds",
-                        BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/", subdir=arch,
-                                  extractor=DualAudioReleaseLinkExtractor))
-                      ))
+    sources_dict = OrderedDict()
+    sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv")
+    sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
+                                                  extractor=OfficialReleaseLinkExtractor)
+    sources_dict["Official Archive"] = BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)
 
+    if arch.startswith("RPi"):
+        sources_dict["Chris Swan Builds (RPi)"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
+        sources_dict["MilhouseVH Builds (RPi)"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
+                                                            subdir=arch.split('.')[0])
+
+    sources_dict["DarkAngel2401 Dual Audio Builds"] = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
+                                                                subdir=arch,
+                                                                extractor=DualAudioReleaseLinkExtractor)
+    return sources_dict
 
 if __name__ == "__main__":
     import sys
