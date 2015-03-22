@@ -254,14 +254,15 @@ def get_installed_build():
 def sources(arch):
     sources_dict = OrderedDict()
     sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv")
-    sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
-                                                  extractor=OfficialReleaseLinkExtractor)
-    sources_dict["Official Archive"] = BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)
 
     if arch.startswith("RPi"):
         sources_dict["Chris Swan Builds (RPi)"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
         sources_dict["MilhouseVH Builds (RPi)"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                             subdir=arch.split('.')[0])
+
+    sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
+                                                  extractor=OfficialReleaseLinkExtractor)
+    sources_dict["Official Archive"] = BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)
 
     sources_dict["DarkAngel2401 Dual Audio Builds"] = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
                                                                 subdir=arch,
