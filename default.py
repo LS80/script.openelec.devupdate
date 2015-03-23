@@ -113,30 +113,14 @@ def maybe_run_backup():
         xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)')
         
 
-@utils.showbusy 
-def get_build_links(build_url, arch, timeout):
-    links = []
-    try:
-        # Get the list of build links.
-        with build_url.extractor() as extractor:
-            links = sorted(set(extractor.get_links(arch, timeout)), reverse=True)
-    except requests.ConnectionError as e:
-        utils.connection_error(str(e))
-    except builds.BuildURLError as e:
-        utils.bad_url(build_url.url, str(e))
-    except requests.RequestException as e:
-        utils.url_error(build_url.url, str(e))
-    else:
-        if not links:
-            utils.bad_url(build_url.url, "No builds were found for {}.".format(arch))
 
-    return links
-        
-        
+
+
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     LABEL_ID = 100
     BUILD_LIST_ID = 20
     SOURCE_LIST_ID = 10
+    BUILD_INFO_ID = 200
     
     def __new__(cls, _1):
         return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", __path__)
@@ -163,15 +147,15 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 utils.bad_url(custom_url, "Invalid URL")
             else:
                 custom_extractor = (builds.BuildLinkExtractor, builds.ReleaseLinkExtractor)[int(__addon__.getSetting('build_type'))]
-                self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)   
+                self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)
                
         self._initial_source = __addon__.getSetting('source_name')
         try:
-            build_url = self._sources[self._initial_source]
+            self._build_url = self._sources[self._initial_source]
         except KeyError:
-            build_url = self._sources.itervalues().next()
+            self._build_url = self._sources.itervalues().next()
             self._initial_source = self._sources.iterkeys().next()
-        self._builds = get_build_links(build_url, self._arch, self._timeout)
+        self._builds = self._get_build_links(self._build_url)
 
     def __nonzero__(self):
         return self._selected_build is not None
@@ -187,11 +171,12 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         label = "Arch: {0}".format(self._arch)
         self.getControl(self.LABEL_ID).setLabel(label)
 
+        self._info_textbox = self.getControl(self.BUILD_INFO_ID)
+
         if self._builds:
             self._selected_source_position = self._sources.keys().index(self._initial_source)
 
             self._set_builds(self._builds)
-            self.setFocusId(self.BUILD_LIST_ID)
         else:
             self._selected_source_position = 0
             self._initial_source = self._sources.iterkeys().next()
@@ -203,6 +188,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         self._selected_source_item = self._sources_list.getListItem(self._selected_source_position)
         self._selected_source_item.setLabel2('selected')
+
+        self._build_infos = self._get_build_infos(self._build_url)
+        self._set_build_info()
 
     @property
     def selected_build(self):
@@ -218,19 +206,75 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self.close()
         elif controlID == self.SOURCE_LIST_ID:
             build_url = self._get_build_url()
-            builds = get_build_links(build_url, self._arch, self._timeout)
+            build_links = self._get_build_links(build_url)
 
-            if builds:
+            if build_links:
                 self._selected_source_item.setLabel2('')
                 self._selected_source_item = self._sources_list.getSelectedItem()
                 self._selected_source_position = self._sources_list.getSelectedPosition()
                 self._selected_source_item.setLabel2('selected')
                 self._selected_source = self._selected_source_item.getLabel()
 
-                self._set_builds(builds)
-                self.setFocusId(self.BUILD_LIST_ID)
+                self._set_builds(build_links)
+
+                self._build_infos = self._get_build_infos(build_url)
+                self._set_build_info()
             else:
                 self._sources_list.selectItem(self._selected_source_position)
+
+    def onAction(self, action):
+        action_id = action.getId()
+        if action_id in (xbmcgui.ACTION_MOVE_DOWN, xbmcgui.ACTION_MOVE_UP,
+                         xbmcgui.ACTION_MOUSE_MOVE):
+            self._set_build_info()
+
+        elif action_id in (xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK):
+            self.close()
+
+    def onFocus(self, controlID):
+        if controlID == self.BUILD_LIST_ID:
+            self._builds_focused = True
+        else:
+            self._builds_focused = False
+
+    @utils.showbusy
+    def _get_build_links(self, build_url):
+        links = []
+        try:
+            # Get the list of build links.
+            with build_url.extractor() as extractor:
+                links = sorted(set(extractor.get_links(self._arch, self._timeout)), reverse=True)
+        except requests.ConnectionError as e:
+            utils.connection_error(str(e))
+        except builds.BuildURLError as e:
+            utils.bad_url(build_url.url, str(e))
+        except requests.RequestException as e:
+            utils.url_error(build_url.url, str(e))
+        else:
+            if not links:
+                utils.bad_url(build_url.url, "No builds were found for {}.".format(self._arch))
+        return links
+
+    def _get_build_infos(self, build_url):
+        try:
+            with build_url.info_extractor() as extractor:
+                info = extractor.get_info(self._timeout)
+        except Exception as e:
+            utils.log("Unable to retrieve build info: {}".format(str(e)))
+            info = {}
+        return info
+                
+    def _set_build_info(self):
+        info = ""
+        if self._builds_focused:
+            build_version = self._builds[self._build_list.getSelectedPosition()].version
+            try:
+                info = self._build_infos[build_version]
+            except KeyError:
+                utils.log("Build info for build {} not found".format(build_version))
+            else:
+                utils.log("Info for build {}:\n\t{}".format(build_version, info))
+        self._info_textbox.setText(info)
 
     def _get_build_url(self):
         source = self._sources_list.getSelectedItem().getLabel()     
@@ -257,6 +301,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 icon = 'installed'
             li.setIconImage("{}.png".format(icon))
             self._build_list.addItem(li)
+        self.setFocusId(self.BUILD_LIST_ID)
+        self._builds_focused = True
 
 
 class Main(object):

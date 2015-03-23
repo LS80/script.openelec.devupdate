@@ -8,17 +8,34 @@
             <height>960</height>
             <centerleft>960</centerleft>
             <centertop>540</centertop>
-            
+
             <control type="image">
                 <description>Background image</description>
                 <width>1100</width>
-                <texture colordiffuse="f0111111">white.png</texture>
+                <texture colordiffuse="f6111111">white.png</texture>
                     <!--
                     <bordertexture colordiffuse="ffb2afa8">white.png</bordertexture>
                     <colordiffuse>f0111111</colordiffuse>
                     <bordersize>2</bordersize>
                     -->
+            </control>
+
+            <control type="group">
+                <description>Bottom panel</description>
+                <top>830</top>
+	            <control type="image">
+	                <description>Separator</description>
+	                <top>0</top>
+	                <texture colordiffuse="99555555">white.png</texture>
+	            </control>
+                <control type="textbox" id="200">
+                    <left>40</left>
+                    <top>25</top>
+                    <height>130</height>
+                    <width>1030</width>
+                    <textcolor>ff87bde1</textcolor>
                 </control>
+            </control>
             
             <control type="group">
                 <description>Left panel</description>
@@ -122,6 +139,7 @@
                 <control type="group">
                     <description>Right panel</description>
                     <left>680</left>
+                    <height>830</height>
     
                     <control type="image">
                         <texture border="5">white.png</texture>
@@ -139,7 +157,7 @@
                         <left>0</left>
                         <top>25</top>
                         <width>420</width>
-                        <height>910</height>
+                        <height>780</height>
                         <pagecontrol>600</pagecontrol>
                         <onleft>10</onleft>
                         <itemlayout height="65" width="420">

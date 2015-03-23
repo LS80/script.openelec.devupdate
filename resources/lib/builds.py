@@ -146,24 +146,37 @@ class ReleaseLink(Release, BuildLinkBase):
         Release.__init__(self, release)
 
 
-class BuildLinkExtractor(object):
+class BaseExtractor(object):
+    URL = None
+
+    def __init__(self, url=None):
+        self.url = url if url is not None else self.URL
+        self._response = None
+
+    def _get_text(self, timeout=None):
+        self._response = requests.get(self.url, timeout=timeout)
+        if not self._response:
+            raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
+        return self._response.text
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._response is not None:
+            self._response.close()
+
+
+class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
 
     BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-(?:r|%23)(\d+[a-z]*)(|-g[0-9a-z]+)\.tar(|\.bz2)"
     CSS_CLASS = None
 
-    def __init__(self, url):
-        self.url = url
-        self._response = None
-
     def get_links(self, arch, timeout=None):
         self.build_re = re.compile(self.BUILD_RE.format(arch))
 
-        self._response = requests.get(self.url, timeout=timeout)
-        if not self._response:
-            raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
-
-        html = self._response.text
+        html = self._get_text(timeout)
         args = ['a']
         if self.CSS_CLASS is not None:
             args.append(self.CSS_CLASS)
@@ -182,17 +195,10 @@ class BuildLinkExtractor(object):
         href = link['href']
         return BuildLink(self.url, href, *self.build_re.match(href).groups()[:2])
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self._response is not None:
-            self._response.close()
-
 
 class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
-        
+
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
     BUILD_RE = ".*OpenELEC.*-{0}-([\d\.]+)\.tar(|\.bz2)"
@@ -212,13 +218,28 @@ class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
     BUILD_RE = ".*OpenELEC-{0}.DA-([\d\.]+)\.tar(|\.bz2)"
 
 
+class BuildInfoExtractor(BaseExtractor):
+    def get_info(self, timeout):
+        return {}   
+
+
+class MilhouseBuildInfoExtractor(BaseExtractor):
+    URL = "http://forum.kodi.tv/showthread.php?tid=211501"
+    R = re.compile("#(\d{4}).*?\((.+)\)")
+
+    def get_info(self, timeout):
+        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+        return dict(self.R.match(li.text).groups() for ul in soup.find('div', 'post-body')('ul') for li in ul('li'))
+
+
 class BuildsURL(object):
-    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor):
+    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor, info_extractor=BuildInfoExtractor):
         self.url = url
         if subdir:
             self.add_subdir(subdir)
         
         self._extractor = extractor
+        self.info_extractor = info_extractor
         
     def __str__(self):
         return self.url
@@ -257,7 +278,8 @@ def sources(arch):
 
     if arch.startswith("RPi"):
         sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
-                                                            subdir=arch.split('.')[0])
+                                                        subdir=arch.split('.')[0],
+                                                        info_extractor=MilhouseBuildInfoExtractor)
         sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
 
     sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
@@ -268,6 +290,7 @@ def sources(arch):
                                                                 subdir=arch,
                                                                 extractor=DualAudioReleaseLinkExtractor)
     return sources_dict
+
 
 if __name__ == "__main__":
     import sys
