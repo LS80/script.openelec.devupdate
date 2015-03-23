@@ -335,7 +335,9 @@ class Main(object):
         utils.log("Selected build: " + str(selected_build))
     
         # Confirm the update.
-        msg = "{} -> {}?".format(self.installed_build, selected_build)
+        msg = ("[COLOR=lightskyblue][B]{}[/B][/COLOR]"
+         "  to  [COLOR=lightskyblue][B]{}[/B][/COLOR] ?").format(self.installed_build,
+                                                                 selected_build)
         if selected_build < self.installed_build:
             args = ("Confirm downgrade", "Downgrade", msg)
         elif selected_build > self.installed_build:
