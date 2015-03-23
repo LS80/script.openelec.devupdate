@@ -69,7 +69,7 @@ def cd_tmp_dir():
 def maybe_disable_overclock():
     import re
     
-    if (constants.ARCH == 'RPi.arm' and
+    if (constants.ARCH.startswith('RPi') and
         os.path.isfile(constants.RPI_CONFIG_PATH) and
         __addon__.getSetting('disable_overclock') == 'true'):
         
