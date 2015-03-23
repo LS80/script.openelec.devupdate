@@ -344,7 +344,7 @@ class Main(object):
             args = ("Confirm upgrade", "Upgrade", msg)
         else:
             args = ("Confirm install",
-                    "Build {} is already installed.".format(selected_build),
+                    "Build  [COLOR=lightskyblue][B]{}[/B][/COLOR]  is already installed.".format(selected_build),
                     "Continue?")
         if not xbmcgui.Dialog().yesno(*args):
             sys.exit(0)
@@ -560,13 +560,13 @@ class Main(object):
         if __addon__.getSetting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno("Confirm reboot",
                                       " ",
-                                      "Reboot now to install build {}?"
+                                      "Reboot now to install build  [COLOR=lightskyblue][B]{}[/COLOR][/B] ?"
                                       .format(self.selected_build)):
                 xbmc.restart() 
             else:
                 utils.notify("Build {} will install on the next reboot".format(self.selected_build))
         else:
-            if progress.restart_countdown("Build {} is ready to install.".format(self.selected_build)):
+            if progress.restart_countdown("Build  [COLOR=lightskyblue][B]{}[/COLOR][/B]  is ready to install.".format(self.selected_build)):
                 xbmc.restart()
             else:
                 utils.notify("Build {} will install on the next reboot".format(self.selected_build))
