@@ -1,3 +1,8 @@
+4.4.0
+ - Added build information for Milhouse RPi Builds.
+ - Fixed RPi2 overclock disable.
+ - Blue highlight for build name in dialogs.
+
 4.3.0
  - Only show RPi build sources for RPi
 
