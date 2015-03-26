@@ -170,11 +170,11 @@ class BaseExtractor(object):
 class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = ".*OpenELEC.*-{0}-[a-zA-Z]+-(\d+)-(?:r|%23)(\d+[a-z]*)(|-g[0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*OpenELEC.*-{arch}-[a-zA-Z]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
     CSS_CLASS = None
 
     def get_links(self, arch, timeout=None):
-        self.build_re = re.compile(self.BUILD_RE.format(arch))
+        self.build_re = re.compile(self.BUILD_RE.format(arch=arch))
 
         html = self._get_text(timeout)
         args = ['a']
@@ -201,7 +201,7 @@ class DropboxBuildLinkExtractor(BuildLinkExtractor):
 
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ".*OpenELEC.*-{0}-([\d\.]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*OpenELEC.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
     BASE_URL = None
 
     def _create_link(self, link):
@@ -215,12 +215,16 @@ class OfficialReleaseLinkExtractor(ReleaseLinkExtractor):
 
 
 class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
-    BUILD_RE = ".*OpenELEC-{0}.DA-([\d\.]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*OpenELEC-{arch}.DA-([\d\.]+)\.tar(|\.bz2)"
+
+
+class MilhouseBuildLinkExtractor(BuildLinkExtractor):
+    BUILD_RE = ".*OpenELEC.*-{arch}-[a-zA-Z]+-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
 
 
 class BuildInfoExtractor(BaseExtractor):
     def get_info(self, timeout):
-        return {}   
+        return {}
 
 
 class MilhouseBuildInfoExtractor(BaseExtractor):
@@ -279,6 +283,7 @@ def sources(arch):
     if arch.startswith("RPi"):
         sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                         subdir=arch.split('.')[0],
+                                                        extractor=MilhouseBuildLinkExtractor,
                                                         info_extractor=MilhouseBuildInfoExtractor)
         sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
 
