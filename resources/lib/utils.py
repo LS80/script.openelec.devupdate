@@ -37,7 +37,7 @@ def bad_url(url, msg="URL not found."):
 def url_error(url, msg):
     log_exception()
     xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the XBMC log file.")
+                        "Please check the log file.")
     
 def write_error(path, msg):
     log_exception()

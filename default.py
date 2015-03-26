@@ -102,7 +102,7 @@ def maybe_run_backup():
         do_backup = False
     elif backup == 1:
         do_backup = xbmcgui.Dialog().yesno("Backup",
-                                           "Run XBMC Backup now?",
+                                           "Run Backup now?",
                                            "This is recommended")
         utils.log("Backup requested")
     elif backup == 2:
