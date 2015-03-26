@@ -11,12 +11,12 @@ from resources.lib import constants
 from resources.lib import utils
 from resources.lib.progress import restart_countdown
 
-__addon__ = xbmcaddon.Addon(constants.__scriptid__)
-__icon__ = __addon__.getAddonInfo('icon')
-__dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
+addon = xbmcaddon.Addon(constants.ADDON_ID)
+
+ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
 
 
-rpi_config_backup_file = os.path.join(__dir__, constants.RPI_CONFIG_FILE)
+rpi_config_backup_file = os.path.join(ADDON_DATA, constants.RPI_CONFIG_FILE)
 if os.path.exists(rpi_config_backup_file):
     utils.log("Re-enabling overclocking")
     utils.mount_readwrite()
@@ -31,7 +31,7 @@ if os.path.exists(rpi_config_backup_file):
         utils.log("Restart cancelled")
 
 
-update_extlinux_file = os.path.join(__dir__, constants.UPDATE_EXTLINUX)
+update_extlinux_file = os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX)
 if os.path.exists(update_extlinux_file):
     utils.log("Updating extlinux")
     utils.mount_readwrite()
@@ -40,7 +40,7 @@ if os.path.exists(update_extlinux_file):
     os.remove(update_extlinux_file)
 
 
-notify_file = os.path.join(__dir__, constants.NOTIFY_FILE)
+notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
 try:
     with open(notify_file) as f:
         build = f.read()
@@ -59,13 +59,13 @@ else:
         utils.log("Removed notification file")
 
 
-check_enabled = __addon__.getSetting('check') == 'true'
+check_enabled = addon.getSetting('check') == 'true'
 if check_enabled:
-    xbmc.executebuiltin("RunScript({},check)".format(constants.__scriptid__))
-    check_onbootonly = __addon__.getSetting('check_onbootonly') == 'true'
-    check_interval = int(__addon__.getSetting('check_interval'))
+    xbmc.executebuiltin("RunScript({},check)".format(constants.ADDON_ID))
+    check_onbootonly = addon.getSetting('check_onbootonly') == 'true'
+    check_interval = int(addon.getSetting('check_interval'))
     if not check_onbootonly:
         # Start a timer to check for a new build every 3 hours.    
         utils.log("Starting build check timer")
-        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.__scriptid__,
+        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.ADDON_ID,
                                                                                                                 check_interval))

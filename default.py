@@ -36,11 +36,11 @@ from resources.lib import utils
 from resources.lib.funcs import size_fmt
 from resources.lib import builds
 
-__addon__ = xbmcaddon.Addon()
-__name__ = __addon__.getAddonInfo('name')
-__icon__ = __addon__.getAddonInfo('icon')
-__dir__ = xbmc.translatePath(__addon__.getAddonInfo('profile'))
-__path__ = xbmc.translatePath(__addon__.getAddonInfo('path'))
+addon = xbmcaddon.Addon(constants.ADDON_ID)
+
+ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
+ADDON_PATH = xbmc.translatePath(addon.getAddonInfo('path'))
+ADDON_NAME = addon.getAddonInfo('name')
 
 
 def check_update_files():
@@ -60,18 +60,18 @@ def check_update_files():
 def cd_tmp_dir():
     # Move to the download directory.
     try:
-        os.makedirs(__dir__)
+        os.makedirs(ADDON_DATA)
     except OSError:
         pass
-    os.chdir(__dir__)
-    utils.log("chdir to " + __dir__)
+    os.chdir(ADDON_DATA)
+    utils.log("chdir to " + ADDON_DATA)
 
 def maybe_disable_overclock():
     import re
     
     if (constants.ARCH.startswith('RPi') and
         os.path.isfile(constants.RPI_CONFIG_PATH) and
-        __addon__.getSetting('disable_overclock') == 'true'):
+        addon.getSetting('disable_overclock') == 'true'):
         
         with open(constants.RPI_CONFIG_PATH, 'r') as a:
             config = a.read()
@@ -79,7 +79,7 @@ def maybe_disable_overclock():
         if constants.RPI_OVERCLOCK_RE.search(config):
 
             xbmcvfs.copy(constants.RPI_CONFIG_PATH,
-                         os.path.join(__dir__, constants.RPI_CONFIG_FILE))
+                         os.path.join(ADDON_DATA, constants.RPI_CONFIG_FILE))
 
             def repl(m):
                 return '#' + m.group(1)
@@ -93,11 +93,11 @@ def maybe_disable_overclock():
 
 def maybe_schedule_extlinux_update():
     if (constants.ARCH != 'RPi.arm' and
-        __addon__.getSetting('update_extlinux') == 'true'):
-        open(os.path.join(__dir__, constants.UPDATE_EXTLINUX), 'w').close()
+        addon.getSetting('update_extlinux') == 'true'):
+        open(os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX), 'w').close()
 
 def maybe_run_backup():
-    backup = int(__addon__.getSetting('backup'))
+    backup = int(addon.getSetting('backup'))
     if backup == 0:
         do_backup = False
     elif backup == 1:
@@ -123,33 +123,33 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     BUILD_INFO_ID = 200
     
     def __new__(cls, _1):
-        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", __path__)
+        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", ADDON_PATH)
     
     def __init__(self, installed_build):
         self._installed_build = installed_build
 
-        if __addon__.getSetting('set_arch') == 'true':
-            self._arch = __addon__.getSetting('arch')
+        if addon.getSetting('set_arch') == 'true':
+            self._arch = addon.getSetting('arch')
         else:
             self._arch = constants.ARCH
             
-        if __addon__.getSetting('set_timeout') == 'true':
-            self._timeout = int(__addon__.getSetting('timeout'))
+        if addon.getSetting('set_timeout') == 'true':
+            self._timeout = int(addon.getSetting('timeout'))
         else:
             self._timeout = None
         
         self._sources = builds.sources(self._arch)
-        custom_name = __addon__.getSetting('custom_source')
+        custom_name = addon.getSetting('custom_source')
         if custom_name:
-            custom_url = __addon__.getSetting('custom_url')
+            custom_url = addon.getSetting('custom_url')
             scheme, netloc = urlparse(custom_url)[:2]
             if not scheme in ('http', 'https') or not netloc:
                 utils.bad_url(custom_url, "Invalid URL")
             else:
-                custom_extractor = (builds.BuildLinkExtractor, builds.ReleaseLinkExtractor)[int(__addon__.getSetting('build_type'))]
+                custom_extractor = (builds.BuildLinkExtractor, builds.ReleaseLinkExtractor)[int(addon.getSetting('build_type'))]
                 self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)
                
-        self._initial_source = __addon__.getSetting('source_name')
+        self._initial_source = addon.getSetting('source_name')
         try:
             self._build_url = self._sources[self._initial_source]
         except KeyError:
@@ -280,7 +280,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         source = self._sources_list.getSelectedItem().getLabel()     
         build_url = self._sources[source]
 
-        #subdir = __addon__.getSetting('subdir')
+        #subdir = addon.getSetting('subdir')
         #if subdir:
         #    utils.log("Using subdirectory = " + subdir)
         #    build_url.add_subdir(subdir)
@@ -310,8 +310,8 @@ class Main(object):
         utils.log("Starting")
         check_update_files()
 
-        self.background = __addon__.getSetting('background') == 'true'
-        self.verify_files = __addon__.getSetting('verify_files') == 'true'
+        self.background = addon.getSetting('background') == 'true'
+        self.verify_files = addon.getSetting('verify_files') == 'true'
         
         self.installed_build = self.get_installed_build()
 
@@ -347,9 +347,9 @@ class Main(object):
             sys.exit(1)
 
     def check_archive(self):
-        self.archive = __addon__.getSetting('archive') == 'true'
+        self.archive = addon.getSetting('archive') == 'true'
         if self.archive:
-            archive_root = __addon__.getSetting('archive_root')
+            archive_root = addon.getSetting('archive_root')
             self.archive_root = archive_root if archive_root.endswith('/') else archive_root + '/'
             self.archive_tar_path = None
             self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
@@ -358,7 +358,7 @@ class Main(object):
                 utils.log("Unable to access archive")
                 xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(self.archive_root),
                                     "Check the archive directory in the addon settings.")
-                __addon__.openSettings()
+                addon.openSettings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
                 utils.log("Unable to create directory in archive")
@@ -371,7 +371,7 @@ class Main(object):
         build_select.doModal()
         
         self.selected_source = build_select.selected_source
-        __addon__.setSetting('source_name', self.selected_source)
+        addon.setSetting('source_name', self.selected_source)
         utils.log("Selected source: " + str(self.selected_source))
         
         if not build_select:
@@ -436,7 +436,7 @@ class Main(object):
                 utils.url_error(self.selected_build.url, str(e))
                 sys.exit(1)
             except script_exceptions.WriteError as e:
-                utils.write_error(os.path.join(__dir__, filename), str(e))
+                utils.write_error(os.path.join(ADDON_DATA, filename), str(e))
                 sys.exit(1)
 
         # Do the decompression if necessary.
@@ -452,13 +452,13 @@ class Main(object):
             except script_exceptions.Canceled:
                 sys.exit(0)
             except script_exceptions.WriteError as e:
-                utils.write_error(os.path.join(__dir__, tar_name), str(e))
+                utils.write_error(os.path.join(ADDON_DATA, tar_name), str(e))
                 sys.exit(1)
             except script_exceptions.DecompressError as e:
-                utils.decompress_error(os.path.join(__dir__, filename), str(e))
+                utils.decompress_error(os.path.join(ADDON_DATA, filename), str(e))
                 sys.exit(1)
 
-        __addon__.setSetting('update_pending', 'true')
+        addon.setSetting('update_pending', 'true')
 
     def maybe_extract(self):
         # Create the .update directory if necessary.
@@ -501,7 +501,7 @@ class Main(object):
                 utils.log("Skipping download and decompression")
         
                 archive = xbmcvfs.File(self.archive_tar_path)
-                tarfile = os.path.join(__dir__, self.selected_build.tar_name)
+                tarfile = os.path.join(ADDON_DATA, self.selected_build.tar_name)
         
                 try:
                     with progress.FileProgress("Retrieving tar file from archive",
@@ -522,7 +522,7 @@ class Main(object):
         if self.archive and not xbmcvfs.exists(self.archive_tar_path):
             utils.log("Archiving tar file to {}".format(self.archive_tar_path))
 
-            tarpath = os.path.join(__dir__, self.selected_build.tar_name)
+            tarpath = os.path.join(ADDON_DATA, self.selected_build.tar_name)
             tar = open(tarpath)
             size = os.path.getsize(tarpath)
 
@@ -600,10 +600,10 @@ class Main(object):
                     utils.log("{} md5 is correct".format(f))
 
     def confirm(self):
-        with open(os.path.join(__dir__, constants.NOTIFY_FILE), 'w') as f:
+        with open(os.path.join(ADDON_DATA, constants.NOTIFY_FILE), 'w') as f:
             f.write(self.selected_build.version)
 
-        if __addon__.getSetting('confirm_reboot') == 'true':
+        if addon.getSetting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno("Confirm reboot",
                                       " ",
                                       "Reboot now to install build  [COLOR=lightskyblue][B]{}[/COLOR][/B] ?"
@@ -621,9 +621,9 @@ class Main(object):
 def check_for_new_build():
     utils.log("Checking for a new build")
     
-    check_prompt = int(__addon__.getSetting('check_prompt'))
-    check_official = __addon__.getSetting('check_official') == 'true'
-    check_interval = int(__addon__.getSetting('check_interval'))
+    check_prompt = int(addon.getSetting('check_prompt'))
+    check_official = addon.getSetting('check_official') == 'true'
+    check_interval = int(addon.getSetting('check_interval'))
 
     autoclose_ms = check_interval * 3540000 # check interval in ms - 1 min
     
@@ -633,15 +633,15 @@ def check_for_new_build():
         utils.log("Unable to get installed build so exiting")
         sys.exit(1)
 
-    source = __addon__.getSetting('source_name')
+    source = addon.getSetting('source_name')
     if (isinstance(installed_build, builds.Release) and source == "Official Releases"
         and not check_official):
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
         try:
-            if __addon__.getSetting('set_arch') == 'true':
-                arch = __addon__.getSetting('arch')
+            if addon.getSetting('set_arch') == 'true':
+                arch = addon.getSetting('arch')
             else:
                 arch = constants.ARCH
 
@@ -655,8 +655,8 @@ def check_for_new_build():
             url = build_url.url
             utils.log("Checking {}".format(url))
 
-            if __addon__.getSetting('set_timeout') == 'true':
-                timeout = int(__addon__.getSetting('timeout'))
+            if addon.getSetting('set_timeout') == 'true':
+                timeout = int(addon.getSetting('timeout'))
             else:
                 timeout = None
 
@@ -668,7 +668,7 @@ def check_for_new_build():
                         utils.notify("Build {} is available".format(latest), 7500)
                     else:
                         utils.log("New build {} is available, prompting to show build list".format(latest))
-                        if xbmcgui.Dialog().yesno(__name__,
+                        if xbmcgui.Dialog().yesno(ADDON_NAME,
                                                   "A more recent build is available:   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(latest),
                                                   "Current build:   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(installed_build),
                                                   "Show builds available to install?",

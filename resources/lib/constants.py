@@ -1,7 +1,7 @@
 import re
 import os
 
-__scriptid__ = "script.openelec.devupdate"
+ADDON_ID = "script.openelec.devupdate"
 
 try:
     ARCH = open('/etc/arch').read().rstrip()

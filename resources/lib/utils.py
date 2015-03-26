@@ -9,13 +9,17 @@ import xbmc, xbmcaddon, xbmcgui
 
 import constants
 
-__addon__ = xbmcaddon.Addon(constants.__scriptid__)
-__icon__ = __addon__.getAddonInfo('icon')
+addon = xbmcaddon.Addon(constants.ADDON_ID)
+
+ADDON_NAME = addon.getAddonInfo('name')
+ADDON_VERSION = xbmc.translatePath(addon.getAddonInfo('version'))
+ICON_PATH = addon.getAddonInfo('icon')
+
 
 def log(txt, level=xbmc.LOGNOTICE):
-    if __addon__.getSetting('debug') == 'true':
-        msg = '{} v{}: {}'.format(__addon__.getAddonInfo('name'),
-                                  __addon__.getAddonInfo('version'), txt)
+    if addon.getSetting('debug') == 'true':
+        msg = '{} v{}: {}'.format(ADDON_NAME,
+                                  ADDON_VERSION, txt)
         xbmc.log(msg, level)
         
 def log_exception():
@@ -39,7 +43,7 @@ def write_error(path, msg):
     log_exception()
     xbmcgui.Dialog().ok("Write Error", msg, path,
                         "Check the download directory in the addon settings.")
-    __addon__.openSettings()
+    addon.openSettings()
     
 def decompress_error(path, msg):
     log_exception()
@@ -72,11 +76,12 @@ def remove_update_files():
                 log("Removed " + f)
                 success = True
     if success or success is None:
-        __addon__.setSetting('update_pending', 'false')
+        addon.setSetting('update_pending', 'false')
     return success
 
 def notify(msg, time=12000):
-    xbmcgui.Dialog().notification("OpenELEC Dev Update", msg, __icon__, time)
+    xbmcgui.Dialog().notification(ADDON_NAME, msg,
+                                  ICON_PATH, time)
     
 def busy():
     xbmc.executebuiltin("ActivateWindow(busydialog)")
