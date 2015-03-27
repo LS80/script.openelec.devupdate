@@ -163,15 +163,24 @@
                         <itemlayout height="65" width="420">
     
                             <control type="label">
-                                <width>420</width>
-                                <left>50</left>
+                                <left>0</left>
+                                <width>190</width>
                                 <aligny>center</aligny>
+                                <align>center</align>
                                 <textcolor>ffb2afa8</textcolor>
                                 <info>ListItem.Label</info>
                             </control>
-    
+
+                            <control type="label">
+                                <right>100</right>
+                                <aligny>center</aligny>
+                                <align>right</align>
+                                <textcolor>ffb2afa8</textcolor>
+                                <info>ListItem.Label2</info>
+                            </control>
+
                             <control type="image">
-                                <left>330</left>
+                                <left>340</left>
                                 <top>10</top>
                                 <height>48</height>
                                 <width>48</width>
@@ -182,37 +191,57 @@
                             <control type="group">
                                 <animation effect="slide" start="0,35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(20).OnPrevious">Focus</animation>
                                 <animation effect="slide" start="0,-35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(20).OnNext">Focus</animation>
-    
-                                <control type="image">
-                                    <!-- #88bde1 -->
-                                    <visible>Control.HasFocus(20)</visible>
-                                    <texture border="12">highlight.png</texture>
-                                </control>
-    
+
                                 <control type="label">
                                     <visible>Control.HasFocus(20)</visible>
-                                    <width>420</width>
-                                    <left>50</left>
+                                    <left>0</left>
+                                    <width>190</width>
                                     <aligny>center</aligny>
+                                    <align>center</align>
                                     <textcolor>ffffffff</textcolor>
                                     <info>ListItem.Label</info>
                                 </control>
                                 
                                 <control type="label">
                                     <visible>!Control.HasFocus(20)</visible>
-                                    <width>420</width>
-                                    <left>50</left>
+                                    <left>0</left>
+                                    <width>190</width>
                                     <aligny>center</aligny>
+                                    <align>center</align>
                                     <textcolor>ffb2afa8</textcolor>
                                     <info>ListItem.Label</info>
                                 </control>
+
+                                <control type="label">
+                                    <visible>Control.HasFocus(20)</visible>
+                                    <right>100</right>
+                                    <aligny>center</aligny>
+                                    <align>right</align>
+                                    <textcolor>ffffffff</textcolor>
+                                    <info>ListItem.Label2</info>
+                                </control>
+
+                                <control type="label">
+                                    <visible>!Control.HasFocus(20)</visible>
+                                    <right>100</right>
+                                    <aligny>center</aligny>
+                                    <align>right</align>
+                                    <textcolor>ffb2afa8</textcolor>
+                                    <info>ListItem.Label2</info>
+                                </control>
                                
                                 <control type="image">
-                                    <left>330</left>
+                                    <left>340</left>
                                     <top>10</top>
                                     <height>48</height>
                                     <width>48</width>
                                     <info>ListItem.Icon</info>
+                                </control>
+
+                                <control type="image">
+                                    <!-- #88bde1 -->
+                                    <visible>Control.HasFocus(20)</visible>
+                                    <texture border="12">highlight.png</texture>
                                 </control>
                             </control>
                         </focusedlayout>

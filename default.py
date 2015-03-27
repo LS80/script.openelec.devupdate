@@ -275,7 +275,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def _set_build_info(self):
         info = ""
         if self._builds_focused:
-            build_version = self._builds[self._build_list.getSelectedPosition()].version
+            build_version = self._build_list.getSelectedItem().getLabel()
             try:
                 info = self._build_infos[build_version]
             except KeyError:
@@ -300,7 +300,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._builds = builds
         self._build_list.reset()
         for build in builds:
-            li = xbmcgui.ListItem(str(build))
+            li = xbmcgui.ListItem()
+            li.setLabel(build.version)
+            li.setLabel2(build.date)
             if build > self._installed_build:
                 icon = 'upgrade'
             elif build < self._installed_build:
