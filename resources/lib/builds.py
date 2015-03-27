@@ -52,8 +52,12 @@ class Build(object):
         return self._datetime > other._datetime
 
     def __str__(self):
-        return '{} ({})'.format(self._version,
-                                self._datetime.strftime('%d %b %y'))
+        return '{} ({})'.format(self.version,
+                                self.date)
+
+    @property
+    def date(self):
+        return self._datetime.strftime('%d %b %y')
 
     @property    
     def version(self):
