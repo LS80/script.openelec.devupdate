@@ -47,13 +47,21 @@ def check_update_files():
     # Check if the update files are already in place.
     if (all(os.path.isfile(f) for f in constants.UPDATE_PATHS) or
         glob.glob(os.path.join(constants.UPDATE_DIR, '*tar'))):
+        notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
+        try:
+            with open(notify_file) as f:
+                selected = f.read()
+            s = " for "
+        except IOError:
+            s = selected = ""
         if xbmcgui.Dialog().yesno("Confirm reboot",
-                                  "The update files are already in place.",
+                                  "An installation is pending{}[COLOR=lightskyblue][B]{}[/B][/COLOR].".format(s, selected),
                                   "Reboot now to install the update",
                                   "or continue to select another build.",
                                   "Continue",
                                   "Reboot"):
             xbmc.restart()
+            sys.exit(0)
         else:
             utils.remove_update_files()
 
