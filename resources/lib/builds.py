@@ -1,5 +1,9 @@
 #! /usr/bin/python
 
+# This is required to work around the ImportError exception
+# "Failed to import _strptime because the import lock is held by another thread."
+import _strptime
+
 import time
 import re
 import os
@@ -235,6 +239,15 @@ class MilhouseBuildInfoExtractor(BaseExtractor):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
         return dict(self.R.match(li.text).groups() for ul in soup.find('div', 'post-body')('ul') for li in ul('li'))
 
+class CommitInfoExtractor(BaseExtractor):
+    URL = "https://github.com/OpenELEC/OpenELEC.tv/commits/master.atom"
+    R = re.compile("Commit/([0-9a-z]{7})")
+
+    def get_info(self, timeout):
+        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+        return dict((self.R.search(entry.id.text).group(1),
+                     entry.title.text.strip()) for entry in soup('entry'))
+
 
 class BuildsURL(object):
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor, info_extractor=BuildInfoExtractor):
@@ -278,14 +291,16 @@ def get_installed_build():
 
 def sources(arch):
     sources_dict = OrderedDict()
-    sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv")
+    sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv",
+                                                         info_extractor=CommitInfoExtractor)
 
     if arch.startswith("RPi"):
         sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                         subdir=arch.split('.')[0],
                                                         extractor=MilhouseBuildLinkExtractor,
                                                         info_extractor=MilhouseBuildInfoExtractor)
-        sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds")
+        sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
+                                                          info_extractor=CommitInfoExtractor)
 
     sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
                                                   extractor=OfficialReleaseLinkExtractor)

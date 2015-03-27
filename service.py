@@ -40,24 +40,7 @@ if os.path.exists(update_extlinux_file):
     os.remove(update_extlinux_file)
 
 
-notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
-try:
-    with open(notify_file) as f:
-        build = f.read()
-except IOError:
-    utils.log("No installation notification")
-else:
-    installed = open('/etc/version').read().rstrip()
-    if build == installed:
-        utils.log("Notifying that build {} was installed".format(build))
-        utils.notify("Build {} was installed successfully".format(build))
-    try:
-        os.remove(notify_file)
-    except OSError:
-        pass # in case file was already deleted
-    else:
-        utils.log("Removed notification file")
-
+xbmc.executebuiltin("RunScript({},notify)".format(constants.ADDON_ID))
 
 check_enabled = addon.getSetting('check') == 'true'
 if check_enabled:

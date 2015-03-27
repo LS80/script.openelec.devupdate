@@ -601,7 +601,7 @@ class Main(object):
 
     def confirm(self):
         with open(os.path.join(ADDON_DATA, constants.NOTIFY_FILE), 'w') as f:
-            f.write(self.selected_build.version)
+            f.write(str(self.selected_build))
 
         if addon.getSetting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno("Confirm reboot",
@@ -677,10 +677,37 @@ def check_for_new_build():
         except:
             pass
 
+def notify_installation():
+    notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
+    try:
+        with open(notify_file) as f:
+            selected = f.read()
+    except IOError:
+        utils.log("No installation notification")
+    else:
+        utils.log("Selected build: {}".format(selected))
+        installed = builds.get_installed_build()
+        utils.log("Installed build: {}".format(installed))
+        if str(installed) == selected:
+            msg = "Build {} was installed successfully".format(installed)
+            utils.notify(msg)
+            utils.log(msg)
+        else:
+            utils.log("Build {} was not installed".format(selected))
+        try:
+            os.remove(notify_file)
+        except OSError:
+            pass # in case file was already deleted
+        else:
+            utils.log("Removed notification file")
+
 
 utils.log("Script arguments: {}".format(sys.argv))
-if len(sys.argv) > 1 and sys.argv[1] == "check":
-    check_for_new_build()
+if len(sys.argv) > 1:
+    if sys.argv[1] == "check":
+        check_for_new_build()
+    elif sys.argv[1] == "notify":
+        notify_installation()
 else:
     Main()
 
