@@ -1,3 +1,10 @@
+4.5.0
+ - Added commit messages to the info area for Official Snapshots
+   and Chris Swan RPi Builds.
+ - By default use the commit hash for development build names
+   instead of the commit count.
+ - Fixed the missing installation notification.
+
 4.4.0
  - Added build information for Milhouse RPi Builds.
  - Fixed RPi2 overclock disable.
