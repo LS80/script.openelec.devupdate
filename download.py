@@ -23,6 +23,7 @@ import os
 import time
 from argparse import ArgumentParser
 from urlparse import urlparse
+import bz2
 
 addons = os.path.join(os.path.expanduser('~'), '.kodi', 'addons')
 if os.path.isdir(addons):
@@ -107,6 +108,28 @@ print
 print "Arch: {}".format(arch)
 print "Installed build: {}".format(installed_build)
 
+
+def read(f):
+    return f.read(131072)
+
+decompressor = bz2.BZ2Decompressor()
+def decompress(f):
+    data = read(f)
+    return decompressor.decompress(data)
+
+def process(fin, fout, size, read_func=read):
+    start_time = time.time()
+    done = 0
+    while done < size:
+        data = read_func(fin)
+        done = fin.tell()
+        fout.write(data)
+        percent = int(done * 100 / size)
+        bytes_per_second = done / (time.time() - start_time)
+        print "\r {0:3d}%   ({1}/s)   ".format(percent, size_fmt(bytes_per_second)),
+        sys.stdout.flush()
+    print
+
 with build_url.extractor() as parser:
     try:
         links = sorted(parser.get_links(arch), reverse=True)
@@ -118,20 +141,23 @@ with build_url.extractor() as parser:
         if links:
             build = get_choice(links, build_suffix)
             remote = build.remote_file()
-            out = open(os.path.join(constants.UPDATE_DIR, build.filename), 'w')
-            start_time = time.time()
-            done = 0
+            file_path = os.path.join(constants.UPDATE_DIR, build.filename)
             print
             print "Downloading {0} ...".format(build.url)
-            while done < build.size:
-                data = remote.read(131072)
-                done += len(data)
-                out.write(data)
-                percent = int(done * 100 / build.size)
-                bytes_per_second = done / (time.time() - start_time)
-                print "\r {0:3d}%   ({1}/s)   ".format(percent, size_fmt(bytes_per_second)),
-                sys.stdout.flush()
+            with open(os.path.join(constants.UPDATE_DIR, build.filename), 'w') as out:
+                process(remote, out, build.size)
+
+            if build.compressed:
+                tar_path = os.path.join(constants.UPDATE_DIR, build.tar_name)
+                size = os.path.getsize(file_path)
+                print
+                print "Decompressing {0} ...".format(file_path)
+                with open(file_path, 'r') as fin, open(tar_path, 'w') as fout:
+                    process(fin, fout, size, decompress)
+                os.remove(file_path)
+
             print
+            print "The update is ready to be installed. Please reboot."
         else:
             print
             print "No builds available"
