@@ -68,7 +68,7 @@ class Release(Build):
     DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
     tag_soup = None
 
-    def __init__(self, version):        
+    def __init__(self, version):
         self.maybe_get_tags()
         tag = self.tag_soup.find('span', text=version)
         if tag is not None:
@@ -279,13 +279,22 @@ class BuildsURL(object):
 
 
 def get_installed_build():
-# Create an INSTALLED_BUILD object for comparison
+    DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
+    try:
+        os_release = open('/etc/os-release').read()
+    except IOError:
+        pass
+    else:
+        if "MILHOUSE_BUILD" in os_release:
+            DEVEL_RE = "devel-(\d+)-[r#](\d+)"
+
     try:
         version = open('/etc/version').read().rstrip()
     except IOError:
+        # For testing
         version = 'devel-20141031232437-r19505-g98f5c23'
-    
-    m = re.search("devel-(\d+)-[r#](\d+)", version)
+
+    m = re.match(DEVEL_RE, version)
     if m:
         return Build(*m.groups())
     else:

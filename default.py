@@ -385,6 +385,7 @@ class Main(object):
         utils.log("Selected source: " + str(self.selected_source))
         
         if not build_select:
+            utils.log("No build selected")
             sys.exit(0)
 
         selected_build = build_select.selected_build
