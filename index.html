@@ -33,33 +33,38 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
 
-<h3>Usage</h3>
-<p>OpenELEC Dev Update makes it easy to upgrade/downgrade OpenELEC development builds by downloading directly from websites which host them.</p>
+<h5>This add-on makes it easy to upgrade/downgrade OpenELEC development builds by downloading directly from websites which host them.</h5>
 
-<p>The add-on shows a list of available build sources and a list of builds available at the currently selected source. There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</p>
-<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/notification.png" alt="Notification"></p>
+<p>It shows a list of available build sources and a list of builds available at the currently selected source.</p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/builds.png" alt="Build list"></p>
 
-<p>To perform an update the add-on will download the (possibly bzip compressed) tar file into the /storage/.update folder. The update will then be installed on the next reboot. This process is as documented on the <a href="http://wiki.openelec.tv/index.php/Updating_OpenELEC#Manually_Updating_OpenELEC">OpenELEC wiki</a>.</p>
+<p>There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/notification.png" alt="Notification"></p>
 
-<h3><a name="sources" class="anchor" href="#sources"><span class="octicon octicon-link"></span></a>Sources</h3>
-<ul>
-<li>Official Releases</li>
-<li><a href="http://snapshots.openelec.tv">Official Daily Builds</a> [<a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a>] </li>
-<li><a href="http://archive.openelec.tv">Official Archive</a></li>
-<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
-<li><a href="http://milhouse.openelec.tv/builds/master">MilhouseVH builds (RPi)</a> [<a href="http://forum.kodi.tv/showthread.php?tid=211501s">Forum</a>]</li>
-<li><a href="http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/">DarkAngel2401 Dual Audio Builds</a> [<a href="http://forum.kodi.tv/showthread.php?tid=192480">Forum</a>]</li>
-</ul>
+<p>To perform an update the add-on will download the (possibly bzip compressed) tar file into the /storage/.update folder. The update will then be installed on the next reboot. This process is as documented on the <a href="http://wiki.openelec.tv/index.php/Updating_OpenELEC#Manually_Updating_OpenELEC">OpenELEC wiki</a>.</p>
 
 <h3><a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
 
 <ol>
-<li>Install my repository from <a href="http://goo.gl/csQU8h">xbmc.repo.leopold.zip</a>.</li>
+<li>Install my repository from <a href="http://goo.gl/csQU8h">xbmc.repo.leopold.zip</a>.<br><br>
+    One way to do this is to <a href="http://wiki.openelec.tv/index.php/Ssh_commands">login via ssh</a> and run
+    <pre>wget http://goo.gl/MpUAWy -O xbmc.repo.leopold.zip</pre>
+    Then <a href="http://kodi.wiki/view/Add-on_manager#How_to_install_from_a_ZIP_file">install from zip</a>.<br><br>
+</li>
 <li>Install <strong>OpenELEC Dev Update</strong> from <strong>Leopold's Add-ons</strong> under <strong>Program Add-ons</strong>.</li>
 </ol><p>Installing this way will ensure that the add-on is kept up-to-date as I push out updates to the repository.</p>
 
 <p>Here is the latest <a href="https://raw.github.com/LS80/script.openelec.devupdate/master/changelog.txt">changelog</a>.</p>
+
+<h3><a name="sources" class="anchor" href="#sources"><span class="octicon octicon-link"></span></a>Sources</h3>
+<ul>
+<li><a href="http://snapshots.openelec.tv">Official Snapshot Builds</a> [<a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a>] </li>
+<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
+<li><a href="http://milhouse.openelec.tv/builds/master">MilhouseVH builds (RPi)</a> [<a href="http://forum.kodi.tv/showthread.php?tid=211501s">Forum</a>]</li>
+<li><a href="http://openelec.mirrors.uk2.net">Official Releases</a></li>
+<li><a href="http://archive.openelec.tv">Official Archive</a></li>
+<li><a href="http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/">DarkAngel2401 Dual Audio Builds</a> [<a href="http://forum.kodi.tv/showthread.php?tid=192480">Forum</a>]</li>
+</ul>
 
 <h3>Frequently asked questions</h3>
 <ol>
@@ -84,7 +89,7 @@ download.py --help
 <hr><ul>
 <li><p><strong>Be aware that development builds often have major bugs. you may experience frequent crashes or other problems when using these builds. stick to the official stable builds where possible. Do not use a development build unless there is a specific need.</strong></p></li>
 <li><p><strong>To avoid potential issues with configuration, it is best to do a fresh install when switching from a stable to a development build, and vice versa.</strong></p></li>
-<li><p><strong>It is advised to backup the userdata folder when updating. This step can now be automated by the add-on, thanks to <a href="http://wiki.xbmc.org/index.php?title=Add-on:XBMC_Backup">XBMC Backup</a>.</strong></p></li>
+<li><p><strong>It is advised to backup the userdata folder when updating. This step can now be automated by the add-on, thanks to the <a href="http://kodi.wiki/view/Add-on:Backup">Backup add-on</a>.</strong></p></li>
 </ul>
 
 <h3><a name="reporting-issues" class="anchor" href="#reporting-issues"><span class="octicon octicon-link"></span></a>Reporting Issues</h3>
@@ -93,13 +98,13 @@ download.py --help
 
 <ul>
 <li>Turn on the 'Debug' option in the add-on advanced settings.</li>
-<li>Restart XBMC to start a clean log.</li>
+<li>Restart to start a clean log.</li>
 <li>Run the add-on again to reproduce the error.</li>
 <li>Upload the debug log. There are a couple of ways:
 
 <ol>
-<li>Log in via ssh and run pastebinit ~/.xbmc/temp/xbmc.log</li>
-<li>Use the add-on "XBMC Log Uploader".</li>
+<li>Log in via ssh and run pastebinit ~/.kodi/temp/kodi.log</li>
+<li>Use the add-on "Kodi Log Uploader".</li>
 </ol>
 </li>
 </ul>
