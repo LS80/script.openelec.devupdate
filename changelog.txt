@@ -1,3 +1,6 @@
+4.6.1
+ - Updated the forum thread url for Milhouse build descriptions.
+
 4.6.0
  - Fixed the detection of the installed build.
  - Align dates in the list of builds.
