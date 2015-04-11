@@ -236,7 +236,7 @@ class BuildInfoExtractor(BaseExtractor):
 
 
 class MilhouseBuildInfoExtractor(BaseExtractor):
-    URL = "http://forum.kodi.tv/showthread.php?tid=211501"
+    URL = "http://forum.kodi.tv/showthread.php?tid=224025"
     R = re.compile("#(\d{4}).*?\((.+)\)")
 
     def get_info(self, timeout):
