@@ -227,7 +227,7 @@ class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
 
 
 class MilhouseBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ".*OpenELEC.*-{arch}-[a-zA-Z]+-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
+    BUILD_RE = "OpenELEC-{arch}-Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
 
 
 class BuildInfoExtractor(BaseExtractor):

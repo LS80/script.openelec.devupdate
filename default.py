@@ -154,7 +154,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             if not scheme in ('http', 'https') or not netloc:
                 utils.bad_url(custom_url, "Invalid URL")
             else:
-                custom_extractor = (builds.BuildLinkExtractor, builds.ReleaseLinkExtractor)[int(addon.getSetting('build_type'))]
+                custom_extractor = (builds.BuildLinkExtractor,
+                                    builds.ReleaseLinkExtractor,
+                                    builds.MilhouseBuildLinkExtractor)[int(addon.getSetting('build_type'))]
                 self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)
                
         self._initial_source = addon.getSetting('source_name')

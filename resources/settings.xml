@@ -5,7 +5,7 @@
         <setting type="lsep" label="Custom source"/>
         <setting label="Name" type="text" id="custom_source"/>
         <setting label="URL" type="text" id="custom_url" enable="!eq(-1,)"/>
-        <setting label="Build type" type="enum" id="build_type" values="Development|Release" enable="!eq(-2,)"/>
+        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="!eq(-2,)"/>
         <setting type="lsep" label="Archive"/>
         <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
         <setting label="Archive directory" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)"/>
