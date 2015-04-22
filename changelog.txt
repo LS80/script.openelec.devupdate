@@ -1,3 +1,6 @@
+4.7.0
+ - Enabled Milhouse builds as a custom source.
+
 4.6.1
  - Updated the forum thread url for Milhouse build descriptions.
 
