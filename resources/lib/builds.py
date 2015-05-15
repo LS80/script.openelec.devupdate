@@ -178,7 +178,7 @@ class BaseExtractor(object):
 class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = ".*OpenELEC.*-{arch}-[a-zA-Z]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
     CSS_CLASS = None
 
     def get_links(self, arch, timeout=None):
@@ -227,7 +227,7 @@ class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
 
 
 class MilhouseBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = "OpenELEC-{arch}-Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
+    BUILD_RE = "OpenELEC-{arch}-(?:\d+\.\d+-|)Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
 
 
 class BuildInfoExtractor(BaseExtractor):
