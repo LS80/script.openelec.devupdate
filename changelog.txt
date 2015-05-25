@@ -1,3 +1,6 @@
+4.8.1
+ - Fixed not waiting for the backup to complete.
+
 4.8.0
  - Handle the latest development build file names with the added version number.
 
