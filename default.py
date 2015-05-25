@@ -118,10 +118,11 @@ def maybe_run_backup():
         utils.log("Backup always")
 
     if do_backup:
-        xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)')
-        
-
-
+        xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)', True)
+        xbmc.sleep(10000)
+        window = xbmcgui.Window(10000)
+        while (window.getProperty('script.xbmcbackup.running') == 'true'):
+            xbmc.sleep(5000)
 
 
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
