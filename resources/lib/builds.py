@@ -237,7 +237,7 @@ class BuildInfoExtractor(BaseExtractor):
 
 class MilhouseBuildInfoExtractor(BaseExtractor):
     URL = "http://forum.kodi.tv/showthread.php?tid=224025"
-    R = re.compile("#(\d{4}).*?\((.+)\)")
+    R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
 
     def get_info(self, timeout):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
