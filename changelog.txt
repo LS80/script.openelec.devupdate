@@ -1,3 +1,6 @@
+4.8.2
+ - Fixed missing build information for Milhouse builds with a letter suffix.
+
 4.8.1
  - Fixed not waiting for the backup to complete.
 
