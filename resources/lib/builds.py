@@ -347,15 +347,29 @@ if __name__ == "__main__":
     
     installed_build = get_installed_build()
 
+    def get_info(build_url):
+        info = {}
+        for info_extractor in build_url.info_extractors:
+            try:
+                with info_extractor:
+                    info.update(info_extractor.get_info())
+            except Exception as e:
+                print str(e)
+        return info
+
     def print_links(name, build_url, arch):
+        info = get_info(build_url)
         print name
         try:
             with build_url.extractor() as parser:
                 for link in sorted(set(parser.get_links(arch)), reverse=True):
-                    print "\t{:25s}".format(str(link) + ' *' * (link > installed_build))
-        except requests.RequestException as e:
-            print str(e)
-        except BuildURLError as e:
+                    try:
+                        summary = info[link.version]
+                    except KeyError:
+                        summary = ""
+                    print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build),
+                                               summary)
+        except (requests.RequestException, BuildURLError) as e:
             print str(e)
         print
 
