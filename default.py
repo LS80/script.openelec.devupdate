@@ -267,12 +267,13 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         return links
 
     def _get_build_infos(self, build_url):
-        try:
-            with build_url.info_extractor() as extractor:
-                info = extractor.get_info(self._timeout)
-        except Exception as e:
-            utils.log("Unable to retrieve build info: {}".format(str(e)))
-            info = {}
+        info = {}
+        for info_extractor in build_url.info_extractors:
+            try:
+                with info_extractor:
+                    info.update(info_extractor.get_info(self._timeout))
+            except Exception as e:
+                utils.log("Unable to retrieve build info: {}".format(str(e)))
         return info
                 
     def _set_build_info(self):

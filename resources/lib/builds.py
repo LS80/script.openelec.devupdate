@@ -231,36 +231,53 @@ class MilhouseBuildLinkExtractor(BuildLinkExtractor):
 
 
 class BuildInfoExtractor(BaseExtractor):
-    def get_info(self, timeout):
+    def get_info(self, timeout=None):
         return {}
 
 
-class MilhouseBuildInfoExtractor(BaseExtractor):
-    URL = "http://forum.kodi.tv/showthread.php?tid=224025"
+class MilhouseBuildInfoExtractor(BuildInfoExtractor):
+    URL_FMT = "http://forum.kodi.tv/showthread.php?tid={}"
     R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
 
-    def get_info(self, timeout):
-        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
-        return dict(self.R.match(li.text).groups() for ul in soup.find('div', 'post-body')('ul') for li in ul('li'))
+    def _gen_li(self, soup):
+        for post in soup.find_all('div', 'post-body', limit=2):
+            for ul in post('ul'):
+                for li in ul('li'):
+                    yield li
 
-class CommitInfoExtractor(BaseExtractor):
+    def get_info(self, timeout=None):
+        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+        return dict(self.R.match(li.text).groups() for li in self._gen_li(soup))
+
+    @classmethod
+    def from_thread_id(cls, thread_id):
+        url = cls.URL_FMT.format(thread_id)
+        return cls(url)
+
+
+def get_milhouse_build_info_extractors():
+    for thread_id in (224025, 231092):
+        yield MilhouseBuildInfoExtractor.from_thread_id(thread_id)
+
+
+class CommitInfoExtractor(BuildInfoExtractor):
     URL = "https://github.com/OpenELEC/OpenELEC.tv/commits/master.atom"
     R = re.compile("Commit/([0-9a-z]{7})")
 
-    def get_info(self, timeout):
+    def get_info(self, timeout=None):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
         return dict((self.R.search(entry.id.text).group(1),
                      entry.title.text.strip()) for entry in soup('entry'))
 
 
 class BuildsURL(object):
-    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor, info_extractor=BuildInfoExtractor):
+    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor, info_extractors=[BuildInfoExtractor()]):
         self.url = url
         if subdir:
             self.add_subdir(subdir)
         
         self._extractor = extractor
-        self.info_extractor = info_extractor
+        self.info_extractors = info_extractors
         
     def __str__(self):
         return self.url
@@ -305,15 +322,15 @@ def get_installed_build():
 def sources(arch):
     sources_dict = OrderedDict()
     sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv",
-                                                         info_extractor=CommitInfoExtractor)
+                                                         info_extractors=[CommitInfoExtractor()])
 
     if arch.startswith("RPi"):
         sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                         subdir=arch.split('.')[0],
                                                         extractor=MilhouseBuildLinkExtractor,
-                                                        info_extractor=MilhouseBuildInfoExtractor)
+                                                        info_extractors=get_milhouse_build_info_extractors())
         sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
-                                                          info_extractor=CommitInfoExtractor)
+                                                          info_extractors=[CommitInfoExtractor()])
 
     sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
                                                   extractor=OfficialReleaseLinkExtractor)
