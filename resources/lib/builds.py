@@ -185,11 +185,17 @@ class BaseExtractor(object):
         self.url = url if url is not None else self.URL
         self._response = None
 
-    def _get_text(self, timeout=None):
+    def _get_response(self, timeout=None):
         self._response = requests.get(self.url, timeout=timeout)
         if not self._response:
             raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
-        return self._response.text
+        return self._response
+
+    def _get_text(self, timeout=None):
+        return self._get_response().text
+
+    def _get_json(self, timeout=None):
+        return self._get_response().json()
 
     def __enter__(self):
         return self
@@ -285,13 +291,11 @@ def get_milhouse_build_info_extractors():
 
 
 class CommitInfoExtractor(BuildInfoExtractor):
-    URL = "https://github.com/OpenELEC/OpenELEC.tv/commits/master.atom"
-    R = re.compile("Commit/([0-9a-z]{7})")
+    URL = "https://api.github.com/repositories/1093060/commits?per_page=100"
 
     def get_info(self, timeout=None):
-        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
-        return dict((self.R.search(entry.id.text).group(1),
-                     entry.title.text.strip()) for entry in soup('entry'))
+        return dict((commit['sha'][:7],
+                     commit['commit']['message'].split('\n\n')[0]) for commit in self._get_json(timeout))
 
 
 class BuildsURL(object):
