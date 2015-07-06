@@ -236,6 +236,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def onAction(self, action):
         action_id = action.getId()
         if action_id in (xbmcgui.ACTION_MOVE_DOWN, xbmcgui.ACTION_MOVE_UP,
+                         xbmcgui.ACTION_PAGE_DOWN, xbmcgui.ACTION_PAGE_UP,
                          xbmcgui.ACTION_MOUSE_MOVE):
             self._set_build_info()
 
