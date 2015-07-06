@@ -1,3 +1,7 @@
+4.10.0
+ - Show older releases down to 3.95.1.
+ - Fixed build information not updating when paging up/down.
+
 4.9.0
  - Fixed missing Milhouse build information.
 
