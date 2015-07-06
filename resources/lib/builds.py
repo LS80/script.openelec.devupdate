@@ -66,20 +66,20 @@ class Build(object):
 
 class Release(Build):
     DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
-    tag_soup = None
+    MIN_VERSION = [3,95,0]
+    tags = None
 
     def __init__(self, version):
         self.maybe_get_tags()
-        tag = self.tag_soup.find('span', text=version)
-        if tag is not None:
+        if version in self.tags:
             self._has_date = True
-            Build.__init__(self, tag.previous_sibling['datetime'][:19], version)
+            Build.__init__(self, self.tags[version][:19], version)
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
         
     def is_valid(self):
-        return self._has_date and self.release >= [3,95,0]
+        return self._has_date and self.release >= self.MIN_VERSION
     
     __nonzero__ = is_valid
 
@@ -87,13 +87,37 @@ class Release(Build):
     def tag_match(cls, tag, attrs):
         return (tag == 'time' or
                ('class' in attrs and attrs['class'] == 'tag-name'))
+
+    @classmethod
+    def pagination_match(cls, tag, attrs):
+        return (tag == 'div' and
+               ('class' in attrs and attrs['class'] == 'pagination'))
+
+    @classmethod
+    def get_tags_page_dict(cls, html):
+        soup = BeautifulSoup(html, 'html.parser',
+                             parse_only=SoupStrainer(cls.tag_match))
+        iter_contents = iter(soup.contents)
+        return dict((unicode(iter_contents.next().string), tag['datetime']) for tag in iter_contents)
         
     @classmethod
     def maybe_get_tags(cls):
-        if cls.tag_soup is None:
+        if cls.tags is None:
+            cls.tags = {}
             html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/releases").text
-            cls.tag_soup = BeautifulSoup(html, 'html.parser',
-                                         parse_only=SoupStrainer(cls.tag_match))
+            while True:
+                cls.tags.update(cls.get_tags_page_dict(html))
+                soup = BeautifulSoup(html, 'html.parser',
+                                     parse_only=SoupStrainer(cls.pagination_match))
+                next_page_link = soup.find('a', text='Next')
+                if next_page_link:
+                    href = next_page_link['href']
+                    version = [int(p) for p in href.split('=')[-1].split('.')]
+                    if version < cls.MIN_VERSION:
+                        break
+                    html = requests.get(href).text
+                else:
+                    break
 
 
 class BuildLinkBase(object):
