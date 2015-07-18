@@ -356,7 +356,7 @@ def sources(arch):
         sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
                                                         subdir=arch.split('.')[0],
                                                         extractor=MilhouseBuildLinkExtractor,
-                                                        info_extractors=get_milhouse_build_info_extractors())
+                                                        info_extractors=list(get_milhouse_build_info_extractors()))
         sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
                                                           info_extractors=[CommitInfoExtractor()])
 
