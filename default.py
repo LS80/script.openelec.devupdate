@@ -143,6 +143,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     BUILD_LIST_ID = 20
     SOURCE_LIST_ID = 10
     BUILD_INFO_ID = 200
+    SETTINGS_BUTTON_ID = 30
     
     def __new__(cls, _):
         return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", ADDON_PATH)
@@ -245,6 +246,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 self._set_build_info()
             else:
                 self._sources_list.selectItem(self._selected_source_position)
+        elif controlID == self.SETTINGS_BUTTON_ID:
+            self.close()
+            addon.openSettings()
 
     def onAction(self, action):
         action_id = action.getId()
