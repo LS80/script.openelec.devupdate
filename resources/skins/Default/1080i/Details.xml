@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <defaultcontrol>10</defaultcontrol>
+    <controls>
+        <control type="group">
+            <animation effect="fade" start="0" end="100" time="600">WindowOpen</animation>
+            <animation effect="fade" start="1000" end="0" time="600">WindowClose</animation>
+            <width>1920</width>
+            <height>1080</height>
+            <centerleft>960</centerleft>
+            <centertop>540</centertop>
+
+            <control type="image">
+                <description>Background image</description>
+                <texture colordiffuse="ff111111">white.png</texture>
+            </control>
+ 
+            <control type="textbox" id="1">
+                <description>Build name</description>
+                <width>200</width>
+                <height>90</height>
+                <left>860</left>
+                <top>40</top>
+                <textcolor>ffffffff</textcolor>
+            </control>
+
+            <control type="textbox" id="2">
+                <top>131</top>
+                <left>70</left>
+                <width>1780</width>
+                <height>880</height>
+                <textcolor>ff87bde1</textcolor>
+                <pagecontrol>10</pagecontrol>
+                <scrolltime>2000</scrolltime>
+            </control>
+            <control type="scrollbar" id="10">
+                <top>131</top>
+                <left>1912</left>
+                <height>880</height>
+                <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
+                <texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
+                <texturesliderbarfocus colordiffuse="ffffffff">white.png</texturesliderbarfocus>
+            </control>
+        </control>
+    </controls>
+</window>

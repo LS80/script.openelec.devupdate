@@ -125,13 +125,26 @@ def maybe_run_backup():
             xbmc.sleep(5000)
 
 
+class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
+    def __new__(cls, _1, _2):
+        return super(BuildDetailsDialog, cls).__new__(cls, "Details.xml", ADDON_PATH)
+
+    def __init__(self, build, text):
+        self._build = build
+        self._text = text
+
+    def onInit(self):
+        self.getControl(1).setText(self._build)
+        self.getControl(2).setText(self._text)
+
+
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     LABEL_ID = 100
     BUILD_LIST_ID = 20
     SOURCE_LIST_ID = 10
     BUILD_INFO_ID = 200
     
-    def __new__(cls, _1):
+    def __new__(cls, _):
         return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", ADDON_PATH)
     
     def __init__(self, installed_build):
@@ -240,6 +253,24 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                          xbmcgui.ACTION_MOUSE_MOVE):
             self._set_build_info()
 
+        elif action_id == xbmcgui.ACTION_SHOW_INFO:
+            build_version = self._build_list.getSelectedItem().getLabel()
+            try:
+                info = self._build_infos[build_version]
+            except KeyError:
+                utils.log("Build details for build {} not found".format(build_version))
+            else:
+                build = "[B]Build #{}[/B]\n\n".format(build_version)
+                if info.details is not None:
+                    try:
+                        details = info.details.get_text()
+                    except:
+                        utils.log("Unable to retrieve build details")
+                    else:
+                        if details:
+                            dialog = BuildDetailsDialog(build, details)
+                            dialog.doModal()
+
         elif action_id in (xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK):
             self.close()
 
@@ -268,6 +299,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         return links
 
     def _get_build_infos(self, build_url):
+        utils.log("Retrieving build information")
         info = {}
         for info_extractor in build_url.info_extractors:
             try:
@@ -282,7 +314,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         if self._builds_focused:
             build_version = self._build_list.getSelectedItem().getLabel()
             try:
-                info = self._build_infos[build_version]
+                info = self._build_infos[build_version].summary
             except KeyError:
                 utils.log("Build info for build {} not found".format(build_version))
             else:

@@ -260,6 +260,30 @@ class MilhouseBuildLinkExtractor(BuildLinkExtractor):
     BUILD_RE = "OpenELEC-{arch}-(?:\d+\.\d+-|)Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
 
 
+class BuildInfo(object):
+    def __init__(self, summary, details=None):
+        self.summary = summary
+        self.details = details
+
+    def __str__(self):
+        return self.summary
+
+
+class BuildDetailsExtractor(BaseExtractor):
+    def get_text(self, timeout=None):
+        return ""
+
+
+class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
+    def get_text(self, timeout=None):
+        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+        text = soup.find(text="Build Details:").find_next('ol').get_text()
+        text = re.sub(r"\n(Commits no longer in build|New commits in this build)", r"\n  \1", text)
+        text = re.sub(r"\n(\S+.*:)\n", r"\n [B]\1[/B]\n", text)
+        text = re.sub(r"\n(\S)", r"\n  - \1", text)
+        return text
+
+
 class BuildInfoExtractor(BaseExtractor):
     def get_info(self, timeout=None):
         return {}
@@ -269,15 +293,17 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
     URL_FMT = "http://forum.kodi.tv/showthread.php?tid={}"
     R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
 
-    def _gen_li(self, soup):
+    def _get_info(self, soup):
         for post in soup.find_all('div', 'post-body', limit=2):
             for ul in post('ul'):
                 for li in ul('li'):
-                    yield li
+                    m = self.R.match(li.get_text())
+                    url = li.find('a', text="Release post")['href']
+                    yield m.group(1), BuildInfo(m.group(2), MilhouseBuildDetailsExtractor(url))
 
     def get_info(self, timeout=None):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
-        return dict(self.R.match(li.text).groups() for li in self._gen_li(soup))
+        return dict(self._get_info(soup))
 
     @classmethod
     def from_thread_id(cls, thread_id):
@@ -295,7 +321,8 @@ class CommitInfoExtractor(BuildInfoExtractor):
 
     def get_info(self, timeout=None):
         return dict((commit['sha'][:7],
-                     commit['commit']['message'].split('\n\n')[0]) for commit in self._get_json(timeout))
+                     BuildInfo(commit['commit']['message'].split('\n\n')[0], None))
+                     for commit in self._get_json(timeout))
 
 
 class BuildsURL(object):
