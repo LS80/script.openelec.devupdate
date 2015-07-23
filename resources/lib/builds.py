@@ -277,7 +277,9 @@ class BuildDetailsExtractor(BaseExtractor):
 class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
     def get_text(self, timeout=None):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
-        text = soup.find(text="Build Details:").find_next('ol').get_text()
+        post_id = "pid_{}".format(urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0])
+        post = soup.find('div', 'post-body', id=post_id)
+        text = post.find(text="Build Details:").find_next('ol').get_text()
         text = re.sub(r"\n(Commits no longer in build|New commits in this build)", r"\n  \1", text)
         text = re.sub(r"\n(\S+.*:)\n", r"\n [B]\1[/B]\n", text)
         text = re.sub(r"\n(\S)", r"\n  - \1", text)
