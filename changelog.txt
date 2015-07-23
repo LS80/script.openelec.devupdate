@@ -1,3 +1,6 @@
+4.11.1
+ - Fixed sometimes showing the build info for a different build.
+
 4.11.0
  - Added a build details dialog for Milhouse RPi builds (press Info).
  - Added a button to open the add-on settings.
