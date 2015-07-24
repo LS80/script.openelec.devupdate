@@ -14,6 +14,7 @@ from urllib2 import unquote
 
 from bs4 import BeautifulSoup, SoupStrainer
 import requests
+import html2text
 
 import constants
 
@@ -279,10 +280,17 @@ class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
         post_id = "pid_{}".format(urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0])
         post = soup.find('div', 'post-body', id=post_id)
-        text = post.find(text="Build Details:").find_next('ol').get_text()
-        text = re.sub(r"\n(Commits no longer in build|New commits in this build)", r"\n  \1", text)
-        text = re.sub(r"\n(\S+.*:)\n", r"\n [B]\1[/B]\n", text)
-        text = re.sub(r"\n(\S)", r"\n  - \1", text)
+
+        text_maker = html2text.HTML2Text()
+        text_maker.ignore_links = True
+        text_maker.ul_item_mark = '-'
+
+        text = text_maker.handle(unicode(post))
+
+        text = re.search(r"(Build Highlights:.*)", text, re.DOTALL).group(1)
+        text = re.sub(r"(Build Highlights:)", r"[B]\1[/B]", text)
+        text = re.sub(r"(Build Details:)", r"[B]\1[/B]", text)
+
         return text
 
 
