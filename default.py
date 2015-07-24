@@ -268,8 +268,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 if info.details is not None:
                     try:
                         details = info.details.get_text()
-                    except:
-                        utils.log("Unable to retrieve build details")
+                    except Exception as e:
+                        utils.log("Unable to retrieve build details: {}".format(e))
                     else:
                         if details:
                             dialog = BuildDetailsDialog(build, details)
