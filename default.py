@@ -137,6 +137,12 @@ class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
         self.getControl(1).setText(self._build)
         self.getControl(2).setText(self._text)
 
+    def onAction(self, action):
+        action_id = action.getId()
+        if action_id in (xbmcgui.ACTION_SHOW_INFO,
+                         xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK):
+            self.close()
+
 
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     LABEL_ID = 100
