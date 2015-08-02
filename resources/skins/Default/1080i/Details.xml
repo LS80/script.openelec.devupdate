@@ -40,6 +40,7 @@
                 <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
                 <texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
                 <texturesliderbarfocus colordiffuse="ffffffff">white.png</texturesliderbarfocus>
+                <showonepage>false</showonepage>
             </control>
         </control>
     </controls>
