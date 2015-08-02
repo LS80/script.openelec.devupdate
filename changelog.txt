@@ -1,3 +1,6 @@
+4.13.0
+ - Info now toggles the build details dialog on and off.
+
 4.12.0
  - Include the Build Highlights section from the Milhouse release posts.
 
