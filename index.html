@@ -38,6 +38,9 @@
 <p>It shows a list of available build sources and a list of builds available at the currently selected source.</p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/builds.png" alt="Build list"></p>
 
+<p>To view more details about a build press the Info button (currently only for Milhouse RPi Builds).</p>
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/build_details.png" alt="Build details"></p>
+
 <p>There is also a service which runs in the background, so when a newer build becomes available, a notification will be shown to enable you to install the update.</p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/notification.png" alt="Notification"></p>
 
@@ -46,9 +49,9 @@
 <h3><a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h3>
 
 <ol>
-<li>Install my repository from <a href="http://goo.gl/csQU8h">xbmc.repo.leopold.zip</a>.<br><br>
+<li>Install my repository from <a href="http://goo.gl/JYjL64">repository.leopold.zip</a>.<br><br>
     One way to do this is to <a href="http://wiki.openelec.tv/index.php/Ssh_commands">login via ssh</a> and run
-    <pre>wget http://goo.gl/MpUAWy -O xbmc.repo.leopold.zip</pre>
+    <pre>wget http://goo.gl/JYjL64 -O repository.leopold.zip</pre>
     Then <a href="http://kodi.wiki/view/Add-on_manager#How_to_install_from_a_ZIP_file">install from zip</a>.<br><br>
 </li>
 <li>Install <strong>OpenELEC Dev Update</strong> from <strong>Leopold's Add-ons</strong> under <strong>Program Add-ons</strong>.</li>
@@ -59,8 +62,8 @@
 <h3><a name="sources" class="anchor" href="#sources"><span class="octicon octicon-link"></span></a>Sources</h3>
 <ul>
 <li><a href="http://snapshots.openelec.tv">Official Snapshot Builds</a> [<a href="http://openelec.tv/forum/20-development-discussion/67846">Forum</a>] </li>
-<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan (RPi)</a></li>
-<li><a href="http://milhouse.openelec.tv/builds/master">MilhouseVH builds (RPi)</a> [<a href="http://forum.kodi.tv/showthread.php?tid=211501s">Forum</a>]</li>
+<li><a href="http://milhouse.openelec.tv/builds/master">Milhouse RPi Builds</a> [<a href="http://forum.kodi.tv/showthread.php?tid=231092">Forum</a>]</li>
+<li><a href="http://resources.pichimney.com/OpenELEC/dev_builds">Chris Swan RPi Builds</a></li>
 <li><a href="http://openelec.mirrors.uk2.net">Official Releases</a></li>
 <li><a href="http://archive.openelec.tv">Official Archive</a></li>
 <li><a href="http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/">DarkAngel2401 Dual Audio Builds</a> [<a href="http://forum.kodi.tv/showthread.php?tid=192480">Forum</a>]</li>
@@ -112,9 +115,8 @@ download.py --help
 <h3><a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h3>
 
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/settings.png" alt="Settings"></p>
-
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/builds.png" alt="Build list"></p>
-
+<p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/build_details.png" alt="Build details"></p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/downloading.png" alt="Downloading"></p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/retrieving_background.png" alt="Retrieving from archive"></p>
 <p><img src="http://ls80.github.io/script.openelec.devupdate/screenshots/rebooting.png" alt="Rebooting"></p>
@@ -128,17 +130,17 @@ download.py --help
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
+          
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-36069599-3");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+  ga('create', 'UA-36069599-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
 
 
   </body>
