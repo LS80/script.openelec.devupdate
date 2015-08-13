@@ -27,7 +27,7 @@ import bz2
 
 addons = os.path.join(os.path.expanduser('~'), '.kodi', 'addons')
 if os.path.isdir(addons):
-    for module in ('requests', 'beautifulsoup4'):
+    for module in ('requests', 'beautifulsoup4', 'html2text'):
         path = os.path.join(addons, 'script.module.' + module, 'lib')
         sys.path.append(path)
 
