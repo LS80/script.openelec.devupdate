@@ -25,6 +25,7 @@ import hashlib
 import tarfile
 import glob
 from urlparse import urlparse
+import threading
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
@@ -220,8 +221,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._selected_source_item = self._sources_list.getListItem(self._selected_source_position)
         self._selected_source_item.setLabel2('selected')
 
-        self._build_infos = self._get_build_infos(self._build_url)
-        self._set_build_info()
+        t = threading.Thread(target=self._get_and_set_build_info, args=(self._build_url,))
+        t.start()
 
     @property
     def selected_build(self):
@@ -248,8 +249,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
                 self._set_builds(build_links)
 
-                self._build_infos = self._get_build_infos(build_url)
-                self._set_build_info()
+                t = threading.Thread(target=self._get_and_set_build_info, args=(self._build_url,))
+                t.start()
             else:
                 self._sources_list.selectItem(self._selected_source_position)
         elif controlID == self.SETTINGS_BUTTON_ID:
@@ -330,6 +331,10 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             else:
                 utils.log("Info for build {}:\n\t{}".format(build_version, info))
         self._info_textbox.setText(info)
+
+    def _get_and_set_build_info(self, build_url):
+        self._build_infos = self._get_build_infos(build_url)
+        self._set_build_info()
 
     def _get_build_url(self):
         source = self._sources_list.getSelectedItem().getLabel()     
