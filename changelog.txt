@@ -1,3 +1,6 @@
+4.15.0
+ - Show Milhouse debug builds when the system partition is large enough.
+
 4.14.0
  - Do not block the gui when waiting to set the build information.
  - Use a slide animation when closing the build selection dialog.
