@@ -384,27 +384,52 @@ def get_installed_build():
         return Release(version)
 
 
+def rpi_debug_system_partition():
+    try:
+        system_size = int(open('/sys/block/mmcblk0/mmcblk0p1/size').read()) * 512
+    except:
+        pass
+    else:
+        if system_size >= 384 * 1024:
+            return True
+    return False
+
+
 def sources(arch):
-    sources_dict = OrderedDict()
-    sources_dict["Official Snapshot Builds"] = BuildsURL("http://snapshots.openelec.tv",
-                                                         info_extractors=[CommitInfoExtractor()])
+    _sources = OrderedDict()
+
+    builds_url = BuildsURL("http://snapshots.openelec.tv",
+                           info_extractors=[CommitInfoExtractor()])
+    _sources["Official Snapshot Builds"] = builds_url
 
     if arch.startswith("RPi"):
-        sources_dict["Milhouse RPi Builds"] = BuildsURL("http://milhouse.openelec.tv/builds/master",
-                                                        subdir=arch.split('.')[0],
-                                                        extractor=MilhouseBuildLinkExtractor,
-                                                        info_extractors=list(get_milhouse_build_info_extractors()))
-        sources_dict["Chris Swan RPi Builds"] = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
-                                                          info_extractors=[CommitInfoExtractor()])
+        builds_url = BuildsURL("http://milhouse.openelec.tv/builds/master",
+                               subdir=arch.split('.')[0],
+                               extractor=MilhouseBuildLinkExtractor,
+                               info_extractors=list(get_milhouse_build_info_extractors()))
+        _sources["Milhouse RPi Builds"] = builds_url
 
-    sources_dict["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
-                                                  extractor=OfficialReleaseLinkExtractor)
-    sources_dict["Official Archive"] = BuildsURL("http://archive.openelec.tv", extractor=ReleaseLinkExtractor)
+        if rpi_debug_system_partition():
+            builds_url = BuildsURL("http://milhouse.openelec.tv/builds/debug",
+                                   subdir=arch.split('.')[0],
+                                   extractor=MilhouseBuildLinkExtractor)
+            _sources["Milhouse RPi Builds (Debug)"] = builds_url
 
-    sources_dict["DarkAngel2401 Dual Audio Builds"] = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
-                                                                subdir=arch,
-                                                                extractor=DualAudioReleaseLinkExtractor)
-    return sources_dict
+        builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
+                               info_extractors=[CommitInfoExtractor()])
+        _sources["Chris Swan RPi Builds"] = builds_url
+
+    _sources["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
+                                              extractor=OfficialReleaseLinkExtractor)
+    _sources["Official Archive"] = BuildsURL("http://archive.openelec.tv",
+                                             extractor=ReleaseLinkExtractor)
+
+    builds_url = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
+                           subdir=arch,
+                           extractor=DualAudioReleaseLinkExtractor)
+    _sources["DarkAngel2401 Dual Audio Builds"] = builds_url
+
+    return _sources
 
 
 if __name__ == "__main__":
