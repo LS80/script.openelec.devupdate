@@ -144,8 +144,14 @@ with build_url.extractor() as parser:
             file_path = os.path.join(constants.UPDATE_DIR, build.filename)
             print
             print "Downloading {0} ...".format(build.url)
-            with open(os.path.join(constants.UPDATE_DIR, build.filename), 'w') as out:
-                process(remote, out, build.size)
+            try:
+                with open(file_path, 'w') as out:
+                    process(remote, out, build.size)
+            except KeyboardInterrupt:
+                os.remove(file_path)
+                print
+                print "Download cancelled"
+                sys.exit()
 
             if build.compressed:
                 tar_path = os.path.join(constants.UPDATE_DIR, build.tar_name)
