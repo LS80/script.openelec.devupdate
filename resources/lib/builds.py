@@ -386,11 +386,11 @@ def get_installed_build():
 
 def rpi_debug_system_partition():
     try:
-        system_size = int(open('/sys/block/mmcblk0/mmcblk0p1/size').read()) * 512
+        system_size_bytes = int(open('/sys/block/mmcblk0/mmcblk0p1/size').read()) * 512
     except:
         pass
     else:
-        if system_size >= 384 * 1024:
+        if system_size_bytes >= 384 * 1024*1024:
             return True
     return False
 
