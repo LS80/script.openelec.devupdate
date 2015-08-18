@@ -1,3 +1,6 @@
+4.16.1
+ - Fixed problems parsing the Milhouse build summaries.
+
 4.16.0
  - Fixed the RPi system partition size check.
  - Command line download can now be cancelled with Ctrl-C.
