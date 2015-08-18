@@ -308,8 +308,10 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
             for ul in post('ul'):
                 for li in ul('li'):
                     m = self.R.match(li.get_text())
-                    url = li.find('a', text="Release post")['href']
-                    yield m.group(1), BuildInfo(m.group(2), MilhouseBuildDetailsExtractor(url))
+                    if m:
+                        url = li.find('a', text="Release post")['href']
+                        yield m.group(1), BuildInfo(m.group(2),
+                                                    MilhouseBuildDetailsExtractor(url))
 
     def get_info(self, timeout=None):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
