@@ -189,6 +189,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._initial_source = self._sources.iterkeys().next()
         self._builds = self._get_build_links(self._build_url)
 
+        self._build_infos = {}
+
     def __nonzero__(self):
         return self._selected_build is not None
 
