@@ -36,9 +36,10 @@ class Build(object):
             try:
                 self._datetime = datetime.strptime(_datetime, self.DATETIME_FMT)
             except TypeError:
-                # Work around an issue with datetime.strptime when the script is run a second time.
-                #raise
-                self._datetime = datetime(*(time.strptime(_datetime, self.DATETIME_FMT)[0:6]))
+                # Work around an issue with datetime.strptime when the script
+                # is run a second time.
+                dt = time.strptime(_datetime, self.DATETIME_FMT)[0:6]
+                self._datetime = datetime(*(dt))
 
     def __eq__(self, other):
         return (self._version, self._datetime) == (other._version, other._datetime)
@@ -99,7 +100,8 @@ class Release(Build):
         soup = BeautifulSoup(html, 'html.parser',
                              parse_only=SoupStrainer(cls.tag_match))
         iter_contents = iter(soup.contents)
-        return dict((unicode(iter_contents.next().string), tag['datetime']) for tag in iter_contents)
+        return dict((unicode(iter_contents.next().string), tag['datetime'])
+                    for tag in iter_contents)
         
     @classmethod
     def maybe_get_tags(cls):
@@ -135,7 +137,8 @@ class BuildLinkBase(object):
         else:
             if netloc == "www.dropbox.com":
                 # Fix Dropbox url
-                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path, None, None, None))
+                link = urlparse.urlunparse((scheme, "dl.dropbox.com", path,
+                                            None, None, None))
             self.url = link
 
     def remote_file(self):
@@ -189,7 +192,8 @@ class BaseExtractor(object):
     def _get_response(self, timeout=None):
         self._response = requests.get(self.url, timeout=timeout)
         if not self._response:
-            raise BuildURLError("Build URL error: status {}".format(self._response.status_code))
+            msg = "Build URL error: status {}".format(self._response.status_code)
+            raise BuildURLError(msg)
         return self._response
 
     def _get_text(self, timeout=None):
@@ -209,7 +213,8 @@ class BaseExtractor(object):
 class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = ".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)"
+    BUILD_RE = (".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)",
+                "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
 
     def get_links(self, arch, timeout=None):
@@ -258,7 +263,8 @@ class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
 
 
 class MilhouseBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = "OpenELEC-{arch}-(?:\d+\.\d+-|)Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)"
+    BUILD_RE = ("OpenELEC-{arch}-(?:\d+\.\d+-|)"
+                "Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)")
 
 
 class BuildInfo(object):
@@ -278,8 +284,9 @@ class BuildDetailsExtractor(BaseExtractor):
 class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
     def get_text(self, timeout=None):
         soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
-        post_id = "pid_{}".format(urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0])
-        post = soup.find('div', 'post-body', id=post_id)
+        pid = urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0]
+        post_div_id = "pid_{}".format(pid)
+        post = soup.find('div', 'post-body', id=post_div_id)
 
         text_maker = html2text.HTML2Text()
         text_maker.ignore_links = True
@@ -338,7 +345,8 @@ class CommitInfoExtractor(BuildInfoExtractor):
 
 
 class BuildsURL(object):
-    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor, info_extractors=[BuildInfoExtractor()]):
+    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor,
+                 info_extractors=[BuildInfoExtractor()]):
         self.url = url
         if subdir:
             self.add_subdir(subdir)

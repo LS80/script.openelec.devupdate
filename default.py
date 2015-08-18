@@ -55,8 +55,10 @@ def check_update_files():
             s = " for "
         except IOError:
             s = selected = ""
+        msg = ("An installation is pending{}"
+               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected)
         if xbmcgui.Dialog().yesno("Confirm reboot",
-                                  "An installation is pending{}[COLOR=lightskyblue][B]{}[/B][/COLOR].".format(s, selected),
+                                  msg,
                                   "Reboot now to install the update",
                                   "or continue to select another build.",
                                   "Continue",
@@ -176,11 +178,14 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             if not scheme in ('http', 'https') or not netloc:
                 utils.bad_url(custom_url, "Invalid URL")
             else:
-                custom_extractor = (builds.BuildLinkExtractor,
-                                    builds.ReleaseLinkExtractor,
-                                    builds.MilhouseBuildLinkExtractor)[int(addon.getSetting('build_type'))]
-                self._sources[custom_name] = builds.BuildsURL(custom_url, extractor=custom_extractor)
-               
+                custom_extractors = (builds.BuildLinkExtractor,
+                                     builds.ReleaseLinkExtractor,
+                                     builds.MilhouseBuildLinkExtractor)
+
+                extractor = custom_extractors[int(addon.getSetting('build_type'))]
+                self._sources[custom_name] = builds.BuildsURL(custom_url,
+                                                              extractor=extractor)
+
         self._initial_source = addon.getSetting('source_name')
         try:
             self._build_url = self._sources[self._initial_source]
@@ -223,8 +228,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._selected_source_item = self._sources_list.getListItem(self._selected_source_position)
         self._selected_source_item.setLabel2('selected')
 
-        t = threading.Thread(target=self._get_and_set_build_info, args=(self._build_url,))
-        t.start()
+        threading.Thread(target=self._get_and_set_build_info,
+                         args=(self._build_url,)).start()
 
     @property
     def selected_build(self):
@@ -251,8 +256,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
                 self._set_builds(build_links)
 
-                t = threading.Thread(target=self._get_and_set_build_info, args=(self._build_url,))
-                t.start()
+                threading.Thread(target=self._get_and_set_build_info,
+                                 args=(self._build_url,)).start()
             else:
                 self._sources_list.selectItem(self._selected_source_position)
         elif controlID == self.SETTINGS_BUTTON_ID:
@@ -454,9 +459,9 @@ class Main(object):
         elif selected_build > self.installed_build:
             args = ("Confirm upgrade", "Upgrade", msg)
         else:
-            args = ("Confirm install",
-                    "Build  [COLOR=lightskyblue][B]{}[/B][/COLOR]  is already installed.".format(selected_build),
-                    "Continue?")
+            msg = ("Build  [COLOR=lightskyblue][B]{}[/B][/COLOR]"
+                   "  is already installed.").format(selected_build)
+            args = ("Confirm install", msg, "Continue?")
         if not xbmcgui.Dialog().yesno(*args):
             sys.exit(0)
             
