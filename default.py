@@ -244,8 +244,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._selected_build = self._builds[self._build_list.getSelectedPosition()]
             self.close()
         elif controlID == self.SOURCE_LIST_ID:
-            build_url = self._get_build_url()
-            build_links = self._get_build_links(build_url)
+            self._build_url = self._get_build_url()
+            build_links = self._get_build_links(self._build_url)
 
             if build_links:
                 self._selected_source_item.setLabel2('')
