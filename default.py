@@ -330,13 +330,18 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def _set_build_info(self):
         info = ""
         if self._builds_focused:
-            build_version = self._build_list.getSelectedItem().getLabel()
+            selected_item = self._build_list.getSelectedItem()
             try:
-                info = self._build_infos[build_version].summary
-            except KeyError:
-                utils.log("Build info for build {} not found".format(build_version))
+                build_version = selected_item.getLabel()
+            except AttributeError:
+                utils.log("Unable to get selected build name")
             else:
-                utils.log("Info for build {}:\n\t{}".format(build_version, info))
+                try:
+                    info = self._build_infos[build_version].summary
+                except KeyError:
+                    utils.log("Build info for build {} not found".format(build_version))
+                else:
+                    utils.log("Info for build {}:\n\t{}".format(build_version, info))
         self._info_textbox.setText(info)
 
     def _get_and_set_build_info(self, build_url):
