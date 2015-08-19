@@ -57,6 +57,10 @@ class Build(object):
         return '{} ({})'.format(self.version,
                                 self.date)
 
+    def __repr__(self):
+        return "{}('{}', '{}')".format(self.__class__.__name__,
+                                       self._datetime, self._version)
+
     @property
     def date(self):
         return self._datetime.strftime('%d %b %y')
@@ -209,6 +213,9 @@ class BaseExtractor(object):
         if self._response is not None:
             self._response.close()
 
+    def __repr__(self):
+        return "{}('{}')".format(self.__class__.__name__, self.url)
+
 
 class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
@@ -353,10 +360,7 @@ class BuildsURL(object):
         
         self._extractor = extractor
         self.info_extractors = info_extractors
-        
-    def __str__(self):
-        return self.url
-        
+
     def extractor(self):
         return self._extractor(self.url)
         
@@ -368,6 +372,12 @@ class BuildsURL(object):
     def _add_slash(self):
         if not self.url.endswith('/'):
             self.url += '/'
+
+    def __str__(self):
+        return self.url
+
+    def __repr__(self):
+        return "{}('{}')".format(self.__class__.__name__, self.url)
 
 
 def get_installed_build():
