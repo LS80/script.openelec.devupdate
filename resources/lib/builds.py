@@ -213,7 +213,7 @@ class BaseExtractor(object):
 class BuildLinkExtractor(BaseExtractor):
     """Class to extract all the build links from the specified URL"""
 
-    BUILD_RE = (".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)",
+    BUILD_RE = (".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
                 "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
 
