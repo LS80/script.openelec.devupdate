@@ -452,6 +452,17 @@ def sources(arch):
     return _sources
 
 
+def latest_build(arch, source, timeout=None):
+    build_sources = sources(arch)
+    try:
+        build_url = build_sources[source]
+    except KeyError:
+        pass
+    else:
+        with build_url.extractor() as parser:
+            return sorted(parser.get_links(arch, timeout), reverse=True)[0]
+
+
 if __name__ == "__main__":
     import sys
     

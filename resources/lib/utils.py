@@ -97,7 +97,12 @@ def showbusy(f):
             return f(*args, **kwargs)
         finally:
             not_busy()
-    return busy_wrapper    
+    return busy_wrapper
+
+def build_check_prompt():
+    check_prompt = int(addon.getSetting('check_prompt'))
+    return check_prompt == 2 or (check_prompt == 1 and not xbmc.Player().isPlayingVideo())
+
             
 if __name__ == "__main__":
     if len(sys.argv) > 1:

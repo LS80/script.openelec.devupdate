@@ -696,7 +696,6 @@ class Main(object):
 def check_for_new_build():
     utils.log("Checking for a new build")
     
-    check_prompt = int(addon.getSetting('check_prompt'))
     check_official = addon.getSetting('check_official') == 'true'
     check_interval = int(addon.getSetting('check_interval'))
 
@@ -714,43 +713,44 @@ def check_for_new_build():
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
+        if addon.getSetting('set_arch') == 'true':
+            arch = addon.getSetting('arch')
+        else:
+            arch = constants.ARCH
+
+        build_sources = builds.sources(arch)
         try:
-            if addon.getSetting('set_arch') == 'true':
-                arch = addon.getSetting('arch')
+            build_url = build_sources[source]
+        except KeyError:
+            utils.log("{} is not a valid source".format(source))
+            return
+
+        utils.log("Checking {}".format(build_url.url))
+
+        if addon.getSetting('set_timeout') == 'true':
+            timeout = int(addon.getSetting('timeout'))
+        else:
+            timeout = None
+
+        latest = builds.latest_build(arch, source, timeout)
+        if latest and latest > installed_build:
+            if utils.build_check_prompt():
+                utils.log("New build {} is available, "
+                          "prompting to show build list".format(latest))
+
+                if xbmcgui.Dialog().yesno(
+                        ADDON_NAME,
+                        line1="A more recent build is available:"
+                        "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(latest),
+                        line2="Current build:"
+                        "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(installed_build),
+                        line3="Show builds available to install?",
+                        autoclose=autoclose_ms):
+                    Main()
             else:
-                arch = constants.ARCH
+                utils.log("Notifying that new build {} is available".format(latest))
+                utils.notify("Build {} is available".format(latest), 7500)
 
-            build_sources = builds.sources(arch)
-            try:
-                build_url = build_sources[source]
-            except KeyError:
-                utils.log("{} is not a valid source".format(source))
-                return
-
-            url = build_url.url
-            utils.log("Checking {}".format(url))
-
-            if addon.getSetting('set_timeout') == 'true':
-                timeout = int(addon.getSetting('timeout'))
-            else:
-                timeout = None
-
-            with build_url.extractor() as parser:
-                latest = sorted(parser.get_links(arch, timeout), reverse=True)[0]
-                if latest > installed_build:
-                    if (check_prompt == 1 and xbmc.Player().isPlayingVideo()) or check_prompt == 0:
-                        utils.log("Notifying that new build {} is available".format(latest))
-                        utils.notify("Build {} is available".format(latest), 7500)
-                    else:
-                        utils.log("New build {} is available, prompting to show build list".format(latest))
-                        if xbmcgui.Dialog().yesno(ADDON_NAME,
-                                                  "A more recent build is available:   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(latest),
-                                                  "Current build:   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(installed_build),
-                                                  "Show builds available to install?",
-                                                  autoclose=autoclose_ms):
-                            Main()
-        except:
-            pass
 
 def notify_installation():
     notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
