@@ -1,3 +1,7 @@
+4.16.3
+ - Fixed a problem with empty build summaries when changing the source.
+ - Fixed the scrollbar height.
+
 4.16.2
  - Fixed a problem with dev build sources.
 
