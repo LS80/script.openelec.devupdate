@@ -105,6 +105,8 @@ def build_check_prompt():
     check_prompt = int(addon.getSetting('check_prompt'))
     return check_prompt == 2 or (check_prompt == 1 and not xbmc.Player().isPlayingVideo())
 
+def ensure_trailing_slash(path):
+    return path if path.endswith('/') else path + '/'
 
 def install_cmdline_script():
     """ Creates a symbolic link to the command line download script

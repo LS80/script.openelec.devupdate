@@ -39,9 +39,11 @@ from resources.lib import constants
 
 
 parser = ArgumentParser(description='Download an OpenELEC update')
-parser.add_argument('-a', '--arch', help='Set the build type (e.g. Generic.x86_64, RPi.arm)')
+parser.add_argument('-a', '--arch',
+                    help='Set the build type (e.g. Generic.x86_64, RPi.arm)')
 parser.add_argument('-s', '--source', help='Set the build source')
-parser.add_argument('-r', '--releases', action='store_true', help='Look for unofficial releases instead of development builds')
+parser.add_argument('-r', '--releases', action='store_true',
+                    help='Look for unofficial releases instead of development builds')
 
 args = parser.parse_args()
 
@@ -50,8 +52,8 @@ def get_choice(items, suffix=lambda item: " "):
     print
     num_width = len(str(len(items) - 1))
     for i, item in enumerate(items):
-        print "[{num:{width}d}] {item:s}\t{suffix}".format(num=i, item=item,
-                                                           width=num_width, suffix=suffix(item))
+        print "[{num:{width}d}] {item:s}\t{suffix}".format(
+            num=i, item=item, width=num_width, suffix=suffix(item))
     print '-' * 50
 
     choice = raw_input('Choose an item or "q" to quit: ')
@@ -82,11 +84,13 @@ if args.source:
         parsed = urlparse(args.source)
         if parsed.scheme in ('http', 'https') and parsed.netloc:
             if args.releases:
-                build_url = builds.BuildsURL(args.source, extractor=builds.ReleaseLinkExtractor)
+                build_url = builds.BuildsURL(args.source,
+                                             extractor=builds.ReleaseLinkExtractor)
             else:
                 build_url = builds.BuildsURL(args.source)
         else:
-            print '"{}" is not in the list of available sources and is not a valid HTTP URL'.format(args.source)
+            print ('"{}" is not in the list of available sources '
+                   'and is not a valid HTTP URL').format(args.source)
             print 'Valid options are:\n\t{}'.format("\n\t".join(urls.keys()))
             sys.exit(1)
 else:

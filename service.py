@@ -50,7 +50,8 @@ if check_enabled:
     if not check_onbootonly:
         # Start a timer to check for a new build every 3 hours.    
         utils.log("Starting build check timer")
-        xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.ADDON_ID,
-                                                                                                                check_interval))
+        xbmc.executebuiltin("AlarmClock(openelecdevupdate,"
+            "RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.ADDON_ID,
+                                                                   check_interval))
 
 utils.install_cmdline_script()

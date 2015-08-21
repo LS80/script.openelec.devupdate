@@ -225,7 +225,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         self._sources_list.selectItem(self._selected_source_position)
 
-        self._selected_source_item = self._sources_list.getListItem(self._selected_source_position)
+        item = self._sources_list.getListItem(self._selected_source_position)
+        self._selected_source_item = item
         self._selected_source_item.setLabel2('selected')
 
         threading.Thread(target=self._get_and_set_build_info,
@@ -304,7 +305,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         try:
             # Get the list of build links.
             with build_url.extractor() as extractor:
-                links = sorted(set(extractor.get_links(self._arch, self._timeout)), reverse=True)
+                links = sorted(set(extractor.get_links(self._arch, self._timeout)),
+                               reverse=True)
         except requests.ConnectionError as e:
             utils.connection_error(str(e))
         except builds.BuildURLError as e:
@@ -313,7 +315,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             utils.url_error(build_url.url, str(e))
         else:
             if not links:
-                utils.bad_url(build_url.url, "No builds were found for {}.".format(self._arch))
+                utils.bad_url(build_url.url,
+                              "No builds were found for {}.".format(self._arch))
         return links
 
     def _get_build_infos(self, build_url):
@@ -424,19 +427,21 @@ class Main(object):
         self.archive = addon.getSetting('archive') == 'true'
         if self.archive:
             archive_root = addon.getSetting('archive_root')
-            self.archive_root = archive_root if archive_root.endswith('/') else archive_root + '/'
+            self.archive_root = utils.ensure_trailing_slash(archive_root)
             self.archive_tar_path = None
             self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
             utils.log("Archive builds to " + self.archive_dir)
             if not xbmcvfs.exists(self.archive_root):
                 utils.log("Unable to access archive")
-                xbmcgui.Dialog().ok("Directory Error", "{} is not accessible.".format(self.archive_root),
+                xbmcgui.Dialog().ok("Directory Error",
+                                    "{} is not accessible.".format(self.archive_root),
                                     "Check the archive directory in the addon settings.")
                 addon.openSettings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
                 utils.log("Unable to create directory in archive")
-                xbmcgui.Dialog().ok("Directory Error", "Unable to create {}.".format(self.archive_dir),
+                xbmcgui.Dialog().ok("Directory Error",
+                                    "Unable to create {}.".format(self.archive_dir),
                                     "Check the archive directory permissions.")
                 sys.exit(1)
 
@@ -457,8 +462,8 @@ class Main(object):
     
         # Confirm the update.
         msg = ("[COLOR=lightskyblue][B]{}[/B][/COLOR]"
-         "  to  [COLOR=lightskyblue][B]{}[/B][/COLOR] ?").format(self.installed_build,
-                                                                 selected_build)
+               "  to  [COLOR=lightskyblue][B]{}[/B][/COLOR] ?").format(self.installed_build,
+                                                                       selected_build)
         if selected_build < self.installed_build:
             args = ("Confirm downgrade", "Downgrade", msg)
         elif selected_build > self.installed_build:
@@ -488,7 +493,8 @@ class Main(object):
         utils.log("File size = " + size_fmt(size))
         
         if self.archive:
-            self.archive_tar_path = os.path.join(self.archive_dir, self.selected_build.tar_name)
+            self.archive_tar_path = os.path.join(self.archive_dir,
+                                                 self.selected_build.tar_name)
         
         if not self.copy_from_archive():
             try:
@@ -679,18 +685,23 @@ class Main(object):
             f.write(str(self.selected_build))
 
         if addon.getSetting('confirm_reboot') == 'true':
-            if xbmcgui.Dialog().yesno("Confirm reboot",
-                                      " ",
-                                      "Reboot now to install build  [COLOR=lightskyblue][B]{}[/COLOR][/B] ?"
-                                      .format(self.selected_build)):
+            if xbmcgui.Dialog().yesno(
+                    "Confirm reboot",
+                    " ",
+                    "Reboot now to install build  [COLOR=lightskyblue][B]{}[/COLOR][/B] ?"
+                    .format(self.selected_build)):
                 xbmc.restart() 
             else:
-                utils.notify("Build {} will install on the next reboot".format(self.selected_build))
+                utils.notify("Build {} will install on the next reboot"
+                             .format(self.selected_build))
         else:
-            if progress.restart_countdown("Build  [COLOR=lightskyblue][B]{}[/COLOR][/B]  is ready to install.".format(self.selected_build)):
+            if progress.restart_countdown("Build  [COLOR=lightskyblue][B]{}[/COLOR][/B]"
+                                          "  is ready to install."
+                                          .format(self.selected_build)):
                 xbmc.restart()
             else:
-                utils.notify("Build {} will install on the next reboot".format(self.selected_build))
+                utils.notify("Build {} will install on the next reboot"
+                             .format(self.selected_build))
 
 
 def check_for_new_build():
