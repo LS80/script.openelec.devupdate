@@ -52,3 +52,5 @@ if check_enabled:
         utils.log("Starting build check timer")
         xbmc.executebuiltin("AlarmClock(openelecdevupdate,RunScript({},check),{:02d}:00:00,silent,loop)".format(constants.ADDON_ID,
                                                                                                                 check_interval))
+
+utils.install_cmdline_script()
