@@ -1,3 +1,9 @@
+4.17.0
+ - Fixed compatibility with the latest OpenELEC builds where some files
+   in /etc have been removed.
+ - Automatically set file permissions and create a devupdate symlink in the
+   home directory to more easily run the cmd line script.
+
 4.16.3
  - Fixed a problem with empty build summaries when changing the source.
  - Fixed the scrollbar height.
