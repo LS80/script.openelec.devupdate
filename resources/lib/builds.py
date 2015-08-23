@@ -382,19 +382,14 @@ class BuildsURL(object):
 
 def get_installed_build():
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
-    try:
-        os_release = open('/etc/os-release').read()
-    except IOError:
-        pass
-    else:
-        if "MILHOUSE_BUILD" in os_release:
-            DEVEL_RE = "devel-(\d+)-[r#](\d+)"
 
-    try:
-        version = open('/etc/version').read().rstrip()
-    except IOError:
-        # For testing
-        version = 'devel-20141031232437-r19505-g98f5c23'
+    if constants.OS_RELEASE['NAME'] == "OpenELEC":
+        version = constants.OS_RELEASE['VERSION']
+        if 'MILHOUSE_BUILD' in constants.OS_RELEASE:
+            DEVEL_RE = "devel-(\d+)-[r#](\d+)"
+    else:
+        # For testing on a non OpenELEC machine
+        version = 'devel-20150503135721-r20764-gbfd3782'
 
     m = re.match(DEVEL_RE, version)
     if m:

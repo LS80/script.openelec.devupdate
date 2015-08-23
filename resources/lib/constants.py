@@ -3,20 +3,24 @@ import os
 
 ADDON_ID = "script.openelec.devupdate"
 
+OS_RELEASE = dict(line.strip().replace('"', '').split('=')
+                  for line in open('/etc/os-release'))
+
 try:
-    ARCH = open('/etc/arch').read().rstrip()
-except IOError:
+    ARCH = OS_RELEASE['OPENELEC_ARCH']
+except KeyError:
+    # Enables testing on non OpenELEC machines
     ARCH = 'RPi.arm'
 
 UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-if not os.path.isfile('/etc/openelec-release'):
+if OS_RELEASE['NAME'] != "OpenELEC":
     try:
         import xbmc
     except ImportError:
-        # Enables testing outside xbmc
+        # Enables testing standalone script
         UPDATE_DIR = os.path.expanduser('~')
     else:
-        # Enables testing on non OpenELEC xbmc
+        # Enables testing on non OpenELEC machines
         UPDATE_DIR = xbmc.translatePath("special://temp/")
 
 if ARCH == 'ATV.i386':  
