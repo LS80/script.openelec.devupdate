@@ -2,25 +2,30 @@
 <settings>
     <category label="General">
         <setting label="Selected source name" type="text" id="source_name" default="Official Snapshot Builds" visible="false"/>
-        <setting type="lsep" label="Custom source"/>
-        <setting label="Name" type="text" id="custom_source"/>
-        <setting label="URL" type="text" id="custom_url" enable="!eq(-1,)"/>
-        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="!eq(-2,)"/>
-        <setting type="lsep" label="Archive"/>
+
+        <setting label="Show progress in background" type="bool" id="background" default="true"/>
+        <setting type="sep"/>
         <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
-        <setting label="Archive directory" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)"/>
-        <setting type="lsep" label="Misc"/>
-        <setting label="Run in background" type="bool" id="background" default="true"/>
-        <setting label="Verify files" type="bool" id="verify_files" default="false"/>
+        <setting label="Archive directory" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)" subsetting="true"/>
+        <setting type="sep"/>
+        <setting label="Verify update files" type="bool" id="verify_files" default="false"/>
+        <setting type="sep"/>
+        <setting label="Backup" type="enum" id="backup" values="Never|Prompt every time|Always" default="1"/>
     </category>
     <category label="Notifications">
-        <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="false"/>
-        <setting type="sep"/>
         <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
         <setting label="Check interval in hours (requires restart)" type="slider" id="check_interval" enable="eq(-2,true) + eq(-1,false)" subsetting="true" default="3" range="1,1,24" option="int"/>
         <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-3,true)" subsetting="true" default="1"/>
         <setting label="Enable for official releases" type="bool" id="check_official" enable="eq(-4,true)" subsetting="true" default="false"/>
+        <setting type="sep"/>
+        <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="false"/>
+    </category>
+    <category label="Custom Source">
+        <setting label="Enable" type="bool" id="custom_source_enable" default="true"/>
+        <setting label="Name" type="text" id="custom_source" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="URL" type="text" id="custom_url" enable="eq(-2,true) + !eq(-1,)"  subsetting="true"/>
+        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-3,true) + !eq(-2,)" subsetting="true"/>
     </category>
     <category label="Actions">
         <setting type="bool" id="update_pending" visible="false"/>
@@ -36,8 +41,6 @@
         <setting type="sep"/>
         <setting label="Set timeout" type="bool" id="set_timeout" default="false"/>
         <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
-        <setting type="sep"/>
-        <setting label="Backup" type="enum" id="backup" values="Never|Prompt every time|Always" default="1"/>       
         <setting type="sep"/>
         <setting label="Debug" type="bool" id="debug" default="false"/>
     </category>

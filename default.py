@@ -171,12 +171,13 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._timeout = None
         
         self._sources = builds.sources(self._arch)
-        custom_name = addon.getSetting('custom_source')
-        if custom_name:
+
+        if addon.getSetting('custom_source_enable') == 'true':
+            custom_name = addon.getSetting('custom_source')
             custom_url = addon.getSetting('custom_url')
             scheme, netloc = urlparse(custom_url)[:2]
             if not scheme in ('http', 'https') or not netloc:
-                utils.bad_url(custom_url, "Invalid URL")
+                utils.bad_url(custom_url, "Invalid custom source URL")
             else:
                 custom_extractors = (builds.BuildLinkExtractor,
                                      builds.ReleaseLinkExtractor,
