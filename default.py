@@ -183,7 +183,15 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                                      builds.ReleaseLinkExtractor,
                                      builds.MilhouseBuildLinkExtractor)
 
-                extractor = custom_extractors[int(addon.getSetting('build_type'))]
+                build_type = addon.getSetting('build_type')
+                try:
+                    build_type_index = int(build_type)
+                except ValueError:
+                    utils.log("Invalid build type index '{}'".format(build_type),
+                              xbmc.LOGERROR)
+                    build_type_index = 0
+                extractor = custom_extractors[build_type_index]
+
                 self._sources[custom_name] = builds.BuildsURL(custom_url,
                                                               extractor=extractor)
 

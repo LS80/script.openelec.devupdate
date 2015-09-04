@@ -22,7 +22,7 @@
         <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="false"/>
     </category>
     <category label="Custom Source">
-        <setting label="Enable" type="bool" id="custom_source_enable" default="true"/>
+        <setting label="Enable" type="bool" id="custom_source_enable" default="false"/>
         <setting label="Name" type="text" id="custom_source" enable="eq(-1,true)" subsetting="true"/>
         <setting label="URL" type="text" id="custom_url" enable="eq(-2,true) + !eq(-1,)"  subsetting="true"/>
         <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-3,true) + !eq(-2,)" subsetting="true"/>
