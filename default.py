@@ -393,8 +393,24 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
 
 class Main(object):
-    def __init__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        already_running = exc_type is script_exceptions.AlreadyRunning
+
+        if not already_running:
+            utils.set_not_running()
+
+        return already_running
+
+    def start(self):
+        if utils.is_running():
+            raise script_exceptions.AlreadyRunning
+
+        utils.set_running()
         utils.log("Starting")
+
         check_update_files()
 
         self.background = addon.getSetting('background') == 'true'
@@ -767,7 +783,8 @@ def check_for_new_build():
                         "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(installed_build),
                         line3="Show builds available to install?",
                         autoclose=autoclose_ms):
-                    Main()
+                    with Main() as main:
+                        main.start()
             else:
                 utils.log("Notifying that new build {} is available".format(latest))
                 utils.notify("Build {} is available".format(latest), 7500)
@@ -805,5 +822,6 @@ if len(sys.argv) > 1:
     elif sys.argv[1] == "notify":
         notify_installation()
 else:
-    Main()
+    with Main() as main:
+        main.start()
 

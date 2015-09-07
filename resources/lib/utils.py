@@ -23,11 +23,29 @@ def log(txt, level=xbmc.LOGNOTICE):
         msg = '{} v{}: {}'.format(ADDON_NAME,
                                   ADDON_VERSION, txt)
         xbmc.log(msg, level)
-        
+
+log_error = functools.partial(log, level=xbmc.LOGERROR)
+
 def log_exception():
     import traceback
     log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
-    
+
+def logging(msg_success=None, msg_error=None, log_exc=True):
+    def wrap(func):
+        def call_with_logging(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except:
+                if msg_error is not None:
+                    log_error(msg_error)
+                if log_exc:
+                    log_exception()
+            else:
+                if msg_success is not None:
+                    log(msg_success)
+        return call_with_logging
+    return wrap
+
 def connection_error(msg):
     xbmcgui.Dialog().ok("Connection Error", msg,
                         "Please check you have a connection to the internet.")  
@@ -98,6 +116,20 @@ def build_check_prompt():
 
 def ensure_trailing_slash(path):
     return path if path.endswith('/') else path + '/'
+
+@logging(msg_error="Unable to check if another instance is running")
+def is_running():
+    running = xbmcgui.Window(10000).getProperty('DevUpdateRunning') == 'True'
+    log("Another instance is running" if running else "No other instance is running")
+    return running
+
+@logging("Set running flag", "Unable to set running flag")
+def set_running():
+    xbmcgui.Window(10000).setProperty('DevUpdateRunning', 'True')
+
+@logging("Cleared running flag", "Unable to clear running flag")
+def set_not_running():
+    xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
 def install_cmdline_script():
     """ Creates a symbolic link to the command line download script

@@ -6,3 +6,6 @@ class WriteError(IOError):
 
 class DecompressError(IOError):
     pass
+
+class AlreadyRunning(Exception):
+    pass
