@@ -1,5 +1,18 @@
 import os
 import glob
+import subprocess
+
+
+def mount_readwrite():
+    subprocess.call(['mount', '-o', 'rw,remount', '/flash'])
+
+
+def mount_readonly():
+    subprocess.call(['mount', '-o', 'ro,remount', '/flash'])
+
+
+def update_extlinux():
+    subprocess.call(['/usr/bin/extlinux', '--update', '/flash'])
 
 
 def debug_system_partition():

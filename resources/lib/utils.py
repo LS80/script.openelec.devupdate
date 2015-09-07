@@ -1,5 +1,5 @@
 from __future__ import division
-import subprocess
+
 import os
 import sys
 import glob
@@ -52,16 +52,7 @@ def decompress_error(path, msg):
     xbmcgui.Dialog().ok("Decompression Error",
                         "An error occurred during decompression:",
                         " ", msg)
-        
-def mount_readwrite():    
-    subprocess.call(['mount', '-o', 'rw,remount', '/flash'])
-    
-def mount_readonly():    
-    subprocess.call(['mount', '-o', 'ro,remount', '/flash'])
-    
-def update_extlinux():    
-    subprocess.call(['/usr/bin/extlinux', '--update', '/flash'])
-    
+
 def remove_update_files():
     update_files = glob.glob(os.path.join(constants.UPDATE_DIR, '*'))
     success = None

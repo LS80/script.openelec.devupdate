@@ -9,6 +9,7 @@ import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
 from resources.lib import constants
 from resources.lib import utils
+from resources.lib import openelec
 from resources.lib.progress import restart_countdown
 
 addon = xbmcaddon.Addon(constants.ADDON_ID)
@@ -19,9 +20,9 @@ ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
 rpi_config_backup_file = os.path.join(ADDON_DATA, constants.RPI_CONFIG_FILE)
 if os.path.exists(rpi_config_backup_file):
     utils.log("Re-enabling overclocking")
-    utils.mount_readwrite()
+    openelec.mount_readwrite()
     xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
-    utils.mount_readonly()
+    openelec.mount_readonly()
     xbmcvfs.delete(rpi_config_backup_file)
     if restart_countdown("Ready to reboot to re-enable overclocking."):
         utils.log("Restarting")
@@ -34,9 +35,9 @@ if os.path.exists(rpi_config_backup_file):
 update_extlinux_file = os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX)
 if os.path.exists(update_extlinux_file):
     utils.log("Updating extlinux")
-    utils.mount_readwrite()
-    utils.update_extlinux()
-    utils.mount_readonly()
+    openelec.mount_readwrite()
+    openelec.update_extlinux()
+    openelec.mount_readonly()
     os.remove(update_extlinux_file)
 
 
