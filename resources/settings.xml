@@ -33,7 +33,7 @@
     </category>
     <category label="Advanced">
         <setting label="Override installed build type" type="bool" id="set_arch" default="false"/>
-        <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Nvidia_Legacy.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm|WeTek_Play.arm" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
         <setting label="Disable overclocking during update" type="bool" id="disable_overclock" default="false" visible="System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
