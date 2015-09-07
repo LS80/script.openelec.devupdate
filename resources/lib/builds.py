@@ -455,7 +455,12 @@ def latest_build(arch, source, timeout=None):
         pass
     else:
         with build_url.extractor() as parser:
-            return sorted(parser.get_links(arch, timeout), reverse=True)[0]
+            builds = sorted(parser.get_links(arch, timeout), reverse=True)
+
+        try:
+            return builds[0]
+        except IndexError:
+            return None
 
 
 if __name__ == "__main__":
