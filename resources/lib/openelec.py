@@ -1,14 +1,28 @@
 import os
 import glob
 import subprocess
+from contextlib import contextmanager
 
 
 def mount_readwrite():
-    subprocess.call(['mount', '-o', 'rw,remount', '/flash'])
+    subprocess.check_call(['mount', '-o', 'rw,remount', '/flash'])
 
 
 def mount_readonly():
     subprocess.call(['mount', '-o', 'ro,remount', '/flash'])
+
+
+@contextmanager
+def write_context():
+    try:
+        mount_readwrite()
+    except subprocess.CalledProcessError:
+        pass
+    else:
+        try:
+            yield
+        finally:
+            mount_readonly()
 
 
 def update_extlinux():

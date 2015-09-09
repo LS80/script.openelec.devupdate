@@ -95,13 +95,11 @@ def maybe_disable_overclock():
 
             def repl(m):
                 return '#' + m.group(1)
-            
-            openelec.mount_readwrite()
 
-            with open(constants.RPI_CONFIG_PATH, 'w') as b:
-                b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
+            with openelec.write_context():
+                with open(constants.RPI_CONFIG_PATH, 'w') as b:
+                    b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
 
-            openelec.mount_readonly()
 
 def maybe_schedule_extlinux_update():
     if (constants.ARCH != 'RPi.arm' and

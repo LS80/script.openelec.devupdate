@@ -20,9 +20,8 @@ ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
 rpi_config_backup_file = os.path.join(ADDON_DATA, constants.RPI_CONFIG_FILE)
 if os.path.exists(rpi_config_backup_file):
     utils.log("Re-enabling overclocking")
-    openelec.mount_readwrite()
-    xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
-    openelec.mount_readonly()
+    with openelec.write_context():
+        xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
     xbmcvfs.delete(rpi_config_backup_file)
     if restart_countdown("Ready to reboot to re-enable overclocking."):
         utils.log("Restarting")
@@ -35,9 +34,8 @@ if os.path.exists(rpi_config_backup_file):
 update_extlinux_file = os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX)
 if os.path.exists(update_extlinux_file):
     utils.log("Updating extlinux")
-    openelec.mount_readwrite()
-    openelec.update_extlinux()
-    openelec.mount_readonly()
+    with openelec.write_context():
+        openelec.update_extlinux()
     os.remove(update_extlinux_file)
 
 
