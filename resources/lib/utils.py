@@ -37,12 +37,12 @@ def logging(msg_success=None, msg_error=None, log_exc=True):
                 return func(*args, **kwargs)
             except:
                 if msg_error is not None:
-                    log_error(msg_error)
+                    log_error(msg_error.format(*args))
                 if log_exc:
                     log_exception()
             else:
                 if msg_success is not None:
-                    log(msg_success)
+                    log(msg_success.format(*args))
         return call_with_logging
     return wrap
 
@@ -71,21 +71,29 @@ def decompress_error(path, msg):
                         "An error occurred during decompression:",
                         " ", msg)
 
+
+@logging("Removed file", "Could not remove file")
+def remove_file(file_path):
+    log("Removing {}".format(file_path))
+    try:
+        os.remove(file_path)
+    except OSError:
+        return False
+    else:
+        return True
+
+
+@logging("Created directory {}", log_exc=False)
+def create_directory(path):
+    os.mkdir(path)
+
+
 def remove_update_files():
     update_files = glob.glob(os.path.join(constants.UPDATE_DIR, '*'))
     success = None
-    log(update_files)
-    for f in update_files:
-        if f in constants.UPDATE_FILES or f.endswith("tar"):
-            try:
-                os.remove(f)
-            except OSError:
-                log("Could not remove " + f)
-                success = False
-                break
-            else:
-                log("Removed " + f)
-                success = True
+    for file_path in update_files:
+        if file_path in constants.UPDATE_FILES or file_path.endswith("tar"):
+            success = remove_file(file_path)
     if success or success is None:
         addon.setSetting('update_pending', 'false')
     return success
@@ -131,6 +139,14 @@ def set_running():
 def set_not_running():
     xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
+@logging(msg_error="Unable to make script executable")
+def make_script_executable(script_path):
+    os.chmod(script_path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
+
+@logging(msg_error="Unable to create script symbolic link", log_exc=False)
+def create_script_symlink(script_path, symlink_path):
+    os.symlink(script_path, symlink_path)
+
 def install_cmdline_script():
     """ Creates a symbolic link to the command line download script
     in the root user home directory. The script can then be invoked
@@ -143,17 +159,11 @@ def install_cmdline_script():
     script_path = os.path.join(ADDON_PATH, SCRIPT_NAME)
 
     SYMLINK_NAME = "devupdate"
-
-    try:
-        os.chmod(script_path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
-    except:
-        log("Unable to make {} executable".format(script_path))
-
     symlink_path = os.path.join(os.path.expanduser('~'), SYMLINK_NAME)
-    try:
-        os.symlink(script_path, symlink_path)
-    except:
-        log("Unable to create symbolic link at {}".format(symlink_path))
+
+    make_script_executable(script_path)
+
+    create_script_symlink(script_path, symlink_path)
 
 
 if __name__ == "__main__":
