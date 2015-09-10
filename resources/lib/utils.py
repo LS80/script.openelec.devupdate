@@ -19,10 +19,9 @@ ICON_PATH = addon.getAddonInfo('icon')
 ADDON_PATH = xbmc.translatePath(addon.getAddonInfo('path'))
 
 
-def log(txt, level=xbmc.LOGNOTICE):
-    if addon.getSetting('debug') == 'true':
-        msg = '{} v{}: {}'.format(ADDON_NAME,
-                                  ADDON_VERSION, txt)
+def log(txt, level=xbmc.LOGDEBUG):
+    if not (addon.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
+        msg = '{} v{}: {}'.format(ADDON_NAME, ADDON_VERSION, txt)
         xbmc.log(msg, level)
 
 
