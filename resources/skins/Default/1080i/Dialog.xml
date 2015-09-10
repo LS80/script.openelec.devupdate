@@ -74,6 +74,7 @@
                 </control>
                 
                 <control type="group">
+                    <description>Source selection</description>
                     <left>0</left>
                     <top>260</top>
         
@@ -103,7 +104,7 @@
                                 <width>680</width>
                                 <left>50</left>
                                 <aligny>center</aligny>
-                                <textcolor>88b2afa8</textcolor>
+                                <textcolor>d0b2afa8</textcolor>
                                 <info>ListItem.Label</info>
                             </control>
                         </itemlayout>
@@ -135,7 +136,7 @@
                                     <width>680</width>
                                     <left>50</left>
                                     <aligny>center</aligny>
-                                    <textcolor>88b2afa8</textcolor>
+                                    <textcolor>f0b2afa8</textcolor>
                                     <info>ListItem.Label</info>
                                 </control>
                                 
