@@ -36,6 +36,7 @@ import requests
 from resources.lib.funcs import size_fmt
 from resources.lib import builds
 from resources.lib import constants
+from resources.lib import openelec
 
 
 parser = ArgumentParser(description='Download an OpenELEC update')
@@ -73,7 +74,7 @@ def get_choice(items, suffix=lambda item: " "):
 if args.arch:
     arch = args.arch
 else:
-    arch = constants.ARCH
+    arch = openelec.ARCH
 
 urls = builds.sources(arch)
 
@@ -145,7 +146,7 @@ with build_url.extractor() as parser:
         if links:
             build = get_choice(links, build_suffix)
             remote = build.remote_file()
-            file_path = os.path.join(constants.UPDATE_DIR, build.filename)
+            file_path = os.path.join(openelec.UPDATE_DIR, build.filename)
             print
             print "Downloading {0} ...".format(build.url)
             try:
@@ -158,7 +159,7 @@ with build_url.extractor() as parser:
                 sys.exit()
 
             if build.compressed:
-                tar_path = os.path.join(constants.UPDATE_DIR, build.tar_name)
+                tar_path = os.path.join(openelec.UPDATE_DIR, build.tar_name)
                 size = os.path.getsize(file_path)
                 print
                 print "Decompressing {0} ...".format(file_path)

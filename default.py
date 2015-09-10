@@ -47,8 +47,8 @@ ADDON_NAME = addon.getAddonInfo('name')
 
 def check_update_files():
     # Check if the update files are already in place.
-    if (all(os.path.isfile(f) for f in constants.UPDATE_PATHS) or
-        glob.glob(os.path.join(constants.UPDATE_DIR, '*tar'))):
+    if (all(os.path.isfile(f) for f in openelec.UPDATE_PATHS) or
+        glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))):
         notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
         try:
             with open(notify_file) as f:
@@ -81,7 +81,7 @@ def cd_tmp_dir():
 def maybe_disable_overclock():
     import re
     
-    if (constants.ARCH.startswith('RPi') and
+    if (openelec.ARCH.startswith('RPi') and
         os.path.isfile(constants.RPI_CONFIG_PATH) and
         addon.getSetting('disable_overclock') == 'true'):
         
@@ -102,7 +102,7 @@ def maybe_disable_overclock():
 
 
 def maybe_schedule_extlinux_update():
-    if (constants.ARCH != 'RPi.arm' and
+    if (openelec.ARCH != 'RPi.arm' and
         addon.getSetting('update_extlinux') == 'true'):
         open(os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX), 'w').close()
 
@@ -159,10 +159,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def __init__(self, installed_build):
         self._installed_build = installed_build
 
-        if addon.getSetting('set_arch') == 'true':
-            self._arch = addon.getSetting('arch')
-        else:
-            self._arch = constants.ARCH
+        self._arch = utils.get_arch()
             
         if addon.getSetting('set_timeout') == 'true':
             self._timeout = int(addon.getSetting('timeout'))
@@ -567,7 +564,7 @@ class Main(object):
 
     def maybe_extract(self):
         # Create the .update directory if necessary.
-        utils.create_directory(constants.UPDATE_DIR)
+        utils.create_directory(openelec.UPDATE_DIR)
 
         if self.verify_files:
             tf = tarfile.open(self.selected_build.tar_name, 'r')
@@ -575,10 +572,10 @@ class Main(object):
             
             # Extract the update files from the tar file to the .update directory.
             tar_members = (m for m in tf.getmembers()
-                           if os.path.basename(m.name) in constants.UPDATE_FILES)
+                           if os.path.basename(m.name) in openelec.UPDATE_FILES)
             for member in tar_members:
                 ti = tf.extractfile(member)
-                outfile = os.path.join(constants.UPDATE_DIR, os.path.basename(member.name))
+                outfile = os.path.join(openelec.UPDATE_DIR, os.path.basename(member.name))
                 try:
                     with progress.FileProgress("Extracting", ti, outfile, ti.size,
                                                self.background) as extractor:
@@ -594,7 +591,7 @@ class Main(object):
             tf.close()
         else:
             # Just move the tar file to the .update directory.
-            dest = os.path.join(constants.UPDATE_DIR, self.selected_build.tar_name)
+            dest = os.path.join(openelec.UPDATE_DIR, self.selected_build.tar_name)
             utils.log("Moving to " + dest)
             os.rename(self.selected_build.tar_name, dest)
 
@@ -686,8 +683,8 @@ class Main(object):
     def maybe_verify(self):
         if self.verify_files:
             # Verify the md5 sums.
-            os.chdir(constants.UPDATE_DIR)
-            for f in constants.UPDATE_IMAGES:
+            os.chdir(openelec.UPDATE_DIR)
+            for f in openelec.UPDATE_IMAGES:
                 md5sum = open(f + '.md5').read().split()[0]
                 utils.log("{}.md5 file = {}".format(f, md5sum))
         
@@ -746,10 +743,7 @@ def check_for_new_build():
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
-        if addon.getSetting('set_arch') == 'true':
-            arch = addon.getSetting('arch')
-        else:
-            arch = constants.ARCH
+        arch = utils.get_arch()
 
         build_sources = builds.sources(arch)
         try:

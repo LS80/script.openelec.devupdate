@@ -4,6 +4,32 @@ import subprocess
 from contextlib import contextmanager
 
 
+OS_RELEASE = dict(line.strip().replace('"', '').split('=')
+                  for line in open('/etc/os-release'))
+
+try:
+    ARCH = OS_RELEASE['OPENELEC_ARCH']
+except KeyError:
+    # Enables testing on non OpenELEC machines
+    ARCH = 'RPi.arm'
+
+UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
+if OS_RELEASE['NAME'] != "OpenELEC":
+    try:
+        import xbmc
+    except ImportError:
+        # Enables testing standalone script outside Kodi
+        UPDATE_DIR = os.path.expanduser('~')
+    else:
+        # Enables testing in non OpenELEC Kodi
+        UPDATE_DIR = xbmc.translatePath("special://temp/")
+
+UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+
+UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
+UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
+
+
 def mount_readwrite():
     subprocess.check_call(['mount', '-o', 'rw,remount', '/flash'])
 

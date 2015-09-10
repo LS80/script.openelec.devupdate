@@ -384,9 +384,9 @@ class BuildsURL(object):
 def get_installed_build():
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
 
-    if constants.OS_RELEASE['NAME'] == "OpenELEC":
-        version = constants.OS_RELEASE['VERSION']
-        if 'MILHOUSE_BUILD' in constants.OS_RELEASE:
+    if openelec.OS_RELEASE['NAME'] == "OpenELEC":
+        version = openelec.OS_RELEASE['VERSION']
+        if 'MILHOUSE_BUILD' in openelec.OS_RELEASE:
             DEVEL_RE = "devel-(\d+)-[r#](\d+)"
     else:
         # For testing on a non OpenELEC machine
@@ -487,14 +487,14 @@ if __name__ == "__main__":
     print "Installed build = {}".format(installed_build)
     print
 
-    urls = sources(constants.ARCH)
+    urls = sources(openelec.ARCH)
 
     if len(sys.argv) > 1:
         name = sys.argv[1]
         if name not in urls:
             print '"{}" not in URL list'.format(name)
         else:
-            print_links(name, urls[name], constants.ARCH)
+            print_links(name, urls[name], openelec.ARCH)
     else:
         for name, build_url in urls.items():
-            print_links(name, build_url, constants.ARCH)
+            print_links(name, build_url, openelec.ARCH)
