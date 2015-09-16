@@ -16,7 +16,7 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary>Unofficial OpenELEC updater</summary>
-    <description>This add-on downloads OpenELEC update files ready to be installed on the next reboot. Use the add-on settings to choose the source URL or provide your own. Run the add-on to select from a list of builds available at the URL.</description>
+    <description>This add-on downloads OpenELEC update files ready to be installed on the next reboot. Select a predefined source or a custom source defined in the add-on settings, then choose from a list of available builds. Some sources provide full build details which can be viewed by pressing 'Info'.</description>
     <disclaimer>Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
     <forum>http://openelec.tv/forum/128-addons/49855</forum>
     <website>http://ls80.github.io/script.openelec.devupdate</website>
