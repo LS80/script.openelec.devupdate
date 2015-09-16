@@ -38,7 +38,7 @@ def logging(msg_success=None, msg_error=None, log_exc=True):
         @functools.wraps(func)
         def call_with_logging(*args, **kwargs):
             try:
-                return func(*args, **kwargs)
+                result = func(*args, **kwargs)
             except:
                 if msg_error is not None:
                     log_error(msg_error.format(*args))
@@ -47,6 +47,7 @@ def logging(msg_success=None, msg_error=None, log_exc=True):
             else:
                 if msg_success is not None:
                     log(msg_success.format(*args))
+                return result
         return call_with_logging
     return wrap
 
