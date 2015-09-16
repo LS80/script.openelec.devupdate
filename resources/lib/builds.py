@@ -63,8 +63,9 @@ class Build(object):
                                 self.date)
 
     def __repr__(self):
-        return "{}('{}', '{}')".format(self.__class__.__name__,
-                                       self._datetime, self._version)
+        return "{}('{}', '{}')".format("Build",
+                                       self._datetime.strftime(self.DATETIME_FMT),
+                                       self.version)
 
     @property
     def date(self):

@@ -31,7 +31,7 @@ import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
 from resources.lib import (constants, progress, script_exceptions,
-                           utils, builds, openelec)
+                           utils, builds, openelec, history)
 from resources.lib.funcs import size_fmt
 
 addon = xbmcaddon.Addon(constants.ADDON_ID)
@@ -45,15 +45,15 @@ def check_update_files():
     # Check if the update files are already in place.
     if (all(os.path.isfile(f) for f in openelec.UPDATE_PATHS) or
         glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))):
-        notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
-        try:
-            with open(notify_file) as f:
-                selected = f.read()
+        selected = get_build_from_file()
+        if selected:
             s = " for "
-        except IOError:
-            s = selected = ""
+            _, selected_build = selected
+        else:
+            s = selected_build = ""
+
         msg = ("An installation is pending{}"
-               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected)
+               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected_build)
         if xbmcgui.Dialog().yesno("Confirm reboot",
                                   msg,
                                   "Reboot now to install the update",
@@ -101,6 +101,7 @@ def maybe_schedule_extlinux_update():
         addon.getSetting('update_extlinux') == 'true'):
         open(os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX), 'w').close()
 
+
 def maybe_run_backup():
     backup = int(addon.getSetting('backup'))
     if backup == 0:
@@ -120,6 +121,17 @@ def maybe_run_backup():
         window = xbmcgui.Window(10000)
         while (window.getProperty('script.xbmcbackup.running') == 'true'):
             xbmc.sleep(5000)
+
+
+def get_build_from_file():
+    notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
+    try:
+        with open(notify_file) as f:
+            source, build_repr = f.read().splitlines()
+    except (IOError, ValueError):
+        return None
+    else:
+        return source, eval("builds." + build_repr)
 
 
 class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
@@ -690,7 +702,7 @@ class Main(object):
 
     def confirm(self):
         with open(os.path.join(ADDON_DATA, constants.NOTIFY_FILE), 'w') as f:
-            f.write(str(self.selected_build))
+            f.write('\n'.join((self.selected_source, repr(self.selected_build))))
 
         if addon.getSetting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno(
@@ -767,37 +779,34 @@ def check_for_new_build():
                 utils.notify("Build {} is available".format(latest), 7500)
 
 
-def notify_installation():
-    notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
-    try:
-        with open(notify_file) as f:
-            selected = f.read()
-    except IOError:
-        utils.log("No installation notification")
-    else:
-        utils.log("Selected build: {}".format(selected))
-        installed = builds.get_installed_build()
-        utils.log("Installed build: {}".format(installed))
-        if str(installed) == selected:
-            msg = "Build {} was installed successfully".format(installed)
+def confirm_installation():
+    selected = get_build_from_file()
+    if selected:
+        source, selected_build = selected
+
+        utils.log("Selected build: {}".format(selected_build))
+        installed_build = builds.get_installed_build()
+        utils.log("Installed build: {}".format(installed_build))
+        if installed_build == selected_build:
+            msg = "Build {} was installed successfully".format(installed_build)
             utils.notify(msg)
             utils.log(msg)
+
+            history.add_install(source, selected_build)
         else:
-            utils.log("Build {} was not installed".format(selected))
-        try:
-            os.remove(notify_file)
-        except OSError:
-            pass # in case file was already deleted
-        else:
-            utils.log("Removed notification file")
+            utils.log("Build {} was not installed".format(selected_build))
+    else:
+        utils.log("No installation notification")
+
+    utils.remove_file(os.path.join(ADDON_DATA, constants.NOTIFY_FILE))
 
 
 utils.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
     if sys.argv[1] == "check":
         check_for_new_build()
-    elif sys.argv[1] == "notify":
-        notify_installation()
+    elif sys.argv[1] == "confirm":
+        confirm_installation()
 else:
     with Main() as main:
         main.start()

@@ -37,7 +37,7 @@ if os.path.exists(update_extlinux_file):
     os.remove(update_extlinux_file)
 
 
-xbmc.executebuiltin("RunScript({},notify)".format(constants.ADDON_ID))
+xbmc.executebuiltin("RunScript({},confirm)".format(constants.ADDON_ID))
 
 check_enabled = addon.getSetting('check') == 'true'
 if check_enabled:
