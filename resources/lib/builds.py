@@ -16,7 +16,6 @@ from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
 
-import constants
 import openelec
 
 
@@ -158,15 +157,8 @@ class BuildLinkBase(object):
         self.filename = unquote(os.path.basename(urlparse.urlparse(resp.url).path))
 
         name, ext = os.path.splitext(self.filename)
-        if ext == '.tar':
-            self.tar_name = self.filename
-        else:
-            self.tar_name = name
-            
-        if ext == '.bz2':
-            self.compressed = True
-        else:
-            self.compressed = False
+        self.tar_name = self.filename if ext == '.tar' else name
+        self.compressed = ext == '.bz2'
             
         return resp.raw
 

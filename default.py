@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-#################################################imp###########################
+############################################################################
 
 from __future__ import division
 
@@ -30,13 +30,9 @@ import threading
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
-from resources.lib import constants
-from resources.lib import progress
-from resources.lib import script_exceptions
-from resources.lib import utils
+from resources.lib import (constants, progress, script_exceptions,
+                           utils, builds, openelec)
 from resources.lib.funcs import size_fmt
-from resources.lib import builds
-from resources.lib import openelec
 
 addon = xbmcaddon.Addon(constants.ADDON_ID)
 
@@ -96,9 +92,8 @@ def maybe_disable_overclock():
             def repl(m):
                 return '#' + m.group(1)
 
-            with openelec.write_context():
-                with open(constants.RPI_CONFIG_PATH, 'w') as b:
-                    b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
+            with openelec.write_context(), open(constants.RPI_CONFIG_PATH, 'w') as b:
+                b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
 
 
 def maybe_schedule_extlinux_update():

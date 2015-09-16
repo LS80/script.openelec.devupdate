@@ -7,10 +7,8 @@ import _strptime
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 
-from resources.lib import constants
-from resources.lib import utils
-from resources.lib import openelec
-from resources.lib.progress import restart_countdown
+from resources.lib import constants, utils, openelec, progress
+
 
 addon = xbmcaddon.Addon(constants.ADDON_ID)
 
@@ -23,7 +21,7 @@ if os.path.exists(rpi_config_backup_file):
     with openelec.write_context():
         xbmcvfs.copy(rpi_config_backup_file, constants.RPI_CONFIG_PATH)
     xbmcvfs.delete(rpi_config_backup_file)
-    if restart_countdown("Ready to reboot to re-enable overclocking."):
+    if progress.restart_countdown("Ready to reboot to re-enable overclocking."):
         utils.log("Restarting")
         xbmc.restart()
         sys.exit()

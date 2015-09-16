@@ -35,6 +35,7 @@ def log_exception():
 
 def logging(msg_success=None, msg_error=None, log_exc=True):
     def wrap(func):
+        @functools.wraps(func)
         def call_with_logging(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
