@@ -379,7 +379,7 @@ def get_installed_build():
     if openelec.OS_RELEASE['NAME'] == "OpenELEC":
         version = openelec.OS_RELEASE['VERSION']
         if 'MILHOUSE_BUILD' in openelec.OS_RELEASE:
-            DEVEL_RE = "devel-(\d+)-[r#](\d+)"
+            DEVEL_RE = "devel-(\d+)-[r#](\d{4}[a-z]?)"
     else:
         # For testing on a non OpenELEC machine
         version = 'devel-20150503135721-r20764-gbfd3782'
