@@ -1,3 +1,7 @@
+4.22.0
+ - Fixed installs of Milhouse debug builds not notifying as successful.
+ - Kodi debug logging is now required for the add-on DEBUG messages to show.
+
 4.21.0
  - Stop more than one instance of the add-on running at the same time.
  - Adjusted the source name text colour so it doesn't look "greyed out".
