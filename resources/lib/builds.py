@@ -26,10 +26,11 @@ arch = openelec.ARCH
 class BuildURLError(Exception):
     pass
 
+
 class Build(object):
-    """Holds information about an OpenELEC build,
-       including how to sort and print them."""
-       
+    """Holds information about an OpenELEC build and defines how to compare them,
+       produce a unique hash for dictionary keys, and print them.
+    """
     DATETIME_FMT = '%Y%m%d%H%M%S'
 
     def __init__(self, _datetime, version):
@@ -75,6 +76,10 @@ class Build(object):
 
 
 class Release(Build):
+    """Subclass of Build for official releases.
+
+       Has additional methods for retrieving datetime information from the git tags.
+    """
     DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
     MIN_VERSION = [3,95,0]
     tags = None
@@ -132,7 +137,7 @@ class Release(Build):
 
 
 class BuildLinkBase(object):
-
+    """Base class for links to builds"""
     def __init__(self, baseurl, link):
         # Set the absolute URL
         link = link.strip()
@@ -150,33 +155,32 @@ class BuildLinkBase(object):
             self.url = link
 
     def remote_file(self):
-        resp = requests.get(self.url, stream=True,
-                            headers={'Accept-Encoding': None})
+        response = requests.get(self.url, stream=True, timeout=timeout,
+                                headers={'Accept-Encoding': None})
         try:
-            self.size = int(resp.headers['Content-Length'])
+            self.size = int(response.headers['Content-Length'])
         except KeyError:
             self.size = 0
 
         # Get the actual filename
-        self.filename = unquote(os.path.basename(urlparse.urlparse(resp.url).path))
+        self.filename = unquote(os.path.basename(urlparse.urlparse(response.url).path))
 
         name, ext = os.path.splitext(self.filename)
         self.tar_name = self.filename if ext == '.tar' else name
         self.compressed = ext == '.bz2'
             
-        return resp.raw
+        return response.raw
 
 
 class BuildLink(Build, BuildLinkBase):
     """Holds information about a link to an OpenELEC build."""
-
     def __init__(self, baseurl, link, datetime_str, revision):
         BuildLinkBase.__init__(self, baseurl, link)
         Build.__init__(self, datetime_str, version=revision)
 
 
 class ReleaseLink(Release, BuildLinkBase):
-    """Class for links to official release downloads."""
+    """Class for links to OpenELEC release downloads."""
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
         Release.__init__(self, release)
@@ -208,8 +212,7 @@ class BaseExtractor(object):
 
 
 class BuildLinkExtractor(BaseExtractor):
-    """Class to extract all the build links from the specified URL"""
-
+    """Base class for extracting build links from a URL"""
     BUILD_RE = (".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
                 "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
@@ -224,10 +227,8 @@ class BuildLinkExtractor(BaseExtractor):
 
         soup = BeautifulSoup(html, 'html.parser',
                              parse_only=SoupStrainer(*args, href=self.build_re))
-                        
-        self._links = soup.contents
 
-        for link in self._links:
+        for link in soup.contents:
             l = self._create_link(link)
             if l:
                 yield l
@@ -242,6 +243,10 @@ class DropboxBuildLinkExtractor(BuildLinkExtractor):
 
         
 class ReleaseLinkExtractor(BuildLinkExtractor):
+    """Class to extract release links from a URL.
+
+       Overrides _create_link to return a ReleaseLink for each link.
+    """
     BUILD_RE = ".*OpenELEC.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
     BASE_URL = None
 
@@ -265,6 +270,7 @@ class MilhouseBuildLinkExtractor(BuildLinkExtractor):
 
 
 class BuildInfo(object):
+    """Class to hold the short summary of a build and the full details."""
     def __init__(self, summary, details=None):
         self.summary = summary
         self.details = details
@@ -274,11 +280,15 @@ class BuildInfo(object):
 
 
 class BuildDetailsExtractor(BaseExtractor):
+    """Default class for extracting build details which returns an empty string."""
     def get_text(self):
         return ""
 
 
 class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
+    """Class for extracting the full build details for a Milhouse build.
+       from the release post on the Kodi forum.
+    """
     def get_text(self):
         soup = BeautifulSoup(self._text(), 'html.parser')
         pid = urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0]
@@ -299,11 +309,15 @@ class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
 
 
 class BuildInfoExtractor(BaseExtractor):
+    """Default build info extractor class for all build sources which just creates
+       an empty dictionary."""
     def get_info(self):
         return {}
 
 
 class MilhouseBuildInfoExtractor(BuildInfoExtractor):
+    """Class for creating a dictionary of BuildInfo objects for Milhouse builds
+       keyed on the build version."""
     URL_FMT = "http://forum.kodi.tv/showthread.php?tid={}"
     R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
 
@@ -323,6 +337,7 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
 
     @classmethod
     def from_thread_id(cls, thread_id):
+        """Create a Milhouse build info extractor from the thread id number."""
         url = cls.URL_FMT.format(thread_id)
         return cls(url)
 
@@ -333,6 +348,8 @@ def get_milhouse_build_info_extractors():
 
 
 class CommitInfoExtractor(BuildInfoExtractor):
+    """Class used by development build sources for extracting the git commit messages
+       for a commit hash as the summary. Full build details are set to None."""
     url = "https://api.github.com/repositories/1093060/commits?per_page=100"
 
     def get_info(self):
@@ -342,6 +359,7 @@ class CommitInfoExtractor(BuildInfoExtractor):
 
 
 class BuildsURL(object):
+    """Class representing a source of builds."""
     def __init__(self, url, subdir=None, extractor=BuildLinkExtractor,
                  info_extractors=[BuildInfoExtractor()]):
         self.url = url
@@ -382,6 +400,7 @@ class BuildsURL(object):
 
 
 def get_installed_build():
+    """Return the currently installed build object."""
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
 
     if openelec.OS_RELEASE['NAME'] == "OpenELEC":
@@ -401,6 +420,10 @@ def get_installed_build():
 
 
 def sources():
+    """Return an ordered dictionary of the sources as BuildsURL objects.
+       Only return sources which are relevant for the system.
+       The GUI will show the sources in the order defined here.
+    """
     _sources = OrderedDict()
 
     builds_url = BuildsURL("http://snapshots.openelec.tv",
@@ -438,6 +461,9 @@ def sources():
 
 
 def latest_build(source):
+    """Return the most recent build for the provided source name or None if
+       there is an error. This is used by the service to check for a new build.
+    """
     build_sources = sources()
     try:
         build_url = build_sources[source]
@@ -447,7 +473,8 @@ def latest_build(source):
         return build_url.latest()
 
 
-if __name__ == "__main__":
+def main():
+    """Test function to print all available builds when executing the module."""
     import sys
     
     installed_build = get_installed_build()
@@ -490,3 +517,7 @@ if __name__ == "__main__":
     else:
         for name, build_url in urls.items():
             print_links(name, build_url)
+
+
+if __name__ == "__main__":
+    main()
