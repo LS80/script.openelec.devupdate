@@ -794,7 +794,11 @@ def confirm_installation():
 
             history.add_install(source, selected_build)
         else:
-            utils.log("Build {} was not installed".format(selected_build))
+            msg = "Build {} was not installed".format(selected_build)
+            utils.notify("[COLOR red]ERROR: {}[/COLOR]".format(msg))
+            utils.log(msg)
+
+            utils.remove_update_files()
     else:
         utils.log("No installation notification")
 
