@@ -1,3 +1,7 @@
+4.23.0
+ - Show a notification if the install was unsuccessful.
+ - Keep a history of installed builds.
+
 4.22.0
  - Fixed installs of Milhouse debug builds not notifying as successful.
  - Kodi debug logging is now required for the add-on DEBUG messages to show.
