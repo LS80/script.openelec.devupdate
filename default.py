@@ -154,14 +154,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def __init__(self, installed_build):
         self._installed_build = installed_build
 
-        self._arch = utils.get_arch()
-            
-        if addon.getSetting('set_timeout') == 'true':
-            self._timeout = int(addon.getSetting('timeout'))
-        else:
-            self._timeout = None
-        
-        self._sources = builds.sources(self._arch)
+        self._sources = builds.sources()
 
         if addon.getSetting('custom_source_enable') == 'true':
             custom_name = addon.getSetting('custom_source')
@@ -207,7 +200,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         
         self._build_list = self.getControl(self.BUILD_LIST_ID)
         
-        label = "Arch: {0}".format(self._arch)
+        label = "Arch: {0}".format(builds.arch)
         self.getControl(self.LABEL_ID).setLabel(label)
 
         self._info_textbox = self.getControl(self.BUILD_INFO_ID)
@@ -303,10 +296,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def _get_build_links(self, build_url):
         links = []
         try:
-            # Get the list of build links.
-            with build_url.extractor() as extractor:
-                links = sorted(set(extractor.get_links(self._arch, self._timeout)),
-                               reverse=True)
+            links = build_url.builds()
         except requests.ConnectionError as e:
             utils.connection_error(str(e))
         except builds.BuildURLError as e:
@@ -316,7 +306,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         else:
             if not links:
                 utils.bad_url(build_url.url,
-                              "No builds were found for {}.".format(self._arch))
+                              "No builds were found for {}.".format(builds.arch))
         return links
 
     def _get_build_infos(self, build_url):
@@ -324,8 +314,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         info = {}
         for info_extractor in build_url.info_extractors:
             try:
-                with info_extractor:
-                    info.update(info_extractor.get_info(self._timeout))
+                info.update(info_extractor.get_info())
             except Exception as e:
                 utils.log("Unable to retrieve build info: {}".format(str(e)))
         return info
@@ -400,6 +389,11 @@ class Main(object):
 
         utils.set_running()
         utils.log("Starting")
+
+        builds.arch = utils.get_arch()
+
+        if addon.getSetting('set_timeout') == 'true':
+            builds.timeout = float(addon.getSetting('timeout'))
 
         check_update_files()
 
@@ -738,9 +732,12 @@ def check_for_new_build():
         # Don't do the job of the official auto-update system.
         utils.log("Skipping build check - official release")
     else:
-        arch = utils.get_arch()
+        builds.arch = utils.get_arch()
 
-        build_sources = builds.sources(arch)
+        if addon.getSetting('set_timeout') == 'true':
+            builds.timeout = float(addon.getSetting('timeout'))
+
+        build_sources = builds.sources()
         try:
             build_url = build_sources[source]
         except KeyError:
@@ -749,12 +746,7 @@ def check_for_new_build():
 
         utils.log("Checking {}".format(build_url.url))
 
-        if addon.getSetting('set_timeout') == 'true':
-            timeout = int(addon.getSetting('timeout'))
-        else:
-            timeout = None
-
-        latest = builds.latest_build(arch, source, timeout)
+        latest = builds.latest_build(source)
         if latest and latest > installed_build:
             if utils.build_check_prompt():
                 utils.log("New build {} is available, "

@@ -19,6 +19,10 @@ import html2text
 import openelec
 
 
+timeout = None
+arch = openelec.ARCH
+
+
 class BuildURLError(Exception):
     pass
 
@@ -173,38 +177,31 @@ class BuildLink(Build, BuildLinkBase):
 
 class ReleaseLink(Release, BuildLinkBase):
     """Class for links to official release downloads."""
-    
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
         Release.__init__(self, release)
 
 
 class BaseExtractor(object):
-    URL = None
+    """Base class for all extractors."""
+    url = None
 
     def __init__(self, url=None):
-        self.url = url if url is not None else self.URL
-        self._response = None
+        if url is not None:
+            self.url = url
 
-    def _get_response(self, timeout=None):
-        self._response = requests.get(self.url, timeout=timeout)
-        if not self._response:
-            msg = "Build URL error: status {}".format(self._response.status_code)
+    def _response(self):
+        response = requests.get(self.url, timeout=timeout)
+        if not response:
+            msg = "Build URL error: status {}".format(response.status_code)
             raise BuildURLError(msg)
-        return self._response
+        return response
 
-    def _get_text(self, timeout=None):
-        return self._get_response().text
+    def _text(self):
+        return self._response().text
 
-    def _get_json(self, timeout=None):
-        return self._get_response().json()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self._response is not None:
-            self._response.close()
+    def _json(self):
+        return self._response().json()
 
     def __repr__(self):
         return "{}('{}')".format(self.__class__.__name__, self.url)
@@ -217,14 +214,14 @@ class BuildLinkExtractor(BaseExtractor):
                 "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
 
-    def get_links(self, arch, timeout=None):
-        self.build_re = re.compile(self.BUILD_RE.format(arch=arch))
-
-        html = self._get_text(timeout)
+    def __iter__(self):
+        html = self._text()
         args = ['a']
         if self.CSS_CLASS is not None:
             args.append(self.CSS_CLASS)
-            
+
+        self.build_re = re.compile(self.BUILD_RE.format(arch=arch))
+
         soup = BeautifulSoup(html, 'html.parser',
                              parse_only=SoupStrainer(*args, href=self.build_re))
                         
@@ -277,13 +274,13 @@ class BuildInfo(object):
 
 
 class BuildDetailsExtractor(BaseExtractor):
-    def get_text(self, timeout=None):
+    def get_text(self):
         return ""
 
 
 class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
-    def get_text(self, timeout=None):
-        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+    def get_text(self):
+        soup = BeautifulSoup(self._text(), 'html.parser')
         pid = urlparse.parse_qs(urlparse.urlparse(self.url).query)['pid'][0]
         post_div_id = "pid_{}".format(pid)
         post = soup.find('div', 'post-body', id=post_div_id)
@@ -302,7 +299,7 @@ class MilhouseBuildDetailsExtractor(BuildDetailsExtractor):
 
 
 class BuildInfoExtractor(BaseExtractor):
-    def get_info(self, timeout=None):
+    def get_info(self):
         return {}
 
 
@@ -320,8 +317,8 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
                         yield m.group(1), BuildInfo(m.group(2),
                                                     MilhouseBuildDetailsExtractor(url))
 
-    def get_info(self, timeout=None):
-        soup = BeautifulSoup(self._get_text(timeout), 'html.parser')
+    def get_info(self):
+        soup = BeautifulSoup(self._text(), 'html.parser')
         return dict(self._get_info(soup))
 
     @classmethod
@@ -336,12 +333,12 @@ def get_milhouse_build_info_extractors():
 
 
 class CommitInfoExtractor(BuildInfoExtractor):
-    URL = "https://api.github.com/repositories/1093060/commits?per_page=100"
+    url = "https://api.github.com/repositories/1093060/commits?per_page=100"
 
-    def get_info(self, timeout=None):
+    def get_info(self):
         return dict((commit['sha'][:7],
                      BuildInfo(commit['commit']['message'].split('\n\n')[0], None))
-                     for commit in self._get_json(timeout))
+                     for commit in self._json())
 
 
 class BuildsURL(object):
@@ -354,9 +351,20 @@ class BuildsURL(object):
         self._extractor = extractor
         self.info_extractors = info_extractors
 
-    def extractor(self):
-        return self._extractor(self.url)
-        
+    def builds(self):
+        return sorted(self._extractor(self.url), reverse=True)
+
+    def __iter__(self):
+        return iter(self.builds())
+
+    def latest(self):
+        """Return the most recent build or None if no builds are available."""
+        builds = self.builds()
+        try:
+            return builds[0]
+        except IndexError:
+            return None
+
     def add_subdir(self, subdir):
         self._add_slash()
         self.url = urlparse.urljoin(self.url, subdir)
@@ -392,7 +400,7 @@ def get_installed_build():
         return Release(version)
 
 
-def sources(arch):
+def sources():
     _sources = OrderedDict()
 
     builds_url = BuildsURL("http://snapshots.openelec.tv",
@@ -429,20 +437,14 @@ def sources(arch):
     return _sources
 
 
-def latest_build(arch, source, timeout=None):
-    build_sources = sources(arch)
+def latest_build(source):
+    build_sources = sources()
     try:
         build_url = build_sources[source]
     except KeyError:
-        pass
+        return None
     else:
-        with build_url.extractor() as parser:
-            builds = sorted(parser.get_links(arch, timeout), reverse=True)
-
-        try:
-            return builds[0]
-        except IndexError:
-            return None
+        return build_url.latest()
 
 
 if __name__ == "__main__":
@@ -454,24 +456,22 @@ if __name__ == "__main__":
         info = {}
         for info_extractor in build_url.info_extractors:
             try:
-                with info_extractor:
-                    info.update(info_extractor.get_info())
+                info.update(info_extractor.get_info())
             except Exception as e:
                 print str(e)
         return info
 
-    def print_links(name, build_url, arch):
+    def print_links(name, build_url):
         info = get_info(build_url)
         print name
         try:
-            with build_url.extractor() as parser:
-                for link in sorted(set(parser.get_links(arch)), reverse=True):
-                    try:
-                        summary = info[link.version]
-                    except KeyError:
-                        summary = ""
-                    print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build),
-                                               summary)
+            for link in build_url:
+                try:
+                    summary = info[link.version]
+                except KeyError:
+                    summary = ""
+                print "\t{:25s} {}".format(str(link) + ' *' * (link > installed_build),
+                                           summary)
         except (requests.RequestException, BuildURLError) as e:
             print str(e)
         print
@@ -479,14 +479,14 @@ if __name__ == "__main__":
     print "Installed build = {}".format(installed_build)
     print
 
-    urls = sources(openelec.ARCH)
+    urls = sources()
 
     if len(sys.argv) > 1:
         name = sys.argv[1]
         if name not in urls:
             print '"{}" not in URL list'.format(name)
         else:
-            print_links(name, urls[name], openelec.ARCH)
+            print_links(name, urls[name])
     else:
         for name, build_url in urls.items():
-            print_links(name, build_url, openelec.ARCH)
+            print_links(name, build_url)
