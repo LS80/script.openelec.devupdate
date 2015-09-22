@@ -21,18 +21,18 @@ from __future__ import division
 
 import os
 import sys
-import hashlib
 import tarfile
 import glob
 from urlparse import urlparse
 import threading
+from contextlib import closing
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
 from resources.lib import (constants, progress, script_exceptions,
                            utils, builds, openelec, history)
-from resources.lib.funcs import size_fmt
+
 
 addon = xbmcaddon.Addon(constants.ADDON_ID)
 
@@ -40,11 +40,12 @@ ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
 ADDON_PATH = xbmc.translatePath(addon.getAddonInfo('path'))
 ADDON_NAME = addon.getAddonInfo('name')
 
+TEMP_PATH = xbmc.translatePath("special://temp/")
+
 
 def check_update_files():
-    # Check if the update files are already in place.
-    if (all(os.path.isfile(f) for f in openelec.UPDATE_PATHS) or
-        glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))):
+    # Check if an update file is already in place.
+    if glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar')):
         selected = get_build_from_file()
         if selected:
             s = " for "
@@ -65,14 +66,6 @@ def check_update_files():
         else:
             utils.remove_update_files()
 
-def cd_tmp_dir():
-    # Move to the download directory.
-    try:
-        os.makedirs(ADDON_DATA)
-    except OSError:
-        pass
-    os.chdir(ADDON_DATA)
-    utils.log("chdir to " + ADDON_DATA)
 
 def maybe_disable_overclock():
     import re
@@ -407,26 +400,20 @@ class Main(object):
         if addon.getSetting('set_timeout') == 'true':
             builds.timeout = float(addon.getSetting('timeout'))
 
+        utils.create_directory(openelec.UPDATE_DIR)
+
         check_update_files()
 
         self.background = addon.getSetting('background') == 'true'
         self.verify_files = addon.getSetting('verify_files') == 'true'
         
         self.installed_build = self.get_installed_build()
-
-        cd_tmp_dir()
             
         self.select_build()
 
         self.check_archive()
 
         self.maybe_download()
-        
-        self.maybe_copy_to_archive()
-
-        self.maybe_extract()
-
-        self.cleanup()
 
         self.maybe_verify()
 
@@ -506,126 +493,89 @@ class Main(object):
             utils.url_error(self.selected_build.url, str(e))
             sys.exit(1)
 
-        tar_name = self.selected_build.tar_name
         filename = self.selected_build.filename
+        tar_name = self.selected_build.tar_name
         size = self.selected_build.size
-
-        utils.log("Download URL = " + self.selected_build.url)
-        utils.log("File name = " + filename)
-        utils.log("File size = " + size_fmt(size))
         
+        self.download_path = os.path.join(TEMP_PATH, filename)
+        self.temp_tar_path = os.path.join(TEMP_PATH, tar_name)
+        self.update_tar_path = os.path.join(openelec.UPDATE_DIR, tar_name)
         if self.archive:
-            self.archive_tar_path = os.path.join(self.archive_dir,
-                                                 self.selected_build.tar_name)
+            self.archive_tar_path = os.path.join(self.archive_dir, tar_name)
         
         if not self.copy_from_archive():
-            try:
-                if (os.path.isfile(filename) and
-                    os.path.getsize(filename) == size):
+            if (os.path.isfile(self.download_path) and
+                    os.path.getsize(self.download_path) == size):
                     # Skip the download if the file exists with the correct size.
-                    utils.log("Skipping download")
-                    pass
-                else:
-                    # Do the download
-                    utils.log("Starting download of " + self.selected_build.url)
-                    with progress.FileProgress("Downloading",
-                                               remote_file, filename, size,
-                                               self.background) as downloader:
+                utils.log("Skipping download")
+            else:
+                try:
+                    utils.log("Starting download of {} to {}".format(self.selected_build.url,
+                                                                     self.download_path))
+                    with progress.FileProgress("Downloading", remote_file, self.download_path,
+                                               size, self.background) as downloader:
                         downloader.start()
-                    utils.log("Completed download of " + self.selected_build.url)  
-            except script_exceptions.Canceled:
-                sys.exit(0)
-            except requests.RequestException as e:
-                utils.url_error(self.selected_build.url, str(e))
-                sys.exit(1)
-            except script_exceptions.WriteError as e:
-                utils.write_error(os.path.join(ADDON_DATA, filename), str(e))
-                sys.exit(1)
+                    utils.log("Completed download")
+                except script_exceptions.Canceled:
+                    sys.exit(0)
+                except requests.RequestException as e:
+                    utils.url_error(self.selected_build.url, str(e))
+                    sys.exit(1)
+                except script_exceptions.WriteError as e:
+                    utils.write_error(self.download_path, str(e))
+                    sys.exit(1)
 
-        # Do the decompression if necessary.
-        if self.selected_build.compressed and not os.path.isfile(tar_name):
-            try:
-                bf = open(filename, 'rb')
-                utils.log("Starting decompression of " + filename)
-                with progress.DecompressProgress("Decompressing",
-                                                 bf, tar_name, size,
-                                                 self.background) as decompressor:
-                    decompressor.start()
-                utils.log("Completed decompression of " + filename)
-            except script_exceptions.Canceled:
-                sys.exit(0)
-            except script_exceptions.WriteError as e:
-                utils.write_error(os.path.join(ADDON_DATA, tar_name), str(e))
-                sys.exit(1)
-            except script_exceptions.DecompressError as e:
-                utils.decompress_error(os.path.join(ADDON_DATA, filename), str(e))
-                sys.exit(1)
+            if self.selected_build.compressed:
+                try:
+                    bf = open(self.download_path, 'rb')
+                    utils.log("Starting decompression of " + self.download_path)
+                    with progress.DecompressProgress("Decompressing",
+                                                     bf, self.temp_tar_path, size,
+                                                     self.background) as decompressor:
+                        decompressor.start()
+                    utils.log("Completed decompression")
+                except script_exceptions.Canceled:
+                    sys.exit(0)
+                except script_exceptions.WriteError as e:
+                    utils.write_error(self.temp_tar_path, str(e))
+                    sys.exit(1)
+                except script_exceptions.DecompressError as e:
+                    utils.decompress_error(self.download_path, str(e))
+                    sys.exit(1)
+                finally:
+                    utils.remove_file(self.download_path)
+
+            self.maybe_copy_to_archive()
+        
+            utils.log("Moving tar file to " + self.update_tar_path)
+            os.rename(self.temp_tar_path, self.update_tar_path)
 
         addon.setSetting('update_pending', 'true')
 
-    def maybe_extract(self):
-        # Create the .update directory if necessary.
-        utils.create_directory(openelec.UPDATE_DIR)
-
-        if self.verify_files:
-            tf = tarfile.open(self.selected_build.tar_name, 'r')
-            utils.log("Starting extraction from tar file " + self.selected_build.tar_name)
-            
-            # Extract the update files from the tar file to the .update directory.
-            tar_members = (m for m in tf.getmembers()
-                           if os.path.basename(m.name) in openelec.UPDATE_FILES)
-            for member in tar_members:
-                ti = tf.extractfile(member)
-                outfile = os.path.join(openelec.UPDATE_DIR, os.path.basename(member.name))
-                try:
-                    with progress.FileProgress("Extracting", ti, outfile, ti.size,
-                                               self.background) as extractor:
-                        extractor.start()
-                    utils.log("Extracted " + outfile)
-                except script_exceptions.Canceled:
-                    utils.remove_update_files()
-                    sys.exit(0)
-                except script_exceptions.WriteError as e:
-                    utils.write_error(outfile, str(e))
-                    sys.exit(1)
-    
-            tf.close()
-        else:
-            # Just move the tar file to the .update directory.
-            dest = os.path.join(openelec.UPDATE_DIR, self.selected_build.tar_name)
-            utils.log("Moving to " + dest)
-            os.rename(self.selected_build.tar_name, dest)
-
     def copy_from_archive(self):
-        if self.archive:
-            if xbmcvfs.exists(self.archive_tar_path):
-                utils.log("Skipping download and decompression")
-        
-                archive = xbmcvfs.File(self.archive_tar_path)
-                tarfile = os.path.join(ADDON_DATA, self.selected_build.tar_name)
-        
-                try:
-                    with progress.FileProgress("Retrieving tar file from archive",
-                                               archive, tarfile, archive.size(),
-                                               self.background) as extractor:
-                        extractor.start()
-                except script_exceptions.Canceled:
-                    self.cleanup()
-                    sys.exit(0)
-                except script_exceptions.WriteError:
-                    sys.exit(1)
-                
-                return True
-        
+        if self.archive and xbmcvfs.exists(self.archive_tar_path):
+            utils.log("Skipping download and decompression")
+
+            archive = xbmcvfs.File(self.archive_tar_path)
+            try:
+                with progress.FileProgress("Retrieving tar file from archive",
+                                           archive, self.update_tar_path, archive.size(),
+                                           self.background) as extractor:
+                    extractor.start()
+            except script_exceptions.Canceled:
+                utils.remove_file(self.tar_path)
+                sys.exit(0)
+            except script_exceptions.WriteError:
+                sys.exit(1)
+            return True
         return False
 
     def maybe_copy_to_archive(self):
         if self.archive and not xbmcvfs.exists(self.archive_tar_path):
             utils.log("Archiving tar file to {}".format(self.archive_tar_path))
 
-            tarpath = os.path.join(ADDON_DATA, self.selected_build.tar_name)
-            tar = open(tarpath)
-            size = os.path.getsize(tarpath)
+            tar = open(self.temp_tar_path)
+            size = os.path.getsize(self.temp_tar_path)
 
             try:
                 with progress.FileProgress("Copying to archive",
@@ -639,66 +589,46 @@ class Main(object):
                 utils.write_error(self.archive_tar_path, str(e))
                 xbmcvfs.delete(self.archive_tar_path)
 
-    def cleanup(self):
-        # Clean up the temporary files.
-        try:
-            if self.selected_build.compressed:
-                utils.log("Deleting temporary {}".format(self.selected_build.filename))
-                os.remove(self.selected_build.filename)
-
-            utils.log("Deleting temporary {}".format(self.selected_build.tar_name))
-            os.remove(self.selected_build.tar_name)
-        except OSError:
-            pass
-
-    def md5sum_verified(self, md5sum_compare, path):
-        if self.background:
-            verify_progress = progress.ProgressBG()
-        else:
-            verify_progress = progress.Progress()
-            
-        verify_progress.create("Verifying", line2=path)
-    
-        BLOCK_SIZE = 8192
-        
-        hasher = hashlib.md5()
-        f = open(path)
-        
-        done = 0
-        size = os.path.getsize(path)
-        while done < size:
-            if verify_progress.iscanceled():
-                verify_progress.close()
-                return True
-            data = f.read(BLOCK_SIZE)
-            done += len(data)
-            hasher.update(data)
-            percent = int(done * 100 / size)
-            verify_progress.update(percent)
-        verify_progress.close()
-            
-        md5sum = hasher.hexdigest()
-        utils.log("{} md5 hash = {}".format(path, md5sum))
-        return md5sum == md5sum_compare
-
     def maybe_verify(self):
-        if self.verify_files:
-            # Verify the md5 sums.
-            os.chdir(openelec.UPDATE_DIR)
-            for f in openelec.UPDATE_IMAGES:
-                md5sum = open(f + '.md5').read().split()[0]
-                utils.log("{}.md5 file = {}".format(f, md5sum))
+        if not self.verify_files:
+            return
+
+        utils.log("Verifying update file")
+        with closing(tarfile.open(self.update_tar_path, 'r')) as tf:
+            tar_names = tf.getnames()
+
+            for update_image in openelec.UPDATE_IMAGES:
+                path_in_tar = next(name for name in tar_names
+                                   if name.endswith(os.path.join('target', update_image)))
+                ti = tf.extractfile(path_in_tar)
+                temp_image_path = os.path.join(TEMP_PATH, update_image)
+                try:
+                    with progress.FileProgress("Verifying", ti, temp_image_path, ti.size,
+                                               self.background) as extractor:
+                        extractor.start()
+                    utils.log("Extracted " + temp_image_path)
+                except script_exceptions.Canceled:
+                    return
+                except script_exceptions.WriteError as e:
+                    utils.write_error(temp_image_path, str(e))
+                    return
+
+                md5sum = tf.extractfile(path_in_tar + '.md5').read().split()[0]
+                utils.log("{}.md5 file = {}".format(update_image, md5sum))
         
-                if not self.md5sum_verified(md5sum, f):
-                    utils.log("{} md5 mismatch!".format(f))
-                    xbmcgui.Dialog().ok("{} md5 mismatch".format(f),
-                                        "The {} image from".format(f),
+                if not progress.md5sum_verified(md5sum, temp_image_path,
+                                                self.background):
+                    utils.log("{} md5 mismatch!".format(update_image))
+                    xbmcgui.Dialog().ok("{} md5 mismatch".format(update_image),
+                                        "The {} image from".format(update_image),
                                         self.selected_build.filename,
-                                        "is corrupt. The update files will be removed.")
+                                        "is corrupt. The update file will be removed.")
                     utils.remove_update_files()
-                    sys.exit(1)
+                    return
                 else:
-                    utils.log("{} md5 is correct".format(f))
+                    utils.log("{} md5 is correct".format(update_image))
+
+                utils.remove_file(temp_image_path)
 
     def confirm(self):
         with open(os.path.join(ADDON_DATA, constants.NOTIFY_FILE), 'w') as f:

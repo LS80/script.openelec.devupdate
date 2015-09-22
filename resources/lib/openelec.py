@@ -26,9 +26,6 @@ if OS_RELEASE['NAME'] != "OpenELEC":
 
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
 
-UPDATE_FILES = UPDATE_IMAGES + tuple(f + '.md5' for f in UPDATE_IMAGES)
-UPDATE_PATHS = tuple(os.path.join(UPDATE_DIR, f) for f in UPDATE_FILES)
-
 
 def mount_readwrite():
     subprocess.check_call(['mount', '-o', 'rw,remount', '/flash'])

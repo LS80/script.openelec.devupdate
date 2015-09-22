@@ -3,6 +3,7 @@ from __future__ import division
 import os
 import bz2
 import time
+import hashlib
 
 import xbmc, xbmcgui, xbmcvfs
 
@@ -134,5 +135,34 @@ def restart_countdown(message, timeout=10):
             break
         seconds -= 1
     progress.close()
-
     return restart
+
+
+def md5sum_verified(md5sum_compare, path, background):
+    if background:
+        verify_progress = ProgressBG()
+    else:
+        verify_progress = Progress()
+
+    verify_progress.create("Verifying", line1=os.path.basename(path))
+
+    BLOCK_SIZE = 8192
+
+    hasher = hashlib.md5()
+    f = open(path)
+
+    done = 0
+    size = os.path.getsize(path)
+    while done < size:
+        if verify_progress.iscanceled():
+            verify_progress.close()
+            return True
+        data = f.read(BLOCK_SIZE)
+        done += len(data)
+        hasher.update(data)
+        percent = int(done * 100 / size)
+        verify_progress.update(percent)
+    verify_progress.close()
+
+    md5sum = hasher.hexdigest()
+    return md5sum == md5sum_compare

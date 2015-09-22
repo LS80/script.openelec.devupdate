@@ -99,12 +99,10 @@ def create_directory(path):
 
 
 def remove_update_files():
-    update_files = glob.glob(os.path.join(openelec.UPDATE_DIR, '*'))
-    success = None
-    for file_path in update_files:
-        if file_path in openelec.UPDATE_FILES or file_path.endswith("tar"):
-            success = remove_file(file_path)
-    if success or success is None:
+    tar_update_files = glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))
+    success = all(remove_file(tar) for tar in tar_update_files)
+
+    if success:
         addon.setSetting('update_pending', 'false')
     return success
 
@@ -200,6 +198,6 @@ if __name__ == "__main__":
         if sys.argv[1] == 'cancel':
             success = remove_update_files()
             if success:
-                notify("Deleted update files(s)")
-            elif success is not None:
-                notify("Update file(s) not deleted")
+                notify("Deleted update file")
+            else:
+                notify("Update file not deleted")
