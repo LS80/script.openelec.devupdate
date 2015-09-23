@@ -1,3 +1,6 @@
+4.24.0
+ - Show the correct build information For Nvidia_Legacy.x86_64 and Generic Milhouse builds.
+
 4.23.0
  - Show a notification if the install was unsuccessful.
  - Keep a history of installed builds.
