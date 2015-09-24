@@ -776,7 +776,7 @@ def check_for_new_build():
                         main.start()
             else:
                 utils.log("Notifying that new build {} is available".format(latest))
-                utils.notify("Build {} is available".format(latest), 7500)
+                utils.notify("Build {} is available".format(latest), 4000)
 
 
 def confirm_installation():
