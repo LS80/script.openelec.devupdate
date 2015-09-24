@@ -70,11 +70,9 @@ def get_choice(items, suffix=lambda item: " "):
 
 
 if args.arch:
-    arch = args.arch
-else:
-    arch = openelec.ARCH
+    builds.arch = args.arch
 
-urls = builds.sources(arch)
+urls = builds.sources()
 
 if args.source:
     try:
@@ -108,7 +106,7 @@ def build_suffix(build):
     return symbol
 
 print
-print "Arch: {}".format(arch)
+print "Arch: {}".format(builds.arch)
 print "Installed build: {}".format(installed_build)
 
 
@@ -133,40 +131,39 @@ def process(fin, fout, size, read_func=read):
         sys.stdout.flush()
     print
 
-with build_url.extractor() as parser:
-    try:
-        links = sorted(parser.get_links(arch), reverse=True)
-    except requests.RequestException as e:
-        print str(e)
-    except builds.BuildURLError as e:
-        print str(e)
+try:
+    links = build_url.builds()
+except requests.RequestException as e:
+    print str(e)
+except builds.BuildURLError as e:
+    print str(e)
+else:
+    if links:
+        build = get_choice(links, build_suffix)
+        remote = build.remote_file()
+        file_path = os.path.join(openelec.UPDATE_DIR, build.filename)
+        print
+        print "Downloading {0} ...".format(build.url)
+        try:
+            with open(file_path, 'w') as out:
+                process(remote, out, build.size)
+        except KeyboardInterrupt:
+            os.remove(file_path)
+            print
+            print "Download cancelled"
+            sys.exit()
+
+        if build.compressed:
+            tar_path = os.path.join(openelec.UPDATE_DIR, build.tar_name)
+            size = os.path.getsize(file_path)
+            print
+            print "Decompressing {0} ...".format(file_path)
+            with open(file_path, 'r') as fin, open(tar_path, 'w') as fout:
+                process(fin, fout, size, decompress)
+            os.remove(file_path)
+
+        print
+        print "The update is ready to be installed. Please reboot."
     else:
-        if links:
-            build = get_choice(links, build_suffix)
-            remote = build.remote_file()
-            file_path = os.path.join(openelec.UPDATE_DIR, build.filename)
-            print
-            print "Downloading {0} ...".format(build.url)
-            try:
-                with open(file_path, 'w') as out:
-                    process(remote, out, build.size)
-            except KeyboardInterrupt:
-                os.remove(file_path)
-                print
-                print "Download cancelled"
-                sys.exit()
-
-            if build.compressed:
-                tar_path = os.path.join(openelec.UPDATE_DIR, build.tar_name)
-                size = os.path.getsize(file_path)
-                print
-                print "Decompressing {0} ...".format(file_path)
-                with open(file_path, 'r') as fin, open(tar_path, 'w') as fout:
-                    process(fin, fout, size, decompress)
-                os.remove(file_path)
-
-            print
-            print "The update is ready to be installed. Please reboot."
-        else:
-            print
-            print "No builds available"
+        print
+        print "No builds available"
