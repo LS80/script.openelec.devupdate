@@ -1,3 +1,6 @@
+4.24.1
+ - Fixed the devupdate command line script (broken since 4.23.0).
+
 4.24.0
  - Show the correct build information For Nvidia_Legacy.x86_64 and Generic Milhouse builds.
 
