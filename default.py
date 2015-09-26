@@ -31,16 +31,13 @@ import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
 from resources.lib import (constants, progress, script_exceptions,
-                           utils, builds, openelec, history)
+                           utils, builds, openelec, history, rpi,
+                           addon, log)
 
-
-addon = xbmcaddon.Addon(constants.ADDON_ID)
-
-ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
-ADDON_PATH = xbmc.translatePath(addon.getAddonInfo('path'))
-ADDON_NAME = addon.getAddonInfo('name')
 
 TEMP_PATH = xbmc.translatePath("special://temp/")
+
+NOTIFY_FILE = os.path.join(addon.data_path, 'installed_build.txt')
 
 
 def check_update_files():
@@ -67,46 +64,24 @@ def check_update_files():
             utils.remove_update_files()
 
 
-def maybe_disable_overclock():
-    import re
-    
-    if (openelec.ARCH.startswith('RPi') and
-        os.path.isfile(constants.RPI_CONFIG_PATH) and
-        addon.getSetting('disable_overclock') == 'true'):
-        
-        with open(constants.RPI_CONFIG_PATH, 'r') as a:
-            config = a.read()
-        
-        if constants.RPI_OVERCLOCK_RE.search(config):
-
-            xbmcvfs.copy(constants.RPI_CONFIG_PATH,
-                         os.path.join(ADDON_DATA, constants.RPI_CONFIG_FILE))
-
-            def repl(m):
-                return '#' + m.group(1)
-
-            with openelec.write_context(), open(constants.RPI_CONFIG_PATH, 'w') as b:
-                b.write(re.sub(constants.RPI_OVERCLOCK_RE, repl, config))
-
-
 def maybe_schedule_extlinux_update():
-    if (openelec.ARCH != 'RPi.arm' and
-        addon.getSetting('update_extlinux') == 'true'):
-        open(os.path.join(ADDON_DATA, constants.UPDATE_EXTLINUX), 'w').close()
+    if (not openelec.ARCH.startswith('RPi') and
+        addon.get_setting('update_extlinux') == 'true'):
+        open(os.path.join(addon.data_path, constants.UPDATE_EXTLINUX_FILE), 'w').close()
 
 
 def maybe_run_backup():
-    backup = int(addon.getSetting('backup'))
+    backup = int(addon.get_setting('backup'))
     if backup == 0:
         do_backup = False
     elif backup == 1:
         do_backup = xbmcgui.Dialog().yesno("Backup",
                                            "Run Backup now?",
                                            "This is recommended")
-        utils.log("Backup requested")
+        log.log("Backup requested")
     elif backup == 2:
         do_backup = True
-        utils.log("Backup always")
+        log.log("Backup always")
 
     if do_backup:
         xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)', True)
@@ -117,9 +92,8 @@ def maybe_run_backup():
 
 
 def get_build_from_file():
-    notify_file = os.path.join(ADDON_DATA, constants.NOTIFY_FILE)
     try:
-        with open(notify_file) as f:
+        with open(NOTIFY_FILE) as f:
             source, build_repr = f.read().splitlines()
     except (IOError, ValueError):
         return None
@@ -129,7 +103,7 @@ def get_build_from_file():
 
 class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
     def __new__(cls, _1, _2):
-        return super(BuildDetailsDialog, cls).__new__(cls, "Details.xml", ADDON_PATH)
+        return super(BuildDetailsDialog, cls).__new__(cls, "Details.xml", addon.src_path)
 
     def __init__(self, build, text):
         self._build = build
@@ -154,16 +128,16 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     SETTINGS_BUTTON_ID = 30
     
     def __new__(cls, _):
-        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", ADDON_PATH)
+        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", addon.src_path)
     
     def __init__(self, installed_build):
         self._installed_build = installed_build
 
         self._sources = builds.sources()
 
-        if addon.getSetting('custom_source_enable') == 'true':
-            custom_name = addon.getSetting('custom_source')
-            custom_url = addon.getSetting('custom_url')
+        if addon.get_setting('custom_source_enable') == 'true':
+            custom_name = addon.get_setting('custom_source')
+            custom_url = addon.get_setting('custom_url')
             scheme, netloc = urlparse(custom_url)[:2]
             if not scheme in ('http', 'https') or not netloc:
                 utils.bad_url(custom_url, "Invalid custom source URL")
@@ -172,19 +146,18 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                                      builds.ReleaseLinkExtractor,
                                      builds.MilhouseBuildLinkExtractor)
 
-                build_type = addon.getSetting('build_type')
+                build_type = addon.get_setting('build_type')
                 try:
                     build_type_index = int(build_type)
                 except ValueError:
-                    utils.log("Invalid build type index '{}'".format(build_type),
-                              xbmc.LOGERROR)
+                    log.log_error("Invalid build type index '{}'".format(build_type))
                     build_type_index = 0
                 extractor = custom_extractors[build_type_index]
 
                 self._sources[custom_name] = builds.BuildsURL(custom_url,
                                                               extractor=extractor)
 
-        self._initial_source = addon.getSetting('source_name')
+        self._initial_source = addon.get_setting('source_name')
         try:
             self._build_url = self._sources[self._initial_source]
         except KeyError:
@@ -261,7 +234,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 self._sources_list.selectItem(self._selected_source_position)
         elif controlID == self.SETTINGS_BUTTON_ID:
             self.close()
-            addon.openSettings()
+            addon.open_settings()
 
     def onAction(self, action):
         action_id = action.getId()
@@ -275,14 +248,14 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             try:
                 info = self._build_infos[build_version]
             except KeyError:
-                utils.log("Build details for build {} not found".format(build_version))
+                log.log("Build details for build {} not found".format(build_version))
             else:
                 build = "[B]Build #{}[/B]\n\n".format(build_version)
                 if info.details is not None:
                     try:
                         details = info.details.get_text()
                     except Exception as e:
-                        utils.log("Unable to retrieve build details: {}".format(e))
+                        log.log("Unable to retrieve build details: {}".format(e))
                     else:
                         if details:
                             dialog = BuildDetailsDialog(build, details)
@@ -315,13 +288,13 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         return links
 
     def _get_build_infos(self, build_url):
-        utils.log("Retrieving build information")
+        log.log("Retrieving build information")
         info = {}
         for info_extractor in build_url.info_extractors:
             try:
                 info.update(info_extractor.get_info())
             except Exception as e:
-                utils.log("Unable to retrieve build info: {}".format(str(e)))
+                log.log("Unable to retrieve build info: {}".format(str(e)))
         return info
                 
     def _set_build_info(self):
@@ -331,14 +304,14 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             try:
                 build_version = selected_item.getLabel()
             except AttributeError:
-                utils.log("Unable to get selected build name")
+                log.log("Unable to get selected build name")
             else:
                 try:
                     info = self._build_infos[build_version].summary
                 except KeyError:
-                    utils.log("Build info for build {} not found".format(build_version))
+                    log.log("Build info for build {} not found".format(build_version))
                 else:
-                    utils.log("Info for build {}:\n\t{}".format(build_version, info))
+                    log.log("Info for build {}:\n\t{}".format(build_version, info))
         self._info_textbox.setText(info)
 
     def _get_and_set_build_info(self, build_url):
@@ -351,10 +324,10 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         #subdir = addon.getSetting('subdir')
         #if subdir:
-        #    utils.log("Using subdirectory = " + subdir)
+        #    log.log("Using subdirectory = " + subdir)
         #    build_url.add_subdir(subdir)
 
-        utils.log("Full URL = " + build_url.url)
+        log.log("Full URL = " + build_url.url)
         return build_url
 
     def _set_builds(self, builds):
@@ -393,22 +366,22 @@ class Main(object):
             raise script_exceptions.AlreadyRunning
 
         utils.set_running()
-        utils.log("Starting")
+        log.log("Starting")
 
         builds.arch = utils.get_arch()
 
-        if addon.getSetting('set_timeout') == 'true':
-            builds.timeout = float(addon.getSetting('timeout'))
+        if addon.get_setting('set_timeout') == 'true':
+            builds.timeout = float(addon.get_setting('timeout'))
 
         utils.create_directory(openelec.UPDATE_DIR)
 
         check_update_files()
 
-        self.background = addon.getSetting('background') == 'true'
-        self.verify_files = addon.getSetting('verify_files') == 'true'
+        self.background = addon.get_setting('background') == 'true'
+        self.verify_files = addon.get_setting('verify_files') == 'true'
         
         self.installed_build = self.get_installed_build()
-            
+
         self.select_build()
 
         self.check_archive()
@@ -417,7 +390,7 @@ class Main(object):
 
         self.maybe_verify()
 
-        maybe_disable_overclock()
+        rpi.maybe_disable_overclock()
 
         maybe_schedule_extlinux_update()
 
@@ -433,22 +406,22 @@ class Main(object):
             sys.exit(1)
 
     def check_archive(self):
-        self.archive = addon.getSetting('archive') == 'true'
+        self.archive = addon.get_setting('archive') == 'true'
         if self.archive:
-            archive_root = addon.getSetting('archive_root')
+            archive_root = addon.get_setting('archive_root')
             self.archive_root = utils.ensure_trailing_slash(archive_root)
             self.archive_tar_path = None
             self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
-            utils.log("Archive builds to " + self.archive_dir)
+            log.log("Archive builds to " + self.archive_dir)
             if not xbmcvfs.exists(self.archive_root):
-                utils.log("Unable to access archive")
+                log.log("Unable to access archive")
                 xbmcgui.Dialog().ok("Directory Error",
                                     "{} is not accessible.".format(self.archive_root),
                                     "Check the archive directory in the addon settings.")
-                addon.openSettings()
+                addon.open_settings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
-                utils.log("Unable to create directory in archive")
+                log.log("Unable to create directory in archive")
                 xbmcgui.Dialog().ok("Directory Error",
                                     "Unable to create {}.".format(self.archive_dir),
                                     "Check the archive directory permissions.")
@@ -459,15 +432,15 @@ class Main(object):
         build_select.doModal()
         
         self.selected_source = build_select.selected_source
-        addon.setSetting('source_name', self.selected_source)
-        utils.log("Selected source: " + str(self.selected_source))
+        addon.set_setting('source_name', self.selected_source)
+        log.log("Selected source: " + str(self.selected_source))
         
         if not build_select:
-            utils.log("No build selected")
+            log.log("No build selected")
             sys.exit(0)
 
         selected_build = build_select.selected_build
-        utils.log("Selected build: " + str(selected_build))
+        log.log("Selected build: " + str(selected_build))
     
         # Confirm the update.
         msg = ("[COLOR=lightskyblue][B]{}[/B][/COLOR]"
@@ -507,15 +480,15 @@ class Main(object):
             if (os.path.isfile(self.download_path) and
                     os.path.getsize(self.download_path) == size):
                     # Skip the download if the file exists with the correct size.
-                utils.log("Skipping download")
+                log.log("Skipping download")
             else:
                 try:
-                    utils.log("Starting download of {} to {}".format(self.selected_build.url,
-                                                                     self.download_path))
+                    log.log("Starting download of {} to {}".format(self.selected_build.url,
+                                                                   self.download_path))
                     with progress.FileProgress("Downloading", remote_file, self.download_path,
                                                size, self.background) as downloader:
                         downloader.start()
-                    utils.log("Completed download")
+                    log.log("Completed download")
                 except script_exceptions.Canceled:
                     sys.exit(0)
                 except requests.RequestException as e:
@@ -528,12 +501,12 @@ class Main(object):
             if self.selected_build.compressed:
                 try:
                     bf = open(self.download_path, 'rb')
-                    utils.log("Starting decompression of " + self.download_path)
+                    log.log("Starting decompression of " + self.download_path)
                     with progress.DecompressProgress("Decompressing",
                                                      bf, self.temp_tar_path, size,
                                                      self.background) as decompressor:
                         decompressor.start()
-                    utils.log("Completed decompression")
+                    log.log("Completed decompression")
                 except script_exceptions.Canceled:
                     sys.exit(0)
                 except script_exceptions.WriteError as e:
@@ -547,14 +520,14 @@ class Main(object):
 
             self.maybe_copy_to_archive()
         
-            utils.log("Moving tar file to " + self.update_tar_path)
+            log.log("Moving tar file to " + self.update_tar_path)
             os.rename(self.temp_tar_path, self.update_tar_path)
 
-        addon.setSetting('update_pending', 'true')
+        addon.set_setting('update_pending', 'true')
 
     def copy_from_archive(self):
         if self.archive and xbmcvfs.exists(self.archive_tar_path):
-            utils.log("Skipping download and decompression")
+            log.log("Skipping download and decompression")
 
             archive = xbmcvfs.File(self.archive_tar_path)
             try:
@@ -572,7 +545,7 @@ class Main(object):
 
     def maybe_copy_to_archive(self):
         if self.archive and not xbmcvfs.exists(self.archive_tar_path):
-            utils.log("Archiving tar file to {}".format(self.archive_tar_path))
+            log.log("Archiving tar file to {}".format(self.archive_tar_path))
 
             tar = open(self.temp_tar_path)
             size = os.path.getsize(self.temp_tar_path)
@@ -583,7 +556,7 @@ class Main(object):
                                            self.background) as extractor:
                     extractor.start()
             except script_exceptions.Canceled:
-                utils.log("Archive copy canceled")
+                log.log("Archive copy canceled")
                 xbmcvfs.delete(self.archive_tar_path)
             except script_exceptions.WriteError as e:
                 utils.write_error(self.archive_tar_path, str(e))
@@ -593,7 +566,7 @@ class Main(object):
         if not self.verify_files:
             return
 
-        utils.log("Verifying update file")
+        log.log("Verifying update file")
         with closing(tarfile.open(self.update_tar_path, 'r')) as tf:
             tar_names = tf.getnames()
 
@@ -606,7 +579,7 @@ class Main(object):
                     with progress.FileProgress("Verifying", ti, temp_image_path, ti.size,
                                                self.background) as extractor:
                         extractor.start()
-                    utils.log("Extracted " + temp_image_path)
+                    log.log("Extracted " + temp_image_path)
                 except script_exceptions.Canceled:
                     return
                 except script_exceptions.WriteError as e:
@@ -614,11 +587,11 @@ class Main(object):
                     return
 
                 md5sum = tf.extractfile(path_in_tar + '.md5').read().split()[0]
-                utils.log("{}.md5 file = {}".format(update_image, md5sum))
+                log.log("{}.md5 file = {}".format(update_image, md5sum))
         
                 if not progress.md5sum_verified(md5sum, temp_image_path,
                                                 self.background):
-                    utils.log("{} md5 mismatch!".format(update_image))
+                    log.log("{} md5 mismatch!".format(update_image))
                     xbmcgui.Dialog().ok("{} md5 mismatch".format(update_image),
                                         "The {} image from".format(update_image),
                                         self.selected_build.filename,
@@ -626,15 +599,15 @@ class Main(object):
                     utils.remove_update_files()
                     return
                 else:
-                    utils.log("{} md5 is correct".format(update_image))
+                    log.log("{} md5 is correct".format(update_image))
 
                 utils.remove_file(temp_image_path)
 
     def confirm(self):
-        with open(os.path.join(ADDON_DATA, constants.NOTIFY_FILE), 'w') as f:
+        with open(NOTIFY_FILE, 'w') as f:
             f.write('\n'.join((self.selected_source, repr(self.selected_build))))
 
-        if addon.getSetting('confirm_reboot') == 'true':
+        if addon.get_setting('confirm_reboot') == 'true':
             if xbmcgui.Dialog().yesno(
                     "Confirm reboot",
                     " ",
@@ -655,47 +628,47 @@ class Main(object):
 
 
 def check_for_new_build():
-    utils.log("Checking for a new build")
+    log.log("Checking for a new build")
     
-    check_official = addon.getSetting('check_official') == 'true'
-    check_interval = int(addon.getSetting('check_interval'))
+    check_official = addon.get_setting('check_official') == 'true'
+    check_interval = int(addon.get_setting('check_interval'))
 
     autoclose_ms = check_interval * 3540000 # check interval in ms - 1 min
     
     try:
         installed_build = builds.get_installed_build()
     except:
-        utils.log("Unable to get installed build so exiting")
+        log.log("Unable to get installed build so exiting")
         sys.exit(1)
 
-    source = addon.getSetting('source_name')
+    source = addon.get_setting('source_name')
     if (isinstance(installed_build, builds.Release) and source == "Official Releases"
         and not check_official):
         # Don't do the job of the official auto-update system.
-        utils.log("Skipping build check - official release")
+        log.log("Skipping build check - official release")
     else:
         builds.arch = utils.get_arch()
 
-        if addon.getSetting('set_timeout') == 'true':
-            builds.timeout = float(addon.getSetting('timeout'))
+        if addon.get_setting('set_timeout') == 'true':
+            builds.timeout = float(addon.get_setting('timeout'))
 
         build_sources = builds.sources()
         try:
             build_url = build_sources[source]
         except KeyError:
-            utils.log("{} is not a valid source".format(source))
+            log.log("{} is not a valid source".format(source))
             return
 
-        utils.log("Checking {}".format(build_url.url))
+        log.log("Checking {}".format(build_url.url))
 
         latest = builds.latest_build(source)
         if latest and latest > installed_build:
             if utils.build_check_prompt():
-                utils.log("New build {} is available, "
-                          "prompting to show build list".format(latest))
+                log.log("New build {} is available, "
+                        "prompting to show build list".format(latest))
 
                 if xbmcgui.Dialog().yesno(
-                        ADDON_NAME,
+                        addon.name,
                         line1="A more recent build is available:"
                         "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(latest),
                         line2="Current build:"
@@ -705,7 +678,7 @@ def check_for_new_build():
                     with Main() as main:
                         main.start()
             else:
-                utils.log("Notifying that new build {} is available".format(latest))
+                log.log("Notifying that new build {} is available".format(latest))
                 utils.notify("Build {} is available".format(latest), 4000)
 
 
@@ -714,28 +687,28 @@ def confirm_installation():
     if selected:
         source, selected_build = selected
 
-        utils.log("Selected build: {}".format(selected_build))
+        log.log("Selected build: {}".format(selected_build))
         installed_build = builds.get_installed_build()
-        utils.log("Installed build: {}".format(installed_build))
+        log.log("Installed build: {}".format(installed_build))
         if installed_build == selected_build:
             msg = "Build {} was installed successfully".format(installed_build)
             utils.notify(msg)
-            utils.log(msg)
+            log.log(msg)
 
             history.add_install(source, selected_build)
         else:
             msg = "Build {} was not installed".format(selected_build)
             utils.notify("[COLOR red]ERROR: {}[/COLOR]".format(msg))
-            utils.log(msg)
+            log.log(msg)
 
             utils.remove_update_files()
     else:
-        utils.log("No installation notification")
+        log.log("No installation notification")
 
-    utils.remove_file(os.path.join(ADDON_DATA, constants.NOTIFY_FILE))
+    utils.remove_file(NOTIFY_FILE)
 
 
-utils.log("Script arguments: {}".format(sys.argv))
+log.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
     if sys.argv[1] == "check":
         check_for_new_build()

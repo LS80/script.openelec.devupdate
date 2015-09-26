@@ -1,18 +1,17 @@
+#! /usr/bin/python
+
 import os
 from datetime import datetime
 import sqlite3
 
-import xbmc
-import xbmcaddon
+from log import with_logging
 
-import constants, utils
-
-
-addon = xbmcaddon.Addon(constants.ADDON_ID)
-
-ADDON_DATA = xbmc.translatePath(addon.getAddonInfo('profile'))
-
-HISTORY_FILE = os.path.join(ADDON_DATA, 'builds.db')
+try:
+    import addon
+except ImportError:
+    pass
+else:
+    HISTORY_FILE = os.path.join(addon.data_path, 'builds.db')
 
 
 def maybe_create_database():
@@ -31,8 +30,8 @@ def maybe_create_database():
                          timestamp TIMESTAMP NOT NULL)''')
 
 
-@utils.logging("Added install {}|{} to database",
-               "Failed to add install {}|{} to database")
+@with_logging("Added install {}|{} to database",
+              "Failed to add install {}|{} to database")
 def add_install(source, build):
     maybe_create_database()
     with sqlite3.connect(HISTORY_FILE) as conn:
@@ -54,7 +53,9 @@ def get_build_id(source, version):
                             (source, version)).fetchone()[0]
 
 
-def get_install_history(source):
+@with_logging("Retrieved install history for source {}",
+              "Failed to retrieve install history for source {}")
+def get_source_install_history(source):
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
         return conn.execute('''SELECT version, timestamp
                                FROM installs
@@ -62,8 +63,34 @@ def get_install_history(source):
                                WHERE source = ?''', (source,)).fetchall()
 
 
+def get_full_install_history():
+    with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+        return conn.execute('''SELECT source, version, timestamp
+                               FROM installs
+                               JOIN builds ON builds.id = build_id''').fetchall()
+
+
 def is_previously_installed(source, build):
     with sqlite3.connect(HISTORY_FILE) as conn:
         return bool(conn.execute('''SELECT COUNT(*) FROM installs WHERE
                                     source = ? AND version = ?''',
                                  (source, build.version)).fetchone()[0])
+
+
+if __name__ == "__main__":
+    import sys
+    import builds
+
+    try:
+        HISTORY_FILE = sys.argv[1]
+    except IndexError:
+        pass
+    else:
+        for source in builds.sources():
+            history = get_source_install_history(source)
+            if history:
+                print source
+                for version, timestamp in history:
+                    print "{:>7s}   {:s}".format(
+                        version, timestamp.strftime("%Y-%m-%d %H:%M"))
+                print

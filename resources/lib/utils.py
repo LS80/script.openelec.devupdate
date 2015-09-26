@@ -8,48 +8,9 @@ import stat
 
 import xbmc, xbmcaddon, xbmcgui
 
-import constants
 import openelec
-
-addon = xbmcaddon.Addon(constants.ADDON_ID)
-
-ADDON_NAME = addon.getAddonInfo('name')
-ADDON_VERSION = xbmc.translatePath(addon.getAddonInfo('version'))
-ICON_PATH = addon.getAddonInfo('icon')
-ADDON_PATH = xbmc.translatePath(addon.getAddonInfo('path'))
-
-
-def log(txt, level=xbmc.LOGDEBUG):
-    if not (addon.getSetting('debug') == 'false' and level == xbmc.LOGDEBUG):
-        msg = '{} v{}: {}'.format(ADDON_NAME, ADDON_VERSION, txt)
-        xbmc.log(msg, level)
-
-
-log_error = functools.partial(log, level=xbmc.LOGERROR)
-
-
-def log_exception():
-    import traceback
-    log("".join(traceback.format_exception(*sys.exc_info())), xbmc.LOGERROR)
-
-
-def logging(msg_success=None, msg_error=None, log_exc=True):
-    def wrap(func):
-        @functools.wraps(func)
-        def call_with_logging(*args, **kwargs):
-            try:
-                result = func(*args, **kwargs)
-            except:
-                if msg_error is not None:
-                    log_error(msg_error.format(*args))
-                if log_exc:
-                    log_exception()
-            else:
-                if msg_success is not None:
-                    log(msg_success.format(*args))
-                return result
-        return call_with_logging
-    return wrap
+import log
+import addon
 
 
 def connection_error(msg):
@@ -63,28 +24,28 @@ def bad_url(url, msg="URL not found."):
 
     
 def url_error(url, msg):
-    log_exception()
+    log.log_exception()
     xbmcgui.Dialog().ok("URL Error", msg, url,
                         "Please check the log file.")
 
     
 def write_error(path, msg):
-    log_exception()
+    log.log_exception()
     xbmcgui.Dialog().ok("Write Error", msg, path,
                         "Check the download directory in the addon settings.")
-    addon.openSettings()
+    addon.open_settings()
 
     
 def decompress_error(path, msg):
-    log_exception()
+    log.log_exception()
     xbmcgui.Dialog().ok("Decompression Error",
                         "An error occurred during decompression:",
                         " ", msg)
 
 
-@logging("Removed file", "Could not remove file")
+@log.with_logging("Removed file", "Could not remove file")
 def remove_file(file_path):
-    log("Removing {}".format(file_path))
+    log.log("Removing {}".format(file_path))
     try:
         os.remove(file_path)
     except OSError:
@@ -93,7 +54,7 @@ def remove_file(file_path):
         return True
 
 
-@logging("Created directory {}", log_exc=False)
+@log.with_logging("Created directory {}", log_exc=False)
 def create_directory(path):
     os.mkdir(path)
 
@@ -103,20 +64,20 @@ def remove_update_files():
     success = all(remove_file(tar) for tar in tar_update_files)
 
     if success:
-        addon.setSetting('update_pending', 'false')
+        addon.set_setting('update_pending', 'false')
     return success
 
 
 def get_arch():
-    if addon.getSetting('set_arch') == 'true':
-        return addon.getSetting('arch')
+    if addon.get_setting('set_arch') == 'true':
+        return addon.get_setting('arch')
     else:
         return openelec.ARCH
 
 
 def notify(msg, time=12000):
-    xbmcgui.Dialog().notification(ADDON_NAME, msg,
-                                  ICON_PATH, time)
+    xbmcgui.Dialog().notification(addon.name, msg,
+                                  addon.icon_path, time)
 
     
 def busy():
@@ -139,7 +100,7 @@ def showbusy(f):
 
 
 def build_check_prompt():
-    check_prompt = int(addon.getSetting('check_prompt'))
+    check_prompt = int(addon.get_setting('check_prompt'))
     return check_prompt == 2 or (check_prompt == 1 and not xbmc.Player().isPlayingVideo())
 
 
@@ -147,29 +108,29 @@ def ensure_trailing_slash(path):
     return path if path.endswith('/') else path + '/'
 
 
-@logging(msg_error="Unable to check if another instance is running")
+@log.with_logging(msg_error="Unable to check if another instance is running")
 def is_running():
     running = xbmcgui.Window(10000).getProperty('DevUpdateRunning') == 'True'
-    log("Another instance is running" if running else "No other instance is running")
+    log.log("Another instance is running" if running else "No other instance is running")
     return running
 
 
-@logging("Set running flag", "Unable to set running flag")
+@log.with_logging("Set running flag", "Unable to set running flag")
 def set_running():
     xbmcgui.Window(10000).setProperty('DevUpdateRunning', 'True')
 
 
-@logging("Cleared running flag", "Unable to clear running flag")
+@log.with_logging("Cleared running flag", "Unable to clear running flag")
 def set_not_running():
     xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
 
-@logging(msg_error="Unable to make script executable")
+@log.with_logging(msg_error="Unable to make script executable")
 def make_script_executable(script_path):
     os.chmod(script_path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
 
 
-@logging(msg_error="Unable to create script symbolic link", log_exc=False)
+@log.with_logging(msg_error="Unable to create script symbolic link", log_exc=False)
 def create_script_symlink(script_path, symlink_path):
     os.symlink(script_path, symlink_path)
 
@@ -183,7 +144,7 @@ def install_cmdline_script():
     """
 
     SCRIPT_NAME = "download.py"
-    script_path = os.path.join(ADDON_PATH, SCRIPT_NAME)
+    script_path = os.path.join(addon.src_path, SCRIPT_NAME)
 
     SYMLINK_NAME = "devupdate"
     symlink_path = os.path.join(os.path.expanduser('~'), SYMLINK_NAME)
