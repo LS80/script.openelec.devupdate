@@ -1,3 +1,7 @@
+4.25.0
+ - Use the tar file for the update even when verifying the images.
+ - Reduced the new build notification time when playing video.
+
 4.24.1
  - Fixed the devupdate command line script (broken since 4.23.0).
 
