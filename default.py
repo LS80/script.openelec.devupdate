@@ -710,10 +710,16 @@ def confirm_installation():
 
 log.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
-    if sys.argv[1] == "check":
+    if sys.argv[1] == 'check':
         check_for_new_build()
-    elif sys.argv[1] == "confirm":
+    elif sys.argv[1] == 'confirm':
         confirm_installation()
+    elif sys.argv[1] == 'cancel':
+        success = utils.remove_update_files()
+        if success:
+            utils.notify("Deleted update file")
+        else:
+            utils.notify("Update file not deleted")
 else:
     with Main() as main:
         main.start()

@@ -152,13 +152,3 @@ def install_cmdline_script():
     make_script_executable(script_path)
 
     create_script_symlink(script_path, symlink_path)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        if sys.argv[1] == 'cancel':
-            success = remove_update_files()
-            if success:
-                notify("Deleted update file")
-            else:
-                notify("Update file not deleted")
