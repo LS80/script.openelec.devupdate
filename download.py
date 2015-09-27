@@ -34,7 +34,7 @@ if os.path.isdir(addons):
 import requests
 
 from resources.lib.funcs import size_fmt
-from resources.lib import builds, constants, openelec
+from resources.lib import builds, openelec
 
 
 parser = ArgumentParser(description='Download an OpenELEC update')

@@ -479,6 +479,16 @@ def latest_build(source):
         return build_url.latest()
 
 
+def get_build_from_file(path):
+    try:
+        with open(path) as f:
+            source, build_repr = f.read().splitlines()
+    except (IOError, ValueError):
+        return None
+    else:
+        return source, eval(build_repr)
+
+
 def main():
     """Test function to print all available builds when executing the module."""
     import sys

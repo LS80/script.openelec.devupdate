@@ -1,7 +1,6 @@
 from __future__ import division
 
 import os
-import sys
 import glob
 import functools
 import stat
@@ -11,36 +10,39 @@ import xbmc, xbmcaddon, xbmcgui
 import openelec
 import log
 import addon
+import constants
 
+
+ok = xbmcgui.Dialog().ok
+yesno = xbmcgui.Dialog().yesno
+notification = xbmcgui.Dialog().notification
 
 def connection_error(msg):
-    xbmcgui.Dialog().ok("Connection Error", msg,
-                        "Please check you have a connection to the internet.")  
+    ok("Connection Error", msg,
+       "Please check you have a connection to the internet.")
 
     
 def bad_url(url, msg="URL not found."):
-    xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the URL.")
+    ok("URL Error", msg, url, "Please check the URL.")
 
     
 def url_error(url, msg):
     log.log_exception()
-    xbmcgui.Dialog().ok("URL Error", msg, url,
-                        "Please check the log file.")
+    ok("URL Error", msg, url, "Please check the log file.")
 
     
 def write_error(path, msg):
     log.log_exception()
-    xbmcgui.Dialog().ok("Write Error", msg, path,
-                        "Check the download directory in the addon settings.")
+    ok("Write Error", msg, path,
+       "Check the download directory in the addon settings.")
     addon.open_settings()
 
     
 def decompress_error(path, msg):
     log.log_exception()
-    xbmcgui.Dialog().ok("Decompression Error",
-                        "An error occurred during decompression:",
-                        " ", msg)
+    ok("Decompression Error",
+       "An error occurred during decompression:",
+       " ", msg)
 
 
 @log.with_logging("Removed file", "Could not remove file")
@@ -76,8 +78,7 @@ def get_arch():
 
 
 def notify(msg, time=12000):
-    xbmcgui.Dialog().notification(addon.name, msg,
-                                  addon.icon_path, time)
+    notification(addon.name, msg, addon.icon_path, time)
 
     
 def busy():
@@ -152,3 +153,28 @@ def install_cmdline_script():
     make_script_executable(script_path)
 
     create_script_symlink(script_path, symlink_path)
+
+
+def maybe_schedule_extlinux_update():
+    if (not openelec.ARCH.startswith('RPi') and
+        addon.get_setting('update_extlinux') == 'true'):
+        open(os.path.join(addon.data_path, constants.UPDATE_EXTLINUX_FILE), 'w').close()
+
+
+def maybe_run_backup():
+    backup = int(addon.get_setting('backup'))
+    if backup == 0:
+        do_backup = False
+    elif backup == 1:
+        do_backup = yesno("Backup", "Run Backup now?", "This is recommended")
+        log.log("Backup requested")
+    elif backup == 2:
+        do_backup = True
+        log.log("Backup always")
+
+    if do_backup:
+        xbmc.executebuiltin('RunScript(script.xbmcbackup, mode=backup)', True)
+        xbmc.sleep(10000)
+        window = xbmcgui.Window(10000)
+        while (window.getProperty('script.xbmcbackup.running') == 'true'):
+            xbmc.sleep(5000)
