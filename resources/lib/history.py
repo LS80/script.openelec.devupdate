@@ -78,19 +78,28 @@ def is_previously_installed(source, build):
 
 
 if __name__ == "__main__":
-    import sys
+    from argparse import ArgumentParser, RawTextHelpFormatter
+
+    from funcs import add_deps_to_path
+    add_deps_to_path()
     import builds
 
-    try:
-        HISTORY_FILE = sys.argv[1]
-    except IndexError:
-        pass
-    else:
-        for source in builds.sources():
-            history = get_source_install_history(source)
-            if history:
-                print source
-                for version, timestamp in history:
-                    print "{:>7s}   {:s}".format(
-                        version, timestamp.strftime("%Y-%m-%d %H:%M"))
-                print
+    parser = ArgumentParser(description='Print install history',
+                            formatter_class=RawTextHelpFormatter)
+    parser.add_argument(
+        'dbpath', nargs='?',
+        default="/storage/.kodi/userdata/addon_data/script.openelec.devupdate/builds.db",
+        help="path to the install history database \n (default: %(default)s)")
+
+    args = parser.parse_args()
+
+    HISTORY_FILE = args.dbpath
+
+    for source in builds.sources():
+        history = get_source_install_history(source)
+        if history:
+            print source
+            for version, timestamp in history:
+                print "{:>7s}   {:s}".format(
+                    version, timestamp.strftime("%Y-%m-%d %H:%M"))
+            print

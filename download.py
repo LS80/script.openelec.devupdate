@@ -25,15 +25,11 @@ from argparse import ArgumentParser
 from urlparse import urlparse
 import bz2
 
-addons = os.path.join(os.path.expanduser('~'), '.kodi', 'addons')
-if os.path.isdir(addons):
-    for module in ('requests', 'beautifulsoup4', 'html2text'):
-        path = os.path.join(addons, 'script.module.' + module, 'lib')
-        sys.path.append(path)
+from resources.lib.funcs import size_fmt, add_deps_to_path
+add_deps_to_path()
 
 import requests
 
-from resources.lib.funcs import size_fmt
 from resources.lib import builds, openelec
 
 
