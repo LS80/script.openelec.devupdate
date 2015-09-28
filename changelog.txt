@@ -1,3 +1,6 @@
+4.26.0
+ - Made the history script runnable under OpenELEC.
+
 4.25.0
  - Use the tar file for the update even when verifying the images.
  - Reduced the new build notification time when playing video.
