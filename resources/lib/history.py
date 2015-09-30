@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 import sqlite3
 
-from log import with_logging
+import log
 
 try:
     import addon
@@ -30,7 +30,7 @@ def maybe_create_database():
                          timestamp TIMESTAMP NOT NULL)''')
 
 
-@with_logging("Added install {}|{} to database",
+@log.with_logging("Added install {}|{} to database",
               "Failed to add install {}|{} to database")
 def add_install(source, build):
     maybe_create_database()
@@ -53,7 +53,7 @@ def get_build_id(source, version):
                             (source, version)).fetchone()[0]
 
 
-@with_logging("Retrieved install history for source {}",
+@log.with_logging("Retrieved install history for source {}",
               "Failed to retrieve install history for source {}")
 def get_source_install_history(source):
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
@@ -79,6 +79,8 @@ def is_previously_installed(source, build):
 
 if __name__ == "__main__":
     from argparse import ArgumentParser, RawTextHelpFormatter
+    import sys
+    import logging
 
     from funcs import add_deps_to_path
     add_deps_to_path()
@@ -91,9 +93,21 @@ if __name__ == "__main__":
         default="/storage/.kodi/userdata/addon_data/script.openelec.devupdate/builds.db",
         help="path to the install history database \n (default: %(default)s)")
 
+    parser.add_argument(
+        '--logdebug', action='store_true',
+        help="log all debug messages to the log file ({})".format(log.log_path))
+
     args = parser.parse_args()
 
     HISTORY_FILE = args.dbpath
+
+    if not os.path.isfile(HISTORY_FILE):
+        print "dbpath does not exist"
+        parser.print_usage()
+        sys.exit(1)
+
+    if args.logdebug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     for source in builds.sources():
         history = get_source_install_history(source)

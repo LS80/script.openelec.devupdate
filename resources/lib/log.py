@@ -27,7 +27,7 @@ if xbmc_log:
 else:
     log_path = os.path.join(os.path.expanduser('~'), 'devupdate.log')
     logging.basicConfig(filename=log_path,
-                        level=logging.DEBUG,
+                        level=logging.ERROR,
                         format='%(asctime)s %(levelname)7s: %(message)s')
 
     def log(txt):
