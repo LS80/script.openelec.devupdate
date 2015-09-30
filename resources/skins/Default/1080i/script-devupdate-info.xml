@@ -16,7 +16,7 @@
             </control>
  
             <control type="textbox" id="1">
-                <description>Build name</description>
+                <description>Title</description>
                 <width>200</width>
                 <height>90</height>
                 <left>860</left>

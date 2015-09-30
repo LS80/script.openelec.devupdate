@@ -7,8 +7,9 @@ import requests
 import addon, builds, utils, log
 
 class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
-    def __new__(cls, _1, _2):
-        return super(BuildDetailsDialog, cls).__new__(cls, "Details.xml", addon.src_path)
+    def __new__(cls, *args):
+        return super(BuildDetailsDialog, cls).__new__(
+            cls, "script-devupdate-info.xml", addon.src_path)
 
     def __init__(self, build, text):
         self._build = build
@@ -32,8 +33,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     BUILD_INFO_ID = 200
     SETTINGS_BUTTON_ID = 30
 
-    def __new__(cls, _):
-        return super(BuildSelectDialog, cls).__new__(cls, "Dialog.xml", addon.src_path)
+    def __new__(cls, *args):
+        return super(BuildSelectDialog, cls).__new__(
+            cls, "script-devupdate-main.xml", addon.src_path)
 
     def __init__(self, installed_build):
         self._installed_build = installed_build
