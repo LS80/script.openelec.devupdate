@@ -38,7 +38,7 @@ def maybe_create_database():
 
 
 @log.with_logging("Added install {}|{} to database",
-              "Failed to add install {}|{} to database")
+                  "Failed to add install {}|{} to database")
 def add_install(source, build):
     maybe_create_database()
     with sqlite3.connect(HISTORY_FILE) as conn:
@@ -61,7 +61,7 @@ def get_build_id(source, version):
 
 
 @log.with_logging("Retrieved install history for source {}",
-              "Failed to retrieve install history for source {}")
+                  "Failed to retrieve install history for source {}")
 def get_source_install_history(source):
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
         conn.row_factory = _row_factory
@@ -88,14 +88,17 @@ def is_previously_installed(source, build):
                                  (source, build.version)).fetchone()[0])
 
 
+def format_history_lines(history):
+    for install in reversed(history):
+        yield "{:16s}  {:>7s}  {:30s}".format(
+            install.timestamp.strftime("%Y-%m-%d %H:%M"), install.version,
+            install.source)
+
+
 if __name__ == "__main__":
     from argparse import ArgumentParser, RawTextHelpFormatter
     import sys
     import logging
-
-    from funcs import add_deps_to_path
-    add_deps_to_path()
-    import builds
 
     parser = ArgumentParser(description='Print install history',
                             formatter_class=RawTextHelpFormatter)
@@ -120,11 +123,6 @@ if __name__ == "__main__":
     if args.logdebug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    for source in builds.sources():
-        history = get_source_install_history(source)
-        if history:
-            print source
-            for install in history:
-                print "{:>7s}   {:s}".format(
-                    install.version, install.timestamp.strftime("%Y-%m-%d %H:%M"))
-            print
+    history = get_full_install_history()
+    for line in format_history_lines(history):
+        print line
