@@ -72,6 +72,8 @@ def get_source_install_history(source):
                             (source,)).fetchall()
 
 
+@log.with_logging("Retrieved full install history",
+                  "Failed to retrieve full install history")
 def get_full_install_history():
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
         conn.row_factory = _row_factory

@@ -4,26 +4,51 @@ import threading
 import xbmcgui
 import requests
 
-import addon, builds, utils, log
+import addon, builds, utils, log, history
 
-class BuildDetailsDialog(xbmcgui.WindowXMLDialog):
-    def __new__(cls, *args):
-        return super(BuildDetailsDialog, cls).__new__(
-            cls, "script-devupdate-info.xml", addon.src_path)
 
-    def __init__(self, build, text):
-        self._build = build
-        self._text = text
-
-    def onInit(self):
-        self.getControl(1).setText(self._build)
-        self.getControl(2).setText(self._text)
-
+class BaseInfoDialog(xbmcgui.WindowXMLDialog):
     def onAction(self, action):
         action_id = action.getId()
         if action_id in (xbmcgui.ACTION_SHOW_INFO,
                          xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK):
             self.close()
+
+
+class InfoDialog(BaseInfoDialog):
+    def __new__(cls, *args):
+        return super(InfoDialog, cls).__new__(
+            cls, "script-devupdate-info.xml", addon.src_path)
+
+    def __init__(self, title, text):
+        self._title = title
+        self._text = text
+
+    def onInit(self):
+        self.getControl(1).setText(self._title)
+        self.getControl(2).setText(self._text)
+
+
+class HistoryDialog(BaseInfoDialog):
+    def __new__(cls, *args):
+        return super(HistoryDialog, cls).__new__(
+            cls, "script-devupdate-history.xml", addon.src_path)
+
+    def __init__(self, history):
+        self._history = history
+
+    def onInit(self):
+        if self._history is not None:
+            self.getControl(1).setText("Install History")
+            install_list = self.getControl(2)
+            for install in reversed(self._history):
+                li = xbmcgui.ListItem()
+                for attr in ('source', 'version'):
+                    li.setProperty(attr, str(getattr(install, attr)))
+                li.setProperty('timestamp', install.timestamp.strftime("%Y-%m-%d %H:%M"))
+                install_list.addItem(li)
+        else:
+            self.getControl(1).setText("Install history not available")
 
 
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
@@ -32,6 +57,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     SOURCE_LIST_ID = 10
     BUILD_INFO_ID = 200
     SETTINGS_BUTTON_ID = 30
+    HISTORY_BUTTON_ID = 40
 
     def __new__(cls, *args):
         return super(BuildSelectDialog, cls).__new__(
@@ -142,6 +168,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         elif controlID == self.SETTINGS_BUTTON_ID:
             self.close()
             addon.open_settings()
+        elif controlID == self.HISTORY_BUTTON_ID:
+            dialog = HistoryDialog(history.get_full_install_history())
+            dialog.doModal()
 
     def onAction(self, action):
         action_id = action.getId()
@@ -165,7 +194,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                         log.log("Unable to retrieve build details: {}".format(e))
                     else:
                         if details:
-                            dialog = BuildDetailsDialog(build, details)
+                            dialog = InfoDialog(build, details)
                             dialog.doModal()
 
         elif action_id in (xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK):
