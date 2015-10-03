@@ -3,6 +3,7 @@
 import os
 from datetime import datetime
 import sqlite3
+from collections import namedtuple
 
 import log
 
@@ -12,6 +13,12 @@ except ImportError:
     pass
 else:
     HISTORY_FILE = os.path.join(addon.data_path, 'builds.db')
+
+
+FIELDS = ['source', 'version', 'timestamp']
+_Install = namedtuple('Install', FIELDS)
+def _row_factory(cursor, row):
+    return _Install(*row)
 
 
 def maybe_create_database():
@@ -57,17 +64,21 @@ def get_build_id(source, version):
               "Failed to retrieve install history for source {}")
 def get_source_install_history(source):
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
-        return conn.execute('''SELECT version, timestamp
+        conn.row_factory = _row_factory
+        return conn.execute('''SELECT {}
                                FROM installs
                                JOIN builds ON builds.id = build_id
-                               WHERE source = ?''', (source,)).fetchall()
+                               WHERE source = ?'''.format(','.join(FIELDS)),
+                            (source,)).fetchall()
 
 
 def get_full_install_history():
     with sqlite3.connect(HISTORY_FILE, detect_types=sqlite3.PARSE_DECLTYPES) as conn:
-        return conn.execute('''SELECT source, version, timestamp
+        conn.row_factory = _row_factory
+        return conn.execute('''SELECT {}
                                FROM installs
-                               JOIN builds ON builds.id = build_id''').fetchall()
+                               JOIN builds ON builds.id = build_id'''
+                            .format(','.join(FIELDS))).fetchall()
 
 
 def is_previously_installed(source, build):
@@ -113,7 +124,7 @@ if __name__ == "__main__":
         history = get_source_install_history(source)
         if history:
             print source
-            for version, timestamp in history:
+            for install in history:
                 print "{:>7s}   {:s}".format(
-                    version, timestamp.strftime("%Y-%m-%d %H:%M"))
+                    install.version, install.timestamp.strftime("%Y-%m-%d %H:%M"))
             print
