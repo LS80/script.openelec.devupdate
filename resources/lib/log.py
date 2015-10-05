@@ -5,7 +5,7 @@ import os
 
 try:
     import xbmc
-    import addon
+    from . import addon
 except ImportError:
     import logging
     xbmc_log = False

@@ -4,7 +4,7 @@ import threading
 import xbmcgui
 import requests
 
-import addon, builds, utils, log, history
+from . import addon, builds, utils, log, history
 
 
 class BaseInfoDialog(xbmcgui.WindowXMLDialog):

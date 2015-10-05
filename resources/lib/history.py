@@ -5,10 +5,10 @@ from datetime import datetime
 import sqlite3
 from collections import namedtuple
 
-import log
+from . import log
 
 try:
-    import addon
+    from . import addon
 except ImportError:
     pass
 else:

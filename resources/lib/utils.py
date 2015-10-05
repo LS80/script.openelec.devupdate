@@ -1,16 +1,15 @@
+''' Module for functions with a dependency on Kodi Python modules '''
+
 from __future__ import division
 
 import os
+import sys
 import glob
 import functools
-import stat
 
 import xbmc, xbmcaddon, xbmcgui
 
-import openelec
-import log
-import addon
-import constants
+from . import openelec, log, addon, funcs, history
 
 
 ok = xbmcgui.Dialog().ok
@@ -45,25 +44,32 @@ def decompress_error(path, msg):
        " ", msg)
 
 
-@log.with_logging("Removed file", "Could not remove file")
-def remove_file(file_path):
-    log.log("Removing {}".format(file_path))
-    try:
-        os.remove(file_path)
-    except OSError:
-        return False
-    else:
-        return True
+def check_update_files(selected):
+    # Check if an update file is already in place.
+    if glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar')):
+        if selected:
+            s = " for "
+            _, selected_build = selected
+        else:
+            s = selected_build = ""
 
-
-@log.with_logging("Created directory {}", log_exc=False)
-def create_directory(path):
-    os.mkdir(path)
+        msg = ("An installation is pending{}"
+               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected_build)
+        if yesno("Confirm reboot",
+                 msg,
+                 "Reboot now to install the update",
+                 "or continue to select another build.",
+                 "Continue",
+                 "Reboot"):
+            xbmc.restart()
+            sys.exit(0)
+        else:
+            remove_update_files()
 
 
 def remove_update_files():
     tar_update_files = glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))
-    success = all(remove_file(tar) for tar in tar_update_files)
+    success = all(funcs.remove_file(tar) for tar in tar_update_files)
 
     if success:
         addon.set_setting('update_pending', 'false')
@@ -81,22 +87,14 @@ def notify(msg, time=12000):
     notification(addon.name, msg, addon.icon_path, time)
 
     
-def busy():
-    xbmc.executebuiltin("ActivateWindow(busydialog)")
-
-
-def not_busy():
-    xbmc.executebuiltin("Dialog.Close(busydialog)")
-
-    
 def showbusy(f):
     @functools.wraps(f)
     def busy_wrapper(*args, **kwargs):
-        busy()
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
         try:
             return f(*args, **kwargs)
         finally:
-            not_busy()
+            xbmc.executebuiltin("Dialog.Close(busydialog)")
     return busy_wrapper
 
 
@@ -126,16 +124,6 @@ def set_not_running():
     xbmcgui.Window(10000).clearProperty('DevUpdateRunning')
 
 
-@log.with_logging(msg_error="Unable to make script executable")
-def make_script_executable(script_path):
-    os.chmod(script_path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
-
-
-@log.with_logging(msg_error="Unable to create script symbolic link", log_exc=False)
-def create_script_symlink(script_path, symlink_path):
-    os.symlink(script_path, symlink_path)
-
-
 def install_cmdline_script():
     """ Creates a symbolic link to the command line download script
     in the root user home directory. The script can then be invoked
@@ -150,15 +138,15 @@ def install_cmdline_script():
     SYMLINK_NAME = "devupdate"
     symlink_path = os.path.join(os.path.expanduser('~'), SYMLINK_NAME)
 
-    make_script_executable(script_path)
+    funcs.make_executable(script_path)
 
-    create_script_symlink(script_path, symlink_path)
+    funcs.create_symlink(script_path, symlink_path)
 
 
 def maybe_schedule_extlinux_update():
     if (not openelec.ARCH.startswith('RPi') and
         addon.get_setting('update_extlinux') == 'true'):
-        open(os.path.join(addon.data_path, constants.UPDATE_EXTLINUX_FILE), 'w').close()
+        funcs.schedule_extlinux_update()
 
 
 def maybe_run_backup():
@@ -178,3 +166,39 @@ def maybe_run_backup():
         window = xbmcgui.Window(10000)
         while (window.getProperty('script.xbmcbackup.running') == 'true'):
             xbmc.sleep(5000)
+
+
+def start_new_build_check_timer():
+    if addon.get_setting('check') == 'true':
+        xbmc.executebuiltin("RunScript({},check)".format(addon.info('id')))
+        check_interval = int(addon.get_setting('check_interval'))
+        if not addon.get_setting('check_onbootonly') == 'true':
+            log.log("Starting build check timer")
+            xbmc.executebuiltin("AlarmClock(openelecdevupdate,"
+                "RunScript({},check),{:02d}:00:00,silent,loop)".format(addon.info('id'),
+                                                                       check_interval))
+
+
+def maybe_confirm_installation(selected, installed_build):
+    if selected:
+        source, selected_build = selected
+
+        log.log("Selected build: {}".format(selected_build))
+
+        log.log("Installed build: {}".format(installed_build))
+        if installed_build == selected_build:
+            msg = "Build {} was installed successfully".format(installed_build)
+            notify(msg)
+            log.log(msg)
+
+            history.add_install(source, selected_build)
+        else:
+            msg = "Build {} was not installed".format(selected_build)
+            notify("[COLOR red]ERROR: {}[/COLOR]".format(msg))
+            log.log(msg)
+
+            remove_update_files()
+    else:
+        log.log("No installation notification")
+
+    funcs.remove_notify_file()

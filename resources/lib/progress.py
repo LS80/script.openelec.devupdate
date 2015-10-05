@@ -7,8 +7,8 @@ import hashlib
 
 import xbmc, xbmcgui, xbmcvfs
 
-from script_exceptions import Canceled, WriteError, DecompressError
-from funcs import size_fmt
+from .script_exceptions import Canceled, WriteError, DecompressError
+from .funcs import size_fmt
 
 
 class Progress(xbmcgui.DialogProgress):

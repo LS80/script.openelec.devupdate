@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
 
-import openelec
+from . import openelec, funcs
 
 
 timeout = None
@@ -479,13 +479,10 @@ def latest_build(source):
         return build_url.latest()
 
 
-def get_build_from_file(path):
-    try:
-        with open(path) as f:
-            source, build_repr = f.read().splitlines()
-    except (IOError, ValueError):
-        return None
-    else:
+def get_build_from_notify_file():
+    selected = funcs.read_notify_file()
+    if selected:
+        source, build_repr = selected
         return source, eval(build_repr)
 
 

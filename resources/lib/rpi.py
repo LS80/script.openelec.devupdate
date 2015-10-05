@@ -1,12 +1,14 @@
 import os
 import re
+import sys
 
-import xbmcvfs
+import xbmc, xbmcvfs
 
-import openelec, addon
+from . import openelec, addon, log, progress
 
 CONFIG_FILE = 'config.txt'
 CONFIG_PATH = '/flash/' + CONFIG_FILE
+CONFIG_BACKUP_PATH = os.path.join(addon.data_path, CONFIG_FILE)
 
 OVERCLOCK_SETTINGS = ('arm_freq',
                       'core_freq',
@@ -15,6 +17,20 @@ OVERCLOCK_SETTINGS = ('arm_freq',
 
 OVERCLOCK_RE = re.compile(r'^([ \t]*({})[ \t]*=)'.format('|'.join(OVERCLOCK_SETTINGS)),
                           re.MULTILINE)
+
+
+def maybe_restore_config():
+    if os.path.exists(CONFIG_BACKUP_PATH):
+        log.log("Re-enabling overclocking")
+        with openelec.write_context():
+            xbmcvfs.copy(CONFIG_BACKUP_PATH, CONFIG_PATH)
+        xbmcvfs.delete(CONFIG_BACKUP_PATH)
+        if progress.restart_countdown("Ready to reboot to re-enable overclocking."):
+            log.log("Restarting")
+            xbmc.restart()
+            sys.exit()
+        else:
+            log.log("Restart cancelled")
 
 
 def maybe_disable_overclock():

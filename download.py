@@ -30,7 +30,7 @@ add_deps_to_path()
 
 import requests
 
-from resources.lib import builds, openelec
+from resources.lib import builds, openelec, funcs
 
 
 parser = ArgumentParser(description='Download an OpenELEC update')
@@ -71,16 +71,17 @@ if args.arch:
 urls = builds.sources()
 
 if args.source:
+    source = args.source
     try:
-        build_url = urls[args.source]
+        build_url = urls[source]
     except KeyError:
-        parsed = urlparse(args.source)
+        parsed = urlparse(source)
         if parsed.scheme in ('http', 'https') and parsed.netloc:
             if args.releases:
-                build_url = builds.BuildsURL(args.source,
+                build_url = builds.BuildsURL(source,
                                              extractor=builds.ReleaseLinkExtractor)
             else:
-                build_url = builds.BuildsURL(args.source)
+                build_url = builds.BuildsURL(source)
         else:
             print ('"{}" is not in the list of available sources '
                    'and is not a valid HTTP URL').format(args.source)
@@ -157,6 +158,8 @@ else:
             with open(file_path, 'r') as fin, open(tar_path, 'w') as fout:
                 process(fin, fout, size, decompress)
             os.remove(file_path)
+
+        funcs.create_notify_file(source, build)
 
         print
         print "The update is ready to be installed. Please reboot."

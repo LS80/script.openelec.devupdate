@@ -22,15 +22,13 @@ from __future__ import division
 import os
 import sys
 import tarfile
-import glob
 from contextlib import closing
 
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import requests
 
-from resources.lib import (constants, progress, script_exceptions,
-                           utils, builds, openelec, history, rpi,
-                           addon, log, gui)
+from resources.lib import (progress, script_exceptions, utils, builds, openelec,
+                           rpi, addon, log, gui, funcs)
 
 
 TEMP_PATH = xbmc.translatePath("special://temp/")
@@ -60,13 +58,13 @@ class Main(object):
         if addon.get_setting('set_timeout') == 'true':
             builds.timeout = float(addon.get_setting('timeout'))
 
-        utils.create_directory(openelec.UPDATE_DIR)
-
-        check_update_files()
-
         self.background = addon.get_setting('background') == 'true'
         self.verify_files = addon.get_setting('verify_files') == 'true'
         
+        funcs.create_directory(openelec.UPDATE_DIR)
+
+        utils.check_update_files(builds.get_build_from_notify_file())
+
         self.installed_build = self.get_installed_build()
 
         self.select_build()
@@ -91,28 +89,6 @@ class Main(object):
         except requests.ConnectionError as e:
             utils.connection_error(str(e))
             sys.exit(1)
-
-    def check_archive(self):
-        self.archive = addon.get_setting('archive') == 'true'
-        if self.archive:
-            archive_root = addon.get_setting('archive_root')
-            self.archive_root = utils.ensure_trailing_slash(archive_root)
-            self.archive_tar_path = None
-            self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
-            log.log("Archive builds to " + self.archive_dir)
-            if not xbmcvfs.exists(self.archive_root):
-                log.log("Unable to access archive")
-                utils.ok("Directory Error",
-                         "{} is not accessible.".format(self.archive_root),
-                         "Check the archive directory in the addon settings.")
-                addon.open_settings()
-                sys.exit(1)
-            elif not xbmcvfs.mkdir(self.archive_dir):
-                log.log("Unable to create directory in archive")
-                utils.ok("Directory Error",
-                         "Unable to create {}.".format(self.archive_dir),
-                         "Check the archive directory permissions.")
-                sys.exit(1)
 
     def select_build(self):
         build_select = gui.BuildSelectDialog(self.installed_build)
@@ -145,6 +121,28 @@ class Main(object):
             sys.exit(0)
             
         self.selected_build = selected_build
+
+    def check_archive(self):
+        self.archive = addon.get_setting('archive') == 'true'
+        if self.archive:
+            archive_root = addon.get_setting('archive_root')
+            self.archive_root = utils.ensure_trailing_slash(archive_root)
+            self.archive_tar_path = None
+            self.archive_dir = os.path.join(self.archive_root, str(self.selected_source))
+            log.log("Archive builds to " + self.archive_dir)
+            if not xbmcvfs.exists(self.archive_root):
+                log.log("Unable to access archive")
+                utils.ok("Directory Error",
+                         "{} is not accessible.".format(self.archive_root),
+                         "Check the archive directory in the addon settings.")
+                addon.open_settings()
+                sys.exit(1)
+            elif not xbmcvfs.mkdir(self.archive_dir):
+                log.log("Unable to create directory in archive")
+                utils.ok("Directory Error",
+                         "Unable to create {}.".format(self.archive_dir),
+                         "Check the archive directory permissions.")
+                sys.exit(1)
 
     def maybe_download(self):
         try:
@@ -203,7 +201,7 @@ class Main(object):
                     utils.decompress_error(self.download_path, str(e))
                     sys.exit(1)
                 finally:
-                    utils.remove_file(self.download_path)
+                    funcs.remove_file(self.download_path)
 
             self.maybe_copy_to_archive()
         
@@ -223,7 +221,7 @@ class Main(object):
                                            self.background) as extractor:
                     extractor.start()
             except script_exceptions.Canceled:
-                utils.remove_file(self.tar_path)
+                funcs.remove_file(self.tar_path)
                 sys.exit(0)
             except script_exceptions.WriteError:
                 sys.exit(1)
@@ -288,11 +286,10 @@ class Main(object):
                 else:
                     log.log("{} md5 is correct".format(update_image))
 
-                utils.remove_file(temp_image_path)
+                funcs.remove_file(temp_image_path)
 
     def confirm(self):
-        with open(constants.NOTIFY_FILE, 'w') as f:
-            f.write('\n'.join((self.selected_source, repr(self.selected_build))))
+        funcs.create_notify_file(self.selected_source, self.selected_build)
 
         if addon.get_setting('confirm_reboot') == 'true':
             if utils.yesno(
@@ -312,30 +309,6 @@ class Main(object):
             else:
                 utils.notify("Build {} will install on the next reboot"
                              .format(self.selected_build))
-
-
-def check_update_files():
-    # Check if an update file is already in place.
-    if glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar')):
-        selected = builds.get_build_from_file(constants.NOTIFY_FILE)
-        if selected:
-            s = " for "
-            _, selected_build = selected
-        else:
-            s = selected_build = ""
-
-        msg = ("An installation is pending{}"
-               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected_build)
-        if utils.yesno("Confirm reboot",
-                       msg,
-                       "Reboot now to install the update",
-                       "or continue to select another build.",
-                       "Continue",
-                       "Reboot"):
-            xbmc.restart()
-            sys.exit(0)
-        else:
-            utils.remove_update_files()
 
 
 def check_for_new_build():
@@ -393,38 +366,14 @@ def check_for_new_build():
                 utils.notify("Build {} is available".format(latest), 4000)
 
 
-def confirm_installation():
-    selected = builds.get_build_from_file(constants.NOTIFY_FILE)
-    if selected:
-        source, selected_build = selected
-
-        log.log("Selected build: {}".format(selected_build))
-        installed_build = builds.get_installed_build()
-        log.log("Installed build: {}".format(installed_build))
-        if installed_build == selected_build:
-            msg = "Build {} was installed successfully".format(installed_build)
-            utils.notify(msg)
-            log.log(msg)
-
-            history.add_install(source, selected_build)
-        else:
-            msg = "Build {} was not installed".format(selected_build)
-            utils.notify("[COLOR red]ERROR: {}[/COLOR]".format(msg))
-            log.log(msg)
-
-            utils.remove_update_files()
-    else:
-        log.log("No installation notification")
-
-    utils.remove_file(constants.NOTIFY_FILE)
-
-
 log.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
     if sys.argv[1] == 'check':
         check_for_new_build()
     elif sys.argv[1] == 'confirm':
-        confirm_installation()
+        selected = builds.get_build_from_notify_file()
+        installed_build = builds.get_installed_build()
+        utils.maybe_confirm_installation(selected, installed_build)
     elif sys.argv[1] == 'cancel':
         success = utils.remove_update_files()
         if success:
