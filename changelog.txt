@@ -1,3 +1,6 @@
+4.28.0
+ - Add updates made with the command line script to the installation history
+
 4.27.0
  - Added a button to show the installation history.
 
