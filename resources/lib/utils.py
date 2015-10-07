@@ -44,27 +44,32 @@ def decompress_error(path, msg):
        " ", msg)
 
 
-def check_update_files(selected):
-    # Check if an update file is already in place.
+def check_update_files(selected, force_dialog=False):
+    log.log("Checking for an existing update file")
     if glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar')):
-        if selected:
-            s = " for "
-            _, selected_build = selected
-        else:
-            s = selected_build = ""
+        log.log("An update file is in place")
 
-        msg = ("An installation is pending{}"
-               "[COLOR=lightskyblue][B]{}[/B][/COLOR].").format(s, selected_build)
-        if yesno("Confirm reboot",
-                 msg,
-                 "Reboot now to install the update",
-                 "or continue to select another build.",
-                 "Continue",
-                 "Reboot"):
-            xbmc.restart()
-            sys.exit(0)
+        if selected:
+            build_str = format_build(selected[1])
         else:
-            remove_update_files()
+            build_str = ""
+
+        msg = "An installation is pending{}{}. ".format(" for " if selected else "",
+                                                        build_str)
+
+        if do_show_dialog() or force_dialog:
+            if yesno(addon.name,
+                     msg,
+                     " ",
+                     "Reboot now to install the update?"):
+                xbmc.restart()
+                sys.exit(0)
+        else:
+            notify(msg + "Please reboot")
+
+        return True
+    else:
+        return False
 
 
 def remove_update_files():
@@ -83,10 +88,13 @@ def get_arch():
         return openelec.ARCH
 
 
-def notify(msg, time=12000):
+def notify(msg, time=12000, error=False):
+    log.log("Notifying: {}".format(msg))
+    if error:
+        msg = "[COLOR red]ERROR: {}[/COLOR]".format(msg)
     notification(addon.name, msg, addon.icon_path, time)
 
-    
+
 def showbusy(f):
     @functools.wraps(f)
     def busy_wrapper(*args, **kwargs):
@@ -98,9 +106,9 @@ def showbusy(f):
     return busy_wrapper
 
 
-def build_check_prompt():
-    check_prompt = int(addon.get_setting('check_prompt'))
-    return check_prompt == 2 or (check_prompt == 1 and not xbmc.Player().isPlayingVideo())
+def do_show_dialog():
+    show = int(addon.get_setting('check_prompt'))
+    return show == 2 or (show == 1 and not xbmc.Player().isPlayingVideo())
 
 
 def ensure_trailing_slash(path):
@@ -168,37 +176,38 @@ def maybe_run_backup():
             xbmc.sleep(5000)
 
 
-def start_new_build_check_timer():
-    if addon.get_setting('check') == 'true':
-        xbmc.executebuiltin("RunScript({},check)".format(addon.info('id')))
-        check_interval = int(addon.get_setting('check_interval'))
-        if not addon.get_setting('check_onbootonly') == 'true':
-            log.log("Starting build check timer")
-            xbmc.executebuiltin("AlarmClock(openelecdevupdate,"
-                "RunScript({},check),{:02d}:00:00,silent,loop)".format(addon.info('id'),
-                                                                       check_interval))
+def make_runscript(arg):
+    return "RunScript({}, {})".format(addon.info('id'), arg)
+
+
+def format_build(build):
+    return "[COLOR=lightskyblue][B]{}[/COLOR][/B]".format(build)
+
+
+def setup_build_check():
+    xbmc.executebuiltin(make_runscript('checkonboot'))
+    if not addon.get_setting('check_onbootonly') == 'true':
+        interval = int(addon.get_setting('check_interval'))
+        log.log("Starting build check timer for every {:d} hour{}"
+                .format(interval, 's' if interval > 1 else ''))
+        cmd = ("AlarmClock(devupdatecheck, {}, {:02d}:00:00, silent, loop)".
+               format(make_runscript('checkperiodic'), interval))
+        xbmc.executebuiltin(cmd)
 
 
 def maybe_confirm_installation(selected, installed_build):
-    if selected:
-        source, selected_build = selected
+    source, selected_build = selected
+    log.log("Selected build: {}".format(selected_build))
+    log.log("Installed build: {}".format(installed_build))
 
-        log.log("Selected build: {}".format(selected_build))
+    build_str = format_build(selected_build)
+    if installed_build == selected_build:
+        msg = "Build {} was installed successfully"
+        notify(msg.format(build_str))
+        log.log(msg.format(selected_build))
 
-        log.log("Installed build: {}".format(installed_build))
-        if installed_build == selected_build:
-            msg = "Build {} was installed successfully".format(installed_build)
-            notify(msg)
-            log.log(msg)
-
-            history.add_install(source, selected_build)
-        else:
-            msg = "Build {} was not installed".format(selected_build)
-            notify("[COLOR red]ERROR: {}[/COLOR]".format(msg))
-            log.log(msg)
-
-            remove_update_files()
+        history.add_install(source, selected_build)
     else:
-        log.log("No installation notification")
-
-    funcs.remove_notify_file()
+        msg = "Build {} was not installed"
+        notify(msg.format(build_str), error=True)
+        log.log(msg.format(selected_build))

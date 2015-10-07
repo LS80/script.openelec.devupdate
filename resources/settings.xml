@@ -13,13 +13,14 @@
         <setting label="Backup" type="enum" id="backup" values="Never|Prompt every time|Always" default="1"/>
     </category>
     <category label="Notifications">
-        <setting label="Enable new build notifications" type="bool" id="check" default="true"/>
+        <setting label="Enable notifications" type="bool" id="check" default="true"/>
         <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
         <setting label="Check interval in hours (requires restart)" type="slider" id="check_interval" enable="eq(-2,true) + eq(-1,false)" subsetting="true" default="3" range="1,1,24" option="int"/>
-        <setting label="Prompt to show build list" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-3,true)" subsetting="true" default="1"/>
+        <setting label="Show dialog" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-3,true)" subsetting="true" default="1"/>
         <setting label="Enable for official releases" type="bool" id="check_official" enable="eq(-4,true)" subsetting="true" default="false"/>
         <setting type="sep"/>
-        <setting label="Enable reboot confirmation" type="bool" id="confirm_reboot" default="false"/>
+        <setting label="Enable reboot confirmation dialog" type="bool" id="confirm_reboot" default="false"/>
+        <setting label="Reboot countdown (seconds)" type="number" id="reboot_count" default="10" visible="eq(-1,false)"/>
     </category>
     <category label="Custom Source">
         <setting label="Enable" type="bool" id="custom_source_enable" default="false"/>
@@ -40,7 +41,7 @@
         <setting label="Also update extlinux" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
         <setting label="Set timeout" type="bool" id="set_timeout" default="false"/>
-        <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
+        <setting label="HTTP timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
         <setting type="sep"/>
         <setting label="Debug" type="bool" id="debug" default="false"/>
     </category>

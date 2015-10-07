@@ -63,11 +63,14 @@ class Main(object):
         
         funcs.create_directory(openelec.UPDATE_DIR)
 
-        utils.check_update_files(builds.get_build_from_notify_file())
+        utils.check_update_files(builds.get_build_from_notify_file(),
+                                 force_dialog=True)
 
         self.installed_build = self.get_installed_build()
 
         self.select_build()
+
+        utils.remove_update_files()
 
         self.check_archive()
 
@@ -104,19 +107,19 @@ class Main(object):
 
         selected_build = build_select.selected_build
         log.log("Selected build: " + str(selected_build))
-    
-        # Confirm the update.
-        msg = ("[COLOR=lightskyblue][B]{}[/B][/COLOR]"
-               "  to  [COLOR=lightskyblue][B]{}[/B][/COLOR] ?").format(self.installed_build,
-                                                                       selected_build)
+
+        build_str = utils.format_build(selected_build)
+        msg = ("{}  to  {} ?").format(utils.format_build(self.installed_build),
+                                      build_str)
+
         if selected_build < self.installed_build:
             args = ("Confirm downgrade", "Downgrade", msg)
         elif selected_build > self.installed_build:
             args = ("Confirm upgrade", "Upgrade", msg)
         else:
-            msg = ("Build  [COLOR=lightskyblue][B]{}[/B][/COLOR]"
-                   "  is already installed.").format(selected_build)
+            msg = "Build  {}  is already installed.".format(build_str)
             args = ("Confirm install", msg, "Continue?")
+
         if not utils.yesno(*args):
             sys.exit(0)
             
@@ -291,27 +294,31 @@ class Main(object):
     def confirm(self):
         funcs.create_notify_file(self.selected_source, self.selected_build)
 
+        build_str = utils.format_build(self.selected_build)
+        do_notify = False
+
         if addon.get_setting('confirm_reboot') == 'true':
             if utils.yesno(
                     "Confirm reboot",
                     " ",
-                    "Reboot now to install build  [COLOR=lightskyblue][B]{}[/COLOR][/B] ?"
-                    .format(self.selected_build)):
-                xbmc.restart() 
-            else:
-                utils.notify("Build {} will install on the next reboot"
-                             .format(self.selected_build))
-        else:
-            if progress.restart_countdown("Build  [COLOR=lightskyblue][B]{}[/COLOR][/B]"
-                                          "  is ready to install."
-                                          .format(self.selected_build)):
+                    "Reboot now to install build  {}?".format(build_str)):
                 xbmc.restart()
             else:
-                utils.notify("Build {} will install on the next reboot"
-                             .format(self.selected_build))
+                do_notify = True
+        else:
+            if progress.restart_countdown(
+                    "Build  {}  is ready to install.".format(build_str),
+                    int(addon.get_setting('reboot_count'))):
+                xbmc.restart()
+                sys.exit()
+            else:
+                do_notify = True
+
+        if do_notify:
+            utils.notify("Build {} will install on the next reboot".format(build_str))
 
 
-def check_for_new_build():
+def new_build_check():
     log.log("Checking for a new build")
     
     check_official = addon.get_setting('check_official') == 'true'
@@ -347,33 +354,46 @@ def check_for_new_build():
 
         latest = builds.latest_build(source)
         if latest and latest > installed_build:
-            if utils.build_check_prompt():
+            if utils.do_show_dialog():
                 log.log("New build {} is available, "
                         "prompting to show build list".format(latest))
 
                 if utils.yesno(
                         addon.name,
-                        line1="A more recent build is available:"
-                        "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(latest),
-                        line2="Current build:"
-                        "   [COLOR lightskyblue][B]{}[/B][/COLOR]".format(installed_build),
+                        line1="A more recent build is available:  " +
+                              utils.format_build(latest),
+                        line2="Current build:  " +
+                              utils.format_build(installed_build),
                         line3="Show builds available to install?",
                         autoclose=autoclose_ms):
                     with Main() as main:
                         main.start()
             else:
-                log.log("Notifying that new build {} is available".format(latest))
-                utils.notify("Build {} is available".format(latest), 4000)
+                utils.notify("Build {} is available".format(utils.format_build(latest)),
+                             4000)
 
 
 log.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
-    if sys.argv[1] == 'check':
-        check_for_new_build()
+    if sys.argv[1] == 'checkperiodic':
+        if addon.get_setting('check') == 'true':
+            selected = builds.get_build_from_notify_file()
+            if not utils.check_update_files(selected):
+                new_build_check()
+
+    elif sys.argv[1] == 'checkonboot':
+        if addon.get_setting('check') == 'true':
+            new_build_check()
+
     elif sys.argv[1] == 'confirm':
         selected = builds.get_build_from_notify_file()
-        installed_build = builds.get_installed_build()
-        utils.maybe_confirm_installation(selected, installed_build)
+        if selected:
+            installed_build = builds.get_installed_build()
+            utils.maybe_confirm_installation(selected, installed_build)
+            funcs.remove_notify_file()
+        else:
+            log.log("No new installation")
+
     elif sys.argv[1] == 'cancel':
         success = utils.remove_update_files()
         if success:

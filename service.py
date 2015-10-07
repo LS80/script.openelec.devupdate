@@ -6,7 +6,7 @@ import _strptime
 
 import xbmc
 
-from resources.lib import utils, rpi, funcs, addon
+from resources.lib import utils, rpi, funcs
 
 
 rpi.maybe_restore_config()
@@ -16,8 +16,8 @@ funcs.maybe_update_extlinux()
 # Need to call out to the main script here
 # because sys.path is only set when running the main script
 # and the builds module needs to import requests
-xbmc.executebuiltin("RunScript({}, confirm)".format(addon.info('id')))
+xbmc.executebuiltin(utils.make_runscript('confirm'))
 
-utils.start_new_build_check_timer()
+utils.setup_build_check()
 
 utils.install_cmdline_script()
