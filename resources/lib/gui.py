@@ -1,3 +1,4 @@
+import os
 from urlparse import urlparse
 import threading
 
@@ -70,25 +71,29 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         if addon.get_setting('custom_source_enable') == 'true':
             custom_name = addon.get_setting('custom_source')
-            custom_url = addon.get_setting('custom_url')
-            scheme, netloc = urlparse(custom_url)[:2]
-            if not scheme in ('http', 'https') or not netloc:
-                utils.bad_url(custom_url, "Invalid custom source URL")
+
+            build_type = addon.get_setting('build_type')
+            try:
+                build_type_index = int(build_type)
+            except ValueError:
+                log.log_error("Invalid build type index '{}'".format(build_type))
+                build_type_index = 0
+
+            subdir = addon.get_setting('custom_subdir')
+
+            if build_type_index == 2:
+                self._sources[custom_name] = builds.MilhouseBuildsURL(subdir)
             else:
-                custom_extractors = (builds.BuildLinkExtractor,
-                                     builds.ReleaseLinkExtractor,
-                                     builds.MilhouseBuildLinkExtractor)
+                custom_url = addon.get_setting('custom_url')
+                scheme, netloc = urlparse(custom_url)[:2]
+                if not scheme in ('http', 'https') or not netloc:
+                    utils.bad_url(custom_url, "Invalid custom source URL")
+                else:
+                    custom_extractors = (builds.BuildLinkExtractor,
+                                         builds.ReleaseLinkExtractor)
 
-                build_type = addon.get_setting('build_type')
-                try:
-                    build_type_index = int(build_type)
-                except ValueError:
-                    log.log_error("Invalid build type index '{}'".format(build_type))
-                    build_type_index = 0
-                extractor = custom_extractors[build_type_index]
-
-                self._sources[custom_name] = builds.BuildsURL(custom_url,
-                                                              extractor=extractor)
+                    self._sources[custom_name] = builds.BuildsURL(
+                        custom_url, subdir, extractor=custom_extractors[build_type_index])
 
         self._initial_source = addon.get_setting('source_name')
         try:

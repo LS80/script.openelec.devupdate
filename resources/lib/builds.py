@@ -405,6 +405,13 @@ class BuildsURL(object):
         return "{}('{}')".format(self.__class__.__name__, self.url)
 
 
+class MilhouseBuildsURL(BuildsURL):
+    def __init__(self, subdir="master"):
+        super(MilhouseBuildsURL, self).__init__(
+            "http://milhouse.openelec.tv/builds/", os.path.join(subdir, arch.split('.')[0]),
+            MilhouseBuildLinkExtractor, list(get_milhouse_build_info_extractors()))
+
+
 def get_installed_build():
     """Return the currently installed build object."""
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
@@ -436,17 +443,10 @@ def sources():
                            info_extractors=[CommitInfoExtractor()])
     _sources["Official Snapshot Builds"] = builds_url
 
-    builds_url = BuildsURL("http://milhouse.openelec.tv/builds/master",
-                           subdir=arch.split('.')[0],
-                           extractor=MilhouseBuildLinkExtractor,
-                           info_extractors=list(get_milhouse_build_info_extractors()))
-    _sources["Milhouse Builds"] = builds_url
+    _sources["Milhouse Builds"] = MilhouseBuildsURL()
 
     if openelec.debug_system_partition():
-        builds_url = BuildsURL("http://milhouse.openelec.tv/builds/debug",
-                               subdir=arch.split('.')[0],
-                               extractor=MilhouseBuildLinkExtractor)
-        _sources["Milhouse Builds (Debug)"] = builds_url
+        _sources["Milhouse Builds (Debug)"] = MilhouseBuildsURL(subdir="debug")
 
     if arch.startswith("RPi"):
         builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
