@@ -6,8 +6,9 @@ import _strptime
 
 import xbmc
 
-from resources.lib import utils, rpi, funcs
+from resources.lib import utils, rpi, funcs, log
 
+log.log_version()
 
 rpi.maybe_restore_config()
 

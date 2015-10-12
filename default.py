@@ -373,6 +373,7 @@ def new_build_check():
                              4000)
 
 
+log.log_version()
 log.log("Script arguments: {}".format(sys.argv))
 if len(sys.argv) > 1:
     if sys.argv[1] == 'checkperiodic':
