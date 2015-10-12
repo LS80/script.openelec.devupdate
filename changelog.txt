@@ -1,5 +1,15 @@
+4.29.0
+ - Use full screen height for the main dialog.
+ - Two custom sources can be defined.
+ - Added a subdirectory setting for custom sources.
+ - Milhouse custom sources can be defined more easily.
+ - Notify about a pending installation.
+ - Added a setting for the reboot countdown time.
+ - Removed the version number from every log line.
+ - Stopped spurious error messages about creating the symbolic link.
+
 4.28.0
- - Add updates made with the command line script to the installation history
+ - Add updates made with the command line script to the installation history.
 
 4.27.0
  - Added a button to show the installation history.
