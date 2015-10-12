@@ -1,4 +1,3 @@
-import os
 from urlparse import urlparse
 import threading
 
@@ -68,32 +67,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._installed_build = installed_build
 
         self._sources = builds.sources()
-
-        if addon.get_setting('custom_source_enable') == 'true':
-            custom_name = addon.get_setting('custom_source')
-
-            build_type = addon.get_setting('build_type')
-            try:
-                build_type_index = int(build_type)
-            except ValueError:
-                log.log_error("Invalid build type index '{}'".format(build_type))
-                build_type_index = 0
-
-            subdir = addon.get_setting('custom_subdir')
-
-            if build_type_index == 2:
-                self._sources[custom_name] = builds.MilhouseBuildsURL(subdir)
-            else:
-                custom_url = addon.get_setting('custom_url')
-                scheme, netloc = urlparse(custom_url)[:2]
-                if not scheme in ('http', 'https') or not netloc:
-                    utils.bad_url(custom_url, "Invalid custom source URL")
-                else:
-                    custom_extractors = (builds.BuildLinkExtractor,
-                                         builds.ReleaseLinkExtractor)
-
-                    self._sources[custom_name] = builds.BuildsURL(
-                        custom_url, subdir, extractor=custom_extractors[build_type_index])
+        self._add_custom_sources()
 
         self._initial_source = addon.get_setting('source_name')
         try:
@@ -104,6 +78,34 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._builds = self._get_build_links(self._build_url)
 
         self._build_infos = {}
+
+    def _add_custom_sources(self):
+        for suffix in ('', '_2'):
+            if addon.get_setting('custom_source_enable' + suffix) == 'true':
+                custom_name = addon.get_setting('custom_source' + suffix)
+
+                build_type = addon.get_setting('build_type' + suffix)
+                try:
+                    build_type_index = int(build_type)
+                except ValueError:
+                    log.log_error("Invalid build type index '{}'".format(build_type))
+                    build_type_index = 0
+
+                subdir = addon.get_setting('custom_subdir' + suffix)
+
+                if build_type_index == 2:
+                    self._sources[custom_name] = builds.MilhouseBuildsURL(subdir)
+                else:
+                    custom_url = addon.get_setting('custom_url' + suffix)
+                    scheme, netloc = urlparse(custom_url)[:2]
+                    if not scheme in ('http', 'https') or not netloc:
+                        utils.bad_url(custom_url, "Invalid custom source URL")
+                    else:
+                        custom_extractors = (builds.BuildLinkExtractor,
+                                             builds.ReleaseLinkExtractor)
+
+                        self._sources[custom_name] = builds.BuildsURL(
+                            custom_url, subdir, custom_extractors[build_type_index])
 
     def __nonzero__(self):
         return self._selected_build is not None
