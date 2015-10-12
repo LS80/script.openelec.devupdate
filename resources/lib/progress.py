@@ -113,29 +113,35 @@ class DecompressProgress(FileProgress):
         return decompressed_data
     
 
-def restart_countdown(message, timeout=10):
+def countdown(title, line1, action_msg, count=10):
+    count = int(count)
     progress = xbmcgui.DialogProgress()
-    progress.create('Rebooting')
+    progress.create(title)
         
-    restart = True
-    seconds = timeout
+    timed_out = True
+    seconds = count
     while seconds >= 0:
-        reboot_msg = "Rebooting"
         if seconds > 0:
-            reboot_msg += " in {} second{}".format(seconds, (seconds > 1) * "s")
+            msg = action_msg + " in {} second{}".format(seconds, (seconds > 1) * "s")
+        else:
+            msg = action_msg
 
-        progress.update(int((timeout - seconds) / timeout * 100),
-                        message,
-                        "{}...".format(reboot_msg),
+        progress.update(int((count - seconds) / count * 100),
+                        line1,
+                        "{}...".format(msg),
                         " ")
 
         xbmc.sleep(1000)
         if progress.iscanceled():
-            restart = False
+            timed_out = False
             break
         seconds -= 1
     progress.close()
-    return restart
+    return timed_out
+
+
+def restart_countdown(line1, count):
+    return countdown('Rebooting', line1, 'Rebooting', count)
 
 
 def md5sum_verified(md5sum_compare, path, background):
