@@ -82,6 +82,12 @@ def make_executable(path):
     os.chmod(path, stat.S_IXUSR|stat.S_IRUSR|stat.S_IWUSR)
 
 
-@log.with_logging(msg_error="Unable to create symbolic link", log_exc=False)
-def create_symlink(path, symlink_path):
-    os.symlink(path, symlink_path)
+@log.with_logging(msg_error="Unable to create symbolic link")
+def maybe_create_symlink(path, symlink_path):
+    if not(os.path.islink(symlink_path) and
+           os.path.realpath(symlink_path) == path):
+        try:
+            os.remove(symlink_path)
+        except:
+            pass
+        os.symlink(path, symlink_path)

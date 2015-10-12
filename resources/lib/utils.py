@@ -146,9 +146,11 @@ def install_cmdline_script():
     SYMLINK_NAME = "devupdate"
     symlink_path = os.path.join(os.path.expanduser('~'), SYMLINK_NAME)
 
+    log.log("Installing command line script {}".format(symlink_path))
+
     funcs.make_executable(script_path)
 
-    funcs.create_symlink(script_path, symlink_path)
+    funcs.maybe_create_symlink(script_path, symlink_path)
 
 
 def maybe_schedule_extlinux_update():
