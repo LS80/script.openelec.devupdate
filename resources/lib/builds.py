@@ -86,6 +86,7 @@ class Release(Build):
     tags = None
 
     def __init__(self, version):
+        self.release_str = version
         self.maybe_get_tags()
         if version in self.tags:
             self._has_date = True
@@ -135,6 +136,9 @@ class Release(Build):
                     html = requests.get(href).text
                 else:
                     break
+
+    def __repr__(self):
+        return "{}('{}')".format("Release", self.release_str)
 
 
 class BuildLinkBase(object):
