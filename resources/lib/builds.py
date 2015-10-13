@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
 
-import openelec, funcs
+import openelec, funcs, log
 
 
 timeout = None
@@ -487,6 +487,7 @@ def latest_build(source):
         return build_url.latest()
 
 
+@log.with_logging(msg_error="Unable to create build object from the notify file")
 def get_build_from_notify_file():
     selected = funcs.read_notify_file()
     if selected:
