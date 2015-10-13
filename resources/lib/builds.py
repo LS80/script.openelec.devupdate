@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 import requests
 import html2text
 
-from . import openelec, funcs
+import openelec, funcs
 
 
 timeout = None

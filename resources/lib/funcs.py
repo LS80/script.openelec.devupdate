@@ -4,7 +4,7 @@ import os
 import sys
 import stat
 
-from . import log, openelec
+import log, openelec
 
 
 TEMP_DIR = os.path.expanduser('~')
