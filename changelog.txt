@@ -1,3 +1,6 @@
+4.29.1
+ - Fixed a script error when installing releases.
+
 4.29.0
  - Use full screen height for the main dialog.
  - Two custom sources can be defined.
