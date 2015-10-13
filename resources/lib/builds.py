@@ -411,9 +411,13 @@ class BuildsURL(object):
 
 class MilhouseBuildsURL(BuildsURL):
     def __init__(self, subdir="master"):
+        self.subdir = subdir
         super(MilhouseBuildsURL, self).__init__(
             "http://milhouse.openelec.tv/builds/", os.path.join(subdir, arch.split('.')[0]),
             MilhouseBuildLinkExtractor, list(get_milhouse_build_info_extractors()))
+
+    def __repr__(self):
+        return "{}('{}')".format(self.__class__.__name__, self.subdir)
 
 
 def get_installed_build():
