@@ -23,7 +23,7 @@
 
             <control type="group">
                 <description>Bottom panel</description>
-                <top>895</top>
+                <top>940</top>
 	            <control type="image">
 	                <description>Separator</description>
 	                <top>0</top>
@@ -88,13 +88,13 @@
                 <control type="group">
                     <description>Source selection</description>
                     <left>0</left>
-                    <top>260</top>
+                    <top>280</top>
         
                     <control type="list" id="10">
                         <left>0</left>
                         <top>25</top>
                         <width>680</width>
-                        <height>520</height>
+                        <height>585</height>
                         <onright>20</onright>
                         <onup>300</onup>
                         <itemlayout height="65" width="680">                            
@@ -168,31 +168,31 @@
                 <control type="group">
                     <description>Right panel</description>
                     <left>680</left>
-                    <height>895</height>
-    
+                    <height>940</height>
+
                     <control type="image">
                         <texture border="5">white.png</texture>
                         <colordiffuse>f02b2b2b</colordiffuse>
                     </control>
-    
+
                     <control type="scrollbar" id="600">
                         <left>412</left>
-                        <height>895</height>
+                        <height>940</height>
                         <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
                         <texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
                         <showonepage>false</showonepage>
                     </control>
-        
+
                     <control type="list" id="20">
                         <description>Build list</description>
                         <left>0</left>
-                        <top>25</top>
+                        <top>45</top>
                         <width>420</width>
                         <height>845</height>
                         <pagecontrol>600</pagecontrol>
                         <onleft>10</onleft>
                         <itemlayout height="65" width="420">
-    
+
                             <control type="label">
                                 <left>0</left>
                                 <width>190</width>
