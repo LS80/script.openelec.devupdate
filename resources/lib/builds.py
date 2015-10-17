@@ -454,7 +454,7 @@ def sources():
     _sources["Milhouse Builds"] = MilhouseBuildsURL()
 
     if openelec.debug_system_partition():
-        _sources["Milhouse Builds (Debug)"] = MilhouseBuildsURL(subdir="debug")
+        _sources["Milhouse Builds (debug)"] = MilhouseBuildsURL(subdir="debug")
 
     if arch.startswith("RPi"):
         builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",

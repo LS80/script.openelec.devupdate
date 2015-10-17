@@ -89,9 +89,10 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                     log.log_error("Invalid build type index '{}'".format(build_type))
                     build_type_index = 0
 
-                subdir = addon.get_setting('custom_subdir' + suffix)
-
                 if build_type_index == 2:
+                    subdir = addon.get_setting('subdir_preset' + suffix)
+                    if subdir == 'Other':
+                        subdir = addon.get_setting('other_subdir' + suffix)
                     custom_name = "Milhouse Builds ({})".format(subdir)
                     self._sources[custom_name] = builds.MilhouseBuildsURL(subdir)
                 else:
@@ -104,8 +105,12 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                         custom_extractors = (builds.BuildLinkExtractor,
                                              builds.ReleaseLinkExtractor)
 
+                        kwargs = {}
+                        if addon.get_setting('custom_subdir_enable' + suffix):
+                            kwargs['subdir'] = addon.get_setting('custom_subdir' + suffix)
+
                         self._sources[custom_name] = builds.BuildsURL(
-                            custom_url, subdir, custom_extractors[build_type_index])
+                            custom_url, custom_extractors[build_type_index], **kwargs)
 
     def __nonzero__(self):
         return self._selected_build is not None
