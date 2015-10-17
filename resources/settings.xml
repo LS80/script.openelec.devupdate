@@ -25,16 +25,16 @@
     <category label="Custom Sources">
         <setting label="Custom Source 1" type="lsep"/>
         <setting label="Enable" type="bool" id="custom_source_enable" default="false"/>
-        <setting label="Name" type="text" id="custom_source" enable="eq(-1,true)" subsetting="true"/>
-        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-2,true) + !eq(-1,)" subsetting="true"/>
-        <setting label="URL" type="text" id="custom_url" visible="eq(-3,true) + !eq(-2,) + !eq(-1,2)" subsetting="true"/>
-        <setting label="Subdirectory" type="text" id="custom_subdir" enable="eq(-4,true) + !eq(-3,)" subsetting="true"/>
+        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="Name" type="text" id="custom_source" enable="eq(-2,true)" visible="!eq(-1,2)" subsetting="true" default="Custom Source 1"/>
+        <setting label="URL" type="text" id="custom_url" enable="eq(-3,true)" visible="!eq(-2,2)" subsetting="true"/>
+        <setting label="Subdirectory" type="text" id="custom_subdir" enable="eq(-4,true)" subsetting="true"/>
         <setting label="Custom Source 2" type="lsep"/>
         <setting label="Enable" type="bool" id="custom_source_enable_2" default="false"/>
-        <setting label="Name" type="text" id="custom_source_2" enable="eq(-1,true)" subsetting="true"/>
-        <setting label="Build type" type="enum" id="build_type_2" values="Development|Release|Milhouse" enable="eq(-2,true) + !eq(-1,)" subsetting="true"/>
-        <setting label="URL" type="text" id="custom_url_2" visible="eq(-3,true) + !eq(-2,) + !eq(-1,2)" subsetting="true"/>
-        <setting label="Subdirectory" type="text" id="custom_subdir_2" enable="eq(-4,true) + !eq(-3,)" subsetting="true"/>
+        <setting label="Build type" type="enum" id="build_type_2" values="Development|Release|Milhouse" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="Name" type="text" id="custom_source_2" enable="eq(-2,true)" visible="!eq(-1,2)" subsetting="true" default="Custom Source 2"/>
+        <setting label="URL" type="text" id="custom_url_2" enable="eq(-3,true)" visible="!eq(-2,2)" subsetting="true"/>
+        <setting label="Subdirectory" type="text" id="custom_subdir_2" enable="eq(-4,true)" subsetting="true"/>
     </category>
     <category label="Actions">
         <setting type="bool" id="update_pending" visible="false"/>

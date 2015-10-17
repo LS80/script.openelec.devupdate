@@ -82,8 +82,6 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     def _add_custom_sources(self):
         for suffix in ('', '_2'):
             if addon.get_setting('custom_source_enable' + suffix) == 'true':
-                custom_name = addon.get_setting('custom_source' + suffix)
-
                 build_type = addon.get_setting('build_type' + suffix)
                 try:
                     build_type_index = int(build_type)
@@ -94,8 +92,10 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 subdir = addon.get_setting('custom_subdir' + suffix)
 
                 if build_type_index == 2:
+                    custom_name = "Milhouse Builds ({})".format(subdir)
                     self._sources[custom_name] = builds.MilhouseBuildsURL(subdir)
                 else:
+                    custom_name = addon.get_setting('custom_source' + suffix)
                     custom_url = addon.get_setting('custom_url' + suffix)
                     scheme, netloc = urlparse(custom_url)[:2]
                     if not scheme in ('http', 'https') or not netloc:
