@@ -1,3 +1,6 @@
+4.31.0
+ - Made it easier to add additional Milhouse build folders.
+
 4.30.0
  - Made it possible to fit all sources on screen.
 
