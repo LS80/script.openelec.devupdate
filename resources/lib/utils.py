@@ -6,10 +6,11 @@ import os
 import sys
 import glob
 import functools
+from urlparse import urlparse
 
 import xbmc, xbmcaddon, xbmcgui
 
-from . import openelec, log, addon, funcs, history
+from . import openelec, log, addon, funcs, history, builds
 
 
 ok = xbmcgui.Dialog().ok
@@ -213,3 +214,37 @@ def maybe_confirm_installation(selected, installed_build):
         msg = "Build {} was not installed"
         notify(msg.format(build_str), error=True)
         log.log(msg.format(selected_build))
+
+
+def add_custom_sources(sources):
+    for suffix in ('', '_2'):
+        if addon.get_setting('custom_source_enable' + suffix) == 'true':
+            build_type = addon.get_setting('build_type' + suffix)
+            try:
+                build_type_index = int(build_type)
+            except ValueError:
+                log.log_error("Invalid build type index '{}'".format(build_type))
+                build_type_index = 0
+
+            if build_type_index == 2:
+                subdir = addon.get_setting('subdir_preset' + suffix)
+                if subdir == 'Other':
+                    subdir = addon.get_setting('other_subdir' + suffix)
+                custom_name = "Milhouse Builds ({})".format(subdir)
+                sources[custom_name] = builds.MilhouseBuildsURL(subdir)
+            else:
+                custom_name = addon.get_setting('custom_source' + suffix)
+                custom_url = addon.get_setting('custom_url' + suffix)
+                scheme, netloc = urlparse(custom_url)[:2]
+                if not scheme in ('http', 'https') or not netloc:
+                    bad_url(custom_url, "Invalid custom source URL")
+                else:
+                    custom_extractors = (builds.BuildLinkExtractor,
+                                         builds.ReleaseLinkExtractor)
+
+                    kwargs = {}
+                    if addon.get_setting('custom_subdir_enable' + suffix):
+                        kwargs['subdir'] = addon.get_setting('custom_subdir' + suffix)
+
+                    sources[custom_name] = builds.BuildsURL(
+                        custom_url, custom_extractors[build_type_index], **kwargs)
