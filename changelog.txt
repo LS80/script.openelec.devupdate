@@ -1,3 +1,7 @@
+4.32.0
+ - Added a button to the toolbar to cancel a pending update,
+   instead of the settings action.
+
 4.31.0
  - Made it easier to add additional Milhouse build folders.
 
