@@ -3,6 +3,7 @@
 import os
 import sys
 import stat
+import glob
 
 import log, openelec
 
@@ -91,3 +92,7 @@ def maybe_create_symlink(path, symlink_path):
         except:
             pass
         os.symlink(path, symlink_path)
+
+
+def update_files():
+    return glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))

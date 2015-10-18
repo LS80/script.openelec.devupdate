@@ -3,7 +3,7 @@ import threading
 import xbmcgui
 import requests
 
-from . import addon, builds, utils, log, history
+from . import addon, builds, utils, log, history, funcs
 
 
 class BaseInfoDialog(xbmcgui.WindowXMLDialog):
@@ -57,6 +57,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     BUILD_INFO_ID = 200
     SETTINGS_BUTTON_ID = 30
     HISTORY_BUTTON_ID = 40
+    CANCEL_BUTTON_ID = 50
 
     def __new__(cls, *args):
         return super(BuildSelectDialog, cls).__new__(
@@ -111,6 +112,9 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._selected_source_item = item
         self._selected_source_item.setLabel2('selected')
 
+        self._cancel_button = self.getControl(self.CANCEL_BUTTON_ID)
+        self._cancel_button.setVisible(bool(funcs.update_files()))
+
         threading.Thread(target=self._get_and_set_build_info,
                          args=(self._build_url,)).start()
 
@@ -149,6 +153,12 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         elif controlID == self.HISTORY_BUTTON_ID:
             dialog = HistoryDialog(history.get_full_install_history())
             dialog.doModal()
+        elif controlID == self.CANCEL_BUTTON_ID:
+            if utils.remove_update_files():
+                utils.notify("Update cancelled")
+                self._cancel_button.setVisible(False)
+                funcs.remove_notify_file()
+                self._info_textbox.setText("")
 
     def onAction(self, action):
         action_id = action.getId()
@@ -179,10 +189,15 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self.close()
 
     def onFocus(self, controlID):
+        self._builds_focused = False
         if controlID == self.BUILD_LIST_ID:
             self._builds_focused = True
-        else:
-            self._builds_focused = False
+        elif controlID == self.SETTINGS_BUTTON_ID:
+            self._info_textbox.setText("Open settings")
+        elif controlID == self.HISTORY_BUTTON_ID:
+            self._info_textbox.setText("Show install history")
+        elif controlID == self.CANCEL_BUTTON_ID:
+            self._info_textbox.setText("Cancel pending installation")
 
     @utils.showbusy
     def _get_build_links(self, build_url):

@@ -4,7 +4,6 @@ from __future__ import division
 
 import os
 import sys
-import glob
 import functools
 from urlparse import urlparse
 
@@ -37,7 +36,7 @@ def write_error(path, msg):
        "Check the download directory in the addon settings.")
     addon.open_settings()
 
-    
+
 def decompress_error(path, msg):
     log.log_exception()
     ok("Decompression Error",
@@ -47,7 +46,7 @@ def decompress_error(path, msg):
 
 def check_update_files(selected, force_dialog=False):
     log.log("Checking for an existing update file")
-    if glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar')):
+    if funcs.update_files():
         log.log("An update file is in place")
 
         if selected:
@@ -74,12 +73,7 @@ def check_update_files(selected, force_dialog=False):
 
 
 def remove_update_files():
-    tar_update_files = glob.glob(os.path.join(openelec.UPDATE_DIR, '*tar'))
-    success = all(funcs.remove_file(tar) for tar in tar_update_files)
-
-    if success:
-        addon.set_setting('update_pending', 'false')
-    return success
+    return all(funcs.remove_file(tar) for tar in funcs.update_files())
 
 
 def get_arch():

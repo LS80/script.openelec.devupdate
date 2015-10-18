@@ -394,13 +394,6 @@ if len(sys.argv) > 1:
             funcs.remove_notify_file()
         else:
             log.log("No new installation")
-
-    elif sys.argv[1] == 'cancel':
-        success = utils.remove_update_files()
-        if success:
-            utils.notify("Deleted update file")
-        else:
-            utils.notify("Update file not deleted")
 else:
     with Main() as main:
         main.start()

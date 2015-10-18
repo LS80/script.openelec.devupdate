@@ -30,6 +30,7 @@
 	                <texture colordiffuse="99555555">white.png</texture>
 	            </control>
                 <control type="textbox" id="200">
+                    <description>Info area</description>
                     <left>40</left>
                     <top>25</top>
                     <height>130</height>
@@ -37,11 +38,12 @@
                     <textcolor>ff87bde1</textcolor>
                 </control>
             </control>
-            
+
             <control type="group">
                 <description>Left panel</description>
 
                 <control type="image">
+                    <description>OpenELEC logo</description>
                     <top>20</top>
                     <left>60</left>
                     <texture>logotype.png</texture>
@@ -50,10 +52,17 @@
                     <width>482</width>
                 </control>
 
+                <control type="label" id="100">
+                    <top>150</top>
+                    <left>400</left>
+                    <aligny>top</aligny>
+                    <textcolor>ff87bde1</textcolor>
+                </control>
+
                 <control type="group" id="300">
                     <description>Toolbar</description>
                     <top>190</top>
-                    <width>560</width>
+                    <width>680</width>
                     <height>50</height>
 
                     <control type="button" id="30">
@@ -76,12 +85,19 @@
                         <texturenofocus colordiffuse="ff555555">history.png</texturenofocus>
                         <ondown>10</ondown>
                         <onleft>30</onleft>
-                        <onright>20</onright>
+                        <onright>50</onright>
                     </control>
 
-                    <control type="label" id="100">
-                        <align>right</align>
-                        <textcolor>ff87bde1</textcolor>
+                    <control type="button" id="50">
+                        <description>Cancel button</description>
+                        <left>220</left>
+                        <width>48</width>
+                        <height>48</height>
+                        <texturefocus colordiffuse="ff87bde1">cancel.png</texturefocus>
+                        <texturenofocus colordiffuse="ff555555">cancel.png</texturenofocus>
+                        <ondown>10</ondown>
+                        <onleft>40</onleft>
+                        <onright>20</onright>
                     </control>
                 </control>
                 
@@ -97,7 +113,7 @@
                         <height>585</height>
                         <onright>20</onright>
                         <onup>300</onup>
-                        <itemlayout height="65" width="680">                            
+                        <itemlayout height="65" width="680">
                             <control type="image">
                                 <visible>StringCompare(ListItem.Label2, selected)</visible>
                                 <texture border="5">white.png</texture>

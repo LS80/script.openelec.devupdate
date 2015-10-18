@@ -45,10 +45,6 @@
         <setting label="Subdirectory" type="text" id="custom_subdir_2" enable="eq(-7,true) + eq(-1,true)" visible="!eq(-5,2)" subsetting="true"/>
         <setting label="Other subdirectory" type="text" id="other_subdir_2" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
     </category>
-    <category label="Actions">
-        <setting type="bool" id="update_pending" visible="false"/>
-        <setting label="Cancel pending update" type="action" action="RunScript($CWD/default.py, cancel)" enable="eq(-1,true)"/>
-    </category>
     <category label="Advanced">
         <setting label="Override installed build type" type="bool" id="set_arch" default="false"/>
         <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Nvidia_Legacy.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm|WeTek_Play.arm" enable="eq(-1,true)" subsetting="true"/>
