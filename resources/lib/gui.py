@@ -54,7 +54,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
     LABEL_ID = 100
     BUILD_LIST_ID = 20
     SOURCE_LIST_ID = 10
-    BUILD_INFO_ID = 200
+    INFO_TEXTBOX_ID = 200
     SETTINGS_BUTTON_ID = 30
     HISTORY_BUTTON_ID = 40
     CANCEL_BUTTON_ID = 50
@@ -93,7 +93,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         label = "Arch: {0}".format(builds.arch)
         self.getControl(self.LABEL_ID).setLabel(label)
 
-        self._info_textbox = self.getControl(self.BUILD_INFO_ID)
+        self._info_textbox = self.getControl(self.INFO_TEXTBOX_ID)
 
         if self._builds:
             self._selected_source_position = self._sources.keys().index(self._initial_source)
@@ -194,11 +194,11 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._builds_focused = True
             self._set_build_info()
         elif controlID == self.SETTINGS_BUTTON_ID:
-            self._info_textbox.setText("Open settings")
+            self._info_textbox.setText("[COLOR=white]Open settings[/COLOR]")
         elif controlID == self.HISTORY_BUTTON_ID:
-            self._info_textbox.setText("Show install history")
+            self._info_textbox.setText("[COLOR=white]Show install history[/COLOR]")
         elif controlID == self.CANCEL_BUTTON_ID:
-            self._info_textbox.setText("Cancel pending installation")
+            self._info_textbox.setText("[COLOR=white]Cancel pending installation[/COLOR]")
 
     @utils.showbusy
     def _get_build_links(self, build_url):
