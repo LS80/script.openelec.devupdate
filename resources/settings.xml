@@ -53,9 +53,9 @@
         <setting type="sep"/>
         <setting label="Also update extlinux" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
-        <setting label="Set timeout" type="bool" id="set_timeout" default="false"/>
-        <setting label="HTTP timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
+        <setting label="Set HTTP timeout" type="bool" id="set_timeout" default="false"/>
+        <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
         <setting type="sep"/>
-        <setting label="Debug" type="bool" id="debug" default="false"/>
+        <setting label="Enable debug logging" type="bool" id="debug" default="false"/>
     </category>
 </settings>
