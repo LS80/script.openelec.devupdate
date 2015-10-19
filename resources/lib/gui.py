@@ -192,6 +192,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         self._builds_focused = False
         if controlID == self.BUILD_LIST_ID:
             self._builds_focused = True
+            self._set_build_info()
         elif controlID == self.SETTINGS_BUTTON_ID:
             self._info_textbox.setText("Open settings")
         elif controlID == self.HISTORY_BUTTON_ID:
