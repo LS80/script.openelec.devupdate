@@ -1,6 +1,12 @@
+4.33.0
+ - Fixed build summaries not showing when the build list is re-focused.
+ - Show toolbar tooltips in white to visually separate them from
+   the build summaries.
+
 4.32.0
  - Added a button to the toolbar to cancel a pending update,
    instead of the settings action.
+ - Added tooltips for toolbar buttons to the bottom information area.
 
 4.31.0
  - Made it easier to add additional Milhouse build folders.
