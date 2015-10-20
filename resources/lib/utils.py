@@ -10,38 +10,36 @@ from urlparse import urlparse
 import xbmc, xbmcaddon, xbmcgui
 
 from . import openelec, log, addon, funcs, history, builds
+from .addon import L10n
 
 
 ok = xbmcgui.Dialog().ok
 yesno = xbmcgui.Dialog().yesno
 notification = xbmcgui.Dialog().notification
 
+
 def connection_error(msg):
-    ok("Connection Error", msg,
-       "Please check you have a connection to the internet.")
+    ok(L10n(32041), msg, L10n(32042))
 
     
-def bad_url(url, msg="URL not found."):
-    ok("URL Error", msg, url, "Please check the URL.")
+def bad_url(url, msg=L10n(32043)):
+    ok(L10n(32044), msg, url, L10n(32045))
 
     
 def url_error(url, msg):
     log.log_exception()
-    ok("URL Error", msg, url, "Please check the log file.")
+    ok(L10n(32044), msg, url, L10n(32046))
 
-    
+
 def write_error(path, msg):
     log.log_exception()
-    ok("Write Error", msg, path,
-       "Check the download directory in the addon settings.")
+    ok(L10n(32047), msg, path, L10n(32048))
     addon.open_settings()
 
 
 def decompress_error(path, msg):
     log.log_exception()
-    ok("Decompression Error",
-       "An error occurred during decompression:",
-       " ", msg)
+    ok(L10n(32049), L10n(32050), " ", msg)
 
 
 def check_update_files(selected, force_dialog=False):
@@ -51,21 +49,17 @@ def check_update_files(selected, force_dialog=False):
 
         if selected:
             build_str = format_build(selected[1])
+            msg = L10n(32052).format(build_str)
         else:
             build_str = ""
-
-        msg = "An installation is pending{}{}. ".format(" for " if selected else "",
-                                                        build_str)
+            msg = L10n(32053)
 
         if do_show_dialog() or force_dialog:
-            if yesno(addon.name,
-                     msg,
-                     " ",
-                     "Reboot now to install the update?"):
+            if yesno(addon.name, msg, " ", L10n(32055)):
                 xbmc.restart()
                 sys.exit(0)
         else:
-            notify(msg + "Please reboot")
+            notify(" ".join(msg, L10n(32056)))
 
         return True
     else:
@@ -86,7 +80,7 @@ def get_arch():
 def notify(msg, time=12000, error=False):
     log.log("Notifying: {}".format(msg))
     if error:
-        msg = "[COLOR red]ERROR: {}[/COLOR]".format(msg)
+        msg = "[COLOR red]{}[/COLOR]".format(L10n(32060)).format(msg)
     notification(addon.name, msg, addon.icon_path, time)
 
 
@@ -159,7 +153,7 @@ def maybe_run_backup():
     if backup == 0:
         do_backup = False
     elif backup == 1:
-        do_backup = yesno("Backup", "Run Backup now?", "This is recommended")
+        do_backup = yesno(L10n(32061), L10n(32062), L10n(32063))
         log.log("Backup requested")
     elif backup == 2:
         do_backup = True
@@ -199,13 +193,13 @@ def maybe_confirm_installation(selected, installed_build):
 
     build_str = format_build(selected_build)
     if installed_build == selected_build:
-        msg = "Build {} was installed successfully"
+        msg = L10n(32064)
         notify(msg.format(build_str))
         log.log(msg.format(selected_build))
 
         history.add_install(source, selected_build)
     else:
-        msg = "Build {} was not installed"
+        msg = L10n(32065)
         notify(msg.format(build_str), error=True)
         log.log(msg.format(selected_build))
 
@@ -222,7 +216,7 @@ def add_custom_sources(sources):
 
             if build_type_index == 2:
                 subdir = addon.get_setting('subdir_preset' + suffix)
-                if subdir == 'Other':
+                if subdir == L10n(32128):
                     subdir = addon.get_setting('other_subdir' + suffix)
                 custom_name = "Milhouse Builds ({})".format(subdir)
                 sources[custom_name] = builds.MilhouseBuildsURL(subdir)
@@ -231,7 +225,7 @@ def add_custom_sources(sources):
                 custom_url = addon.get_setting('custom_url' + suffix)
                 scheme, netloc = urlparse(custom_url)[:2]
                 if not scheme in ('http', 'https') or not netloc:
-                    bad_url(custom_url, "Invalid custom source URL")
+                    bad_url(custom_url, L10n(32066))
                 else:
                     custom_extractors = (builds.BuildLinkExtractor,
                                          builds.ReleaseLinkExtractor)

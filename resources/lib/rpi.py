@@ -5,6 +5,7 @@ import sys
 import xbmc, xbmcvfs
 
 from . import openelec, addon, log, progress
+from .addon import L10n
 
 CONFIG_FILE = 'config.txt'
 CONFIG_PATH = '/flash/' + CONFIG_FILE
@@ -25,8 +26,7 @@ def maybe_restore_config():
         with openelec.write_context():
             xbmcvfs.copy(CONFIG_BACKUP_PATH, CONFIG_PATH)
         xbmcvfs.delete(CONFIG_BACKUP_PATH)
-        if progress.restart_countdown("Ready to reboot to re-enable overclocking.",
-                                      addon.get_setting('reboot_count')):
+        if progress.restart_countdown(L10n(32040), addon.get_setting('reboot_count')):
             log.log("Restarting")
             xbmc.restart()
             sys.exit()

@@ -4,6 +4,7 @@ import xbmcgui
 import requests
 
 from . import addon, builds, utils, log, history, funcs
+from .addon import L10n
 
 
 class BaseInfoDialog(xbmcgui.WindowXMLDialog):
@@ -38,7 +39,7 @@ class HistoryDialog(BaseInfoDialog):
 
     def onInit(self):
         if self._history is not None:
-            self.getControl(1).setText("Install History")
+            self.getControl(1).setText(L10n(32031))
             install_list = self.getControl(2)
             for install in reversed(self._history):
                 li = xbmcgui.ListItem()
@@ -47,7 +48,7 @@ class HistoryDialog(BaseInfoDialog):
                 li.setProperty('timestamp', install.timestamp.strftime("%Y-%m-%d %H:%M"))
                 install_list.addItem(li)
         else:
-            self.getControl(1).setText("Install history not available")
+            self.getControl(1).setText(L10n(32032))
 
 
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):
@@ -90,7 +91,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         self._build_list = self.getControl(self.BUILD_LIST_ID)
 
-        label = "Arch: {0}".format(builds.arch)
+        label = L10n(32033).format(builds.arch)
         self.getControl(self.LABEL_ID).setLabel(label)
 
         self._info_textbox = self.getControl(self.INFO_TEXTBOX_ID)
@@ -155,7 +156,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             dialog.doModal()
         elif controlID == self.CANCEL_BUTTON_ID:
             if utils.remove_update_files():
-                utils.notify("Update cancelled")
+                utils.notify(L10n(32034))
                 self._cancel_button.setVisible(False)
                 funcs.remove_notify_file()
                 self._info_textbox.setText("")
@@ -174,7 +175,6 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             except KeyError:
                 log.log("Build details for build {} not found".format(build_version))
             else:
-                build = "[B]Build #{}[/B]\n\n".format(build_version)
                 if info.details is not None:
                     try:
                         details = info.details.get_text()
@@ -182,6 +182,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                         log.log("Unable to retrieve build details: {}".format(e))
                     else:
                         if details:
+                            build = "[B]{}[/B]\n\n".format(L10n(32035)).format(build_version)
                             dialog = InfoDialog(build, details)
                             dialog.doModal()
 
@@ -194,11 +195,11 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._builds_focused = True
             self._set_build_info()
         elif controlID == self.SETTINGS_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]Open settings[/COLOR]")
+            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32036)))
         elif controlID == self.HISTORY_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]Show install history[/COLOR]")
+            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32037)))
         elif controlID == self.CANCEL_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]Cancel pending installation[/COLOR]")
+            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32038)))
 
     @utils.showbusy
     def _get_build_links(self, build_url):
@@ -213,8 +214,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             utils.url_error(build_url.url, str(e))
         else:
             if not links:
-                utils.bad_url(build_url.url,
-                              "No builds were found for {}.".format(builds.arch))
+                utils.bad_url(build_url.url, L10n(32039).format(builds.arch))
         return links
 
     def _get_build_infos(self, build_url):

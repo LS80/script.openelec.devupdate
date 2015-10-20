@@ -9,6 +9,7 @@ import xbmc, xbmcgui, xbmcvfs
 
 from .script_exceptions import Canceled, WriteError, DecompressError
 from .funcs import size_fmt
+from .addon import L10n
 
 
 class Progress(xbmcgui.DialogProgress):
@@ -113,7 +114,7 @@ class DecompressProgress(FileProgress):
         return decompressed_data
     
 
-def countdown(title, line1, action_msg, count=10):
+def reboot_countdown(title, line1, count):
     count = int(count)
     progress = xbmcgui.DialogProgress()
     progress.create(title)
@@ -121,15 +122,15 @@ def countdown(title, line1, action_msg, count=10):
     timed_out = True
     seconds = count
     while seconds >= 0:
-        if seconds > 0:
-            msg = action_msg + " in {} second{}".format(seconds, (seconds > 1) * "s")
+        if seconds > 1:
+            msg = L10n(32057).format(seconds)
+        elif seconds == 1:
+            msg = L10n(32058)
         else:
-            msg = action_msg
+            msg = L10n(32059)
 
         progress.update(int((count - seconds) / count * 100),
-                        line1,
-                        "{}...".format(msg),
-                        " ")
+                        line1, msg, " ")
 
         xbmc.sleep(1000)
         if progress.iscanceled():
@@ -138,10 +139,6 @@ def countdown(title, line1, action_msg, count=10):
         seconds -= 1
     progress.close()
     return timed_out
-
-
-def restart_countdown(line1, count):
-    return countdown('Rebooting', line1, 'Rebooting', count)
 
 
 def md5sum_verified(md5sum_compare, path, background):

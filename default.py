@@ -29,7 +29,7 @@ import requests
 
 from resources.lib import (progress, script_exceptions, utils, builds, openelec,
                            rpi, addon, log, gui, funcs)
-
+from resources.lib.addon import L10n
 
 TEMP_PATH = xbmc.translatePath("special://temp/")
 
@@ -109,16 +109,16 @@ class Main(object):
         log.log("Selected build: " + str(selected_build))
 
         build_str = utils.format_build(selected_build)
-        msg = ("{}  to  {} ?").format(utils.format_build(self.installed_build),
-                                      build_str)
+        msg = L10n(32003).format(utils.format_build(self.installed_build),
+                                 build_str)
 
         if selected_build < self.installed_build:
-            args = ("Confirm downgrade", "Downgrade", msg)
+            args = (L10n(32004), L10n(32005), msg)
         elif selected_build > self.installed_build:
-            args = ("Confirm upgrade", "Upgrade", msg)
+            args = (L10n(32001), L10n(32002), msg)
         else:
-            msg = "Build  {}  is already installed.".format(build_str)
-            args = ("Confirm install", msg, "Continue?")
+            msg = L10n(32007).format(build_str)
+            args = (L10n(32006), msg, L10n(32008))
 
         if not utils.yesno(*args):
             sys.exit(0)
@@ -135,16 +135,12 @@ class Main(object):
             log.log("Archive builds to " + self.archive_dir)
             if not xbmcvfs.exists(self.archive_root):
                 log.log("Unable to access archive")
-                utils.ok("Directory Error",
-                         "{} is not accessible.".format(self.archive_root),
-                         "Check the archive directory in the addon settings.")
+                utils.ok(L10n(32009), L10n(32010).format(self.archive_root), L10n(32011))
                 addon.open_settings()
                 sys.exit(1)
             elif not xbmcvfs.mkdir(self.archive_dir):
                 log.log("Unable to create directory in archive")
-                utils.ok("Directory Error",
-                         "Unable to create {}.".format(self.archive_dir),
-                         "Check the archive directory permissions.")
+                utils.ok(L10n(32009), L10n(32012).format(self.archive_dir), L10n(32013))
                 sys.exit(1)
 
     def maybe_download(self):
@@ -173,7 +169,7 @@ class Main(object):
                 try:
                     log.log("Starting download of {} to {}".format(self.selected_build.url,
                                                                    self.download_path))
-                    with progress.FileProgress("Downloading", remote_file, self.download_path,
+                    with progress.FileProgress(L10n(32014), remote_file, self.download_path,
                                                size, self.background) as downloader:
                         downloader.start()
                     log.log("Completed download")
@@ -190,7 +186,7 @@ class Main(object):
                 try:
                     bf = open(self.download_path, 'rb')
                     log.log("Starting decompression of " + self.download_path)
-                    with progress.DecompressProgress("Decompressing",
+                    with progress.DecompressProgress(L10n(32015),
                                                      bf, self.temp_tar_path, size,
                                                      self.background) as decompressor:
                         decompressor.start()
@@ -219,7 +215,7 @@ class Main(object):
 
             archive = xbmcvfs.File(self.archive_tar_path)
             try:
-                with progress.FileProgress("Retrieving tar file from archive",
+                with progress.FileProgress(L10n(32016),
                                            archive, self.update_tar_path, archive.size(),
                                            self.background) as extractor:
                     extractor.start()
@@ -239,7 +235,7 @@ class Main(object):
             size = os.path.getsize(self.temp_tar_path)
 
             try:
-                with progress.FileProgress("Copying to archive",
+                with progress.FileProgress(L10n(32017),
                                            tar, self.archive_tar_path, size,
                                            self.background) as extractor:
                     extractor.start()
@@ -264,7 +260,7 @@ class Main(object):
                 ti = tf.extractfile(path_in_tar)
                 temp_image_path = os.path.join(TEMP_PATH, update_image)
                 try:
-                    with progress.FileProgress("Verifying", ti, temp_image_path, ti.size,
+                    with progress.FileProgress(L10n(32018), ti, temp_image_path, ti.size,
                                                self.background) as extractor:
                         extractor.start()
                     log.log("Extracted " + temp_image_path)
@@ -280,10 +276,9 @@ class Main(object):
                 if not progress.md5sum_verified(md5sum, temp_image_path,
                                                 self.background):
                     log.log("{} md5 mismatch!".format(update_image))
-                    utils.ok("{} md5 mismatch".format(update_image),
-                             "The {} image from".format(update_image),
+                    utils.ok(L10n(32019).format(update_image),
                              self.selected_build.filename,
-                             "is corrupt. The update file will be removed.")
+                             L10n(32020).format(update_image), L10n(32021))
                     utils.remove_update_files()
                     return
                 else:
@@ -298,16 +293,13 @@ class Main(object):
         do_notify = False
 
         if addon.get_setting('confirm_reboot') == 'true':
-            if utils.yesno(
-                    "Confirm reboot",
-                    " ",
-                    "Reboot now to install build  {}?".format(build_str)):
+            if utils.yesno(L10n(32022), " ", L10n(32024).format(build_str)):
                 xbmc.restart()
             else:
                 do_notify = True
         else:
-            if progress.restart_countdown(
-                    "Build  {}  is ready to install.".format(build_str),
+            if progress.reboot_countdown(
+                    L10n(32054), L10n(32025).format(build_str),
                     int(addon.get_setting('reboot_count'))):
                 xbmc.restart()
                 sys.exit()
@@ -315,7 +307,7 @@ class Main(object):
                 do_notify = True
 
         if do_notify:
-            utils.notify("Build {} will install on the next reboot".format(build_str))
+            utils.notify(L10n(32026).format(build_str))
 
 
 def new_build_check():
@@ -360,16 +352,14 @@ def new_build_check():
 
                 if utils.yesno(
                         addon.name,
-                        line1="A more recent build is available:  " +
-                              utils.format_build(latest),
-                        line2="Current build:  " +
-                              utils.format_build(installed_build),
-                        line3="Show builds available to install?",
+                        line1=L10n(32027).format(utils.format_build(latest)),
+                        line2=L10n(32028).format(utils.format_build(installed_build)),
+                        line3=L10n(32029),
                         autoclose=autoclose_ms):
                     with Main() as main:
                         main.start()
             else:
-                utils.notify("Build {} is available".format(utils.format_build(latest)),
+                utils.notify(L10n(32030).format(utils.format_build(latest)),
                              4000)
 
 

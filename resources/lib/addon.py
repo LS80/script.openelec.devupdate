@@ -6,6 +6,7 @@ info = __addon.getAddonInfo
 get_setting = __addon.getSetting
 set_setting = __addon.setSetting
 open_settings = __addon.openSettings
+L10n = __addon.getLocalizedString
 
 name = info('name')
 version = info('version')

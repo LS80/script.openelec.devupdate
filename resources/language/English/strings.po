@@ -1,0 +1,422 @@
+# Kodi Media Center language file
+# Addon Name: OpenELEC Dev Update
+# Addon id: script.openelec.devupdate
+# Addon Provider: Leopold
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Kodi Translation Team\n"
+"Language-Team: English (http://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+msgctxt "#32001"
+msgid "Confirm upgrade"
+msgstr ""
+
+msgctxt "#32002"
+msgid "Upgrade"
+msgstr ""
+
+msgctxt "#32003"
+msgid "{}  to  {} ?"
+msgstr ""
+
+msgctxt "#32004"
+msgid "Confirm downgrade"
+msgstr ""
+
+msgctxt "#32005"
+msgid "Downgrade"
+msgstr ""
+
+msgctxt "#32006"
+msgid "Confirm install"
+msgstr ""
+
+msgctxt "#32007"
+msgid "Build  {}  is already installed."
+msgstr ""
+
+msgctxt "#32008"
+msgid "Continue?"
+msgstr ""
+
+msgctxt "#32009"
+msgid "Directory Error"
+msgstr ""
+
+msgctxt "#32010"
+msgid "{} is not accessible."
+msgstr ""
+
+msgctxt "#32011"
+msgid "Check the archive directory in the addon settings."
+msgstr ""
+
+msgctxt "#32012"
+msgid "Unable to create {}."
+msgstr ""
+
+msgctxt "#32013"
+msgid "Check the archive directory permissions."
+msgstr ""
+
+msgctxt "#32014"
+msgid "Downloading"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Decompressing"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Retrieving tar file from archive"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Copying to archive"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Verifying"
+msgstr ""
+
+msgctxt "#32019"
+msgid "{} md5 mismatch"
+msgstr ""
+
+msgctxt "#32020"
+msgid "The {} image is corrupt."
+msgstr ""
+
+msgctxt "#32021"
+msgid "The update file will be removed."
+msgstr ""
+
+msgctxt "#32022"
+msgid "Confirm reboot"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Reboot now to install build  {}?"
+msgstr ""
+
+msgctxt "#32025"
+msgid "Build  {}  is ready to install."
+msgstr ""
+
+msgctxt "#32026"
+msgid "Build  {}  will install on the next reboot"
+msgstr ""
+
+msgctxt "#32027"
+msgid "A more recent build is available:  {}"
+msgstr ""
+
+msgctxt "#32028"
+msgid "Current build:  {}"
+msgstr ""
+
+msgctxt "#32029"
+msgid "Show builds available to install?"
+msgstr ""
+
+msgctxt "#32030"
+msgid "Build  {}  is available"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Install History"
+msgstr ""
+
+msgctxt "#32032"
+msgid "Install history not available"
+msgstr ""
+
+msgctxt "#32033"
+msgid "Arch: {}"
+msgstr ""
+
+msgctxt "#32034"
+msgid "Update cancelled"
+msgstr ""
+
+msgctxt "#32035"
+msgid "Build {}"
+msgstr ""
+
+msgctxt "#32036"
+msgid "Open settings"
+msgstr ""
+
+msgctxt "#32037"
+msgid "Show install history"
+msgstr ""
+
+msgctxt "#32038"
+msgid "Cancel pending installation"
+msgstr ""
+
+msgctxt "#32039"
+msgid "No builds were found for {}."
+msgstr ""
+
+msgctxt "#32040"
+msgid "Ready to reboot to re-enable overclocking."
+msgstr ""
+
+msgctxt "#32041"
+msgid "Connection Error"
+msgstr ""
+
+msgctxt "#32042"
+msgid "Please check you have a connection to the internet."
+msgstr ""
+    
+msgctxt "#32043"
+msgid "URL not found."
+msgstr ""
+
+msgctxt "#32044"
+msgid "URL Error"
+msgstr ""
+
+msgctxt "#32045"
+msgid "Please check the URL."
+msgstr ""
+
+msgctxt "#32046"
+msgid "Please check the log file."
+msgstr ""
+
+msgctxt "#32047"
+msgid "Write Error"
+msgstr ""
+
+msgctxt "#32048"
+msgid "Check the directory."
+msgstr ""
+
+msgctxt "#32049"
+msgid "Decompression Error"
+msgstr ""
+
+msgctxt "#32050"
+msgid "An error occurred during decompression:"
+msgstr ""
+
+msgctxt "#32052"
+msgid "An installation is pending for {}."
+msgstr ""
+
+msgctxt "#32053"
+msgid "An installation is pending."
+msgstr ""
+
+msgctxt "#32054"
+msgid "Rebooting"
+msgstr ""
+
+msgctxt "#32055"
+msgid "Reboot now to install the update?"
+msgstr ""
+
+msgctxt "#32056"
+msgid "Please reboot"
+msgstr ""
+
+msgctxt "#32057"
+msgid "Rebooting in {} seconds..."
+msgstr ""
+
+msgctxt "#32058"
+msgid "Rebooting in 1 second..."
+msgstr ""
+
+msgctxt "#32059"
+msgid "Rebooting..."
+msgstr ""
+
+msgctxt "#32060"
+msgid "ERROR: {}"
+msgstr ""
+
+msgctxt "#32061"
+msgid "Backup"
+msgstr ""
+
+msgctxt "#32062"
+msgid "Run Backup now?"
+msgstr ""
+
+msgctxt "#32063"
+msgid "This is recommended"
+msgstr ""
+
+msgctxt "#32064"
+msgid "Build {} was installed successfully"
+msgstr ""
+
+msgctxt "#32065"
+msgid "Build {} was not installed"
+msgstr ""
+
+msgctxt "#32066"
+msgid "Invalid custom source URL"
+msgstr ""
+
+msgctxt "#32101"
+msgid "General"
+msgstr ""
+
+msgctxt "#32102"
+msgid "Selected source name"
+msgstr ""
+
+msgctxt "#32103"
+msgid "Show progress in background"
+msgstr ""
+
+msgctxt "#32104"
+msgid "Archive tar files (for quicker re-installs)"
+msgstr ""
+
+msgctxt "#32105"
+msgid "Archive directory"
+msgstr ""
+
+msgctxt "#32106"
+msgid "Verify update files"
+msgstr ""
+
+msgctxt "#32107"
+msgid "Never"
+msgstr ""
+
+msgctxt "#32108"
+msgid "Prompt every time"
+msgstr ""
+
+msgctxt "#32109"
+msgid "Always"
+msgstr ""
+
+msgctxt "#32110"
+msgid "Notifications"
+msgstr ""
+
+msgctxt "#32111"
+msgid "Enable notifications"
+msgstr ""
+
+msgctxt "#32112"
+msgid "Check only on boot"
+msgstr ""
+
+msgctxt "#32113"
+msgid "Check interval in hours (requires restart)"
+msgstr ""
+
+msgctxt "#32114"
+msgid "Show dialog"
+msgstr ""
+
+msgctxt "#32115"
+msgid "When not playing video"
+msgstr ""
+
+msgctxt "#32116"
+msgid "Enable for official releases"
+msgstr ""
+
+msgctxt "#32117"
+msgid "Enable reboot confirmation dialog"
+msgstr ""
+
+msgctxt "#32118"
+msgid "Reboot countdown (seconds)"
+msgstr ""
+
+msgctxt "#32119"
+msgid "Custom Sources"
+msgstr ""
+
+msgctxt "#32121"
+msgid "Enable"
+msgstr ""
+
+msgctxt "#32122"
+msgid "Build type"
+msgstr ""
+
+msgctxt "#32123"
+msgid "Development"
+msgstr ""
+
+msgctxt "#32124"
+msgid "Release"
+msgstr ""
+
+msgctxt "#32125"
+msgid "Name"
+msgstr ""
+
+msgctxt "#32126"
+msgid "URL"
+msgstr ""
+
+msgctxt "#32127"
+msgid "Subdirectory"
+msgstr ""
+
+msgctxt "#32128"
+msgid "Other"
+msgstr ""
+
+msgctxt "#32129"
+msgid "Enable subdirectory"
+msgstr ""
+
+msgctxt "#32130"
+msgid "Other subdirectory"
+msgstr ""
+
+msgctxt "#32131"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#32132"
+msgid "Override installed build type"
+msgstr ""
+
+msgctxt "#32133"
+msgid "Build type to install"
+msgstr ""
+
+msgctxt "#32134"
+msgid "Disable overclocking during update"
+msgstr ""
+
+msgctxt "#32135"
+msgid "Also update extlinux"
+msgstr ""
+
+msgctxt "#32136"
+msgid "Set HTTP timeout"
+msgstr ""
+
+msgctxt "#32137"
+msgid "Timeout (seconds)"
+msgstr ""
+
+msgctxt "#32138"
+msgid "Enable debug logging"
+msgstr ""

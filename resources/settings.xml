@@ -1,61 +1,61 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="General">
-        <setting label="Selected source name" type="text" id="source_name" default="Official Snapshot Builds" visible="false"/>
+    <category label="32101">
+        <setting label="32102" type="text" id="source_name" default="Official Snapshot Builds" visible="false"/>
 
-        <setting label="Show progress in background" type="bool" id="background" default="true"/>
+        <setting label="32103" type="bool" id="background" default="true"/>
         <setting type="sep"/>
-        <setting label="Archive tar files (for quicker re-installs)" type="bool" id="archive" default="false"/>
-        <setting label="Archive directory" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)" subsetting="true"/>
+        <setting label="32104" type="bool" id="archive" default="false"/>
+        <setting label="32105" type="folder" id="archive_root" default="/storage/" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
-        <setting label="Verify update files" type="bool" id="verify_files" default="false"/>
+        <setting label="32106" type="bool" id="verify_files" default="false"/>
         <setting type="sep"/>
-        <setting label="Backup" type="enum" id="backup" values="Never|Prompt every time|Always" default="1"/>
+        <setting label="32061" type="enum" id="backup" lvalues="32107|32108|32109" default="1"/>
     </category>
-    <category label="Notifications">
-        <setting label="Enable notifications" type="bool" id="check" default="true"/>
-        <setting label="Check only on boot" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
-        <setting label="Check interval in hours (requires restart)" type="slider" id="check_interval" enable="eq(-2,true) + eq(-1,false)" subsetting="true" default="3" range="1,1,24" option="int"/>
-        <setting label="Show dialog" type="enum" id="check_prompt" values="Never|When not playing video|Always" enable="eq(-3,true)" subsetting="true" default="1"/>
-        <setting label="Enable for official releases" type="bool" id="check_official" enable="eq(-4,true)" subsetting="true" default="false"/>
+    <category label="32110">
+        <setting label="32111" type="bool" id="check" default="true"/>
+        <setting label="32112" type="bool" id="check_onbootonly" enable="eq(-1,true)" subsetting="true" default="false"/>
+        <setting label="32113" type="slider" id="check_interval" enable="eq(-2,true) + eq(-1,false)" subsetting="true" default="3" range="1,1,24" option="int"/>
+        <setting label="32114" type="enum" id="check_prompt" lvalues="32107|32115|32109" enable="eq(-3,true)" subsetting="true" default="1"/>
+        <setting label="32116" type="bool" id="check_official" enable="eq(-4,true)" subsetting="true" default="false"/>
         <setting type="sep"/>
-        <setting label="Enable reboot confirmation dialog" type="bool" id="confirm_reboot" default="false"/>
-        <setting label="Reboot countdown (seconds)" type="number" id="reboot_count" default="10" visible="eq(-1,false)"/>
+        <setting label="32117" type="bool" id="confirm_reboot" default="false"/>
+        <setting label="32118" type="number" id="reboot_count" default="10" visible="eq(-1,false)"/>
     </category>
-    <category label="Custom Sources">
+    <category label="32119">
         <setting label="Custom Source 1" type="lsep"/>
-        <setting label="Enable" type="bool" id="custom_source_enable" default="false"/>
+        <setting label="32121" type="bool" id="custom_source_enable" default="false"/>
         <setting type="sep"/>
-        <setting label="Build type" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-2,true)" default="2"/>
-        <setting label="Name" type="text" id="custom_source" enable="eq(-3,true)" visible="!eq(-1,2)" default="Custom Source 1"/>
-        <setting label="URL" type="text" id="custom_url" enable="eq(-4,true)" visible="!eq(-2,2)"/>
-        <setting label="Subdirectory" type="labelenum" id="subdir_preset" values="Other|testing|next" enable="eq(-5,true)" visible="eq(-3,2)" default="testing"/>
-        <setting label="Enable subdirectory" type="bool" id="custom_subdir_enable" enable="eq(-6,true)" visible="!eq(-4,2)" default="false"/>
-        <setting label="Subdirectory" type="text" id="custom_subdir" enable="eq(-7,true) + eq(-1,true)" visible="!eq(-5,2)" subsetting="true"/>
-        <setting label="Other subdirectory" type="text" id="other_subdir" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
+        <setting label="32122" type="enum" id="build_type" values="Development|Release|Milhouse" enable="eq(-2,true)" default="2"/>
+        <setting label="32125" type="text" id="custom_source" enable="eq(-3,true)" visible="!eq(-1,2)" default="Custom Source 1"/>
+        <setting label="32126" type="text" id="custom_url" enable="eq(-4,true)" visible="!eq(-2,2)"/>
+        <setting label="32127" type="labelenum" id="subdir_preset" values="Other|testing|next" enable="eq(-5,true)" visible="eq(-3,2)" default="testing"/>
+        <setting label="32129" type="bool" id="custom_subdir_enable" enable="eq(-6,true)" visible="!eq(-4,2)" default="false"/>
+        <setting label="32127" type="text" id="custom_subdir" enable="eq(-7,true) + eq(-1,true)" visible="!eq(-5,2)" subsetting="true"/>
+        <setting label="32130" type="text" id="other_subdir" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
 
         <setting label="Custom Source 2" type="lsep"/>
-        <setting label="Enable" type="bool" id="custom_source_enable_2" default="false"/>
+        <setting label="32121" type="bool" id="custom_source_enable_2" default="false"/>
         <setting type="sep"/>
-        <setting label="Build type" type="enum" id="build_type_2" values="Development|Release|Milhouse" enable="eq(-2,true)" default="2"/>
-        <setting label="Name" type="text" id="custom_source_2" enable="eq(-3,true)" visible="!eq(-1,2)" default="Custom Source 1"/>
-        <setting label="URL" type="text" id="custom_url_2" enable="eq(-4,true)" visible="!eq(-2,2)"/>
-        <setting label="Subdirectory" type="labelenum" id="subdir_preset_2" values="Other|testing|next" enable="eq(-5,true)" visible="eq(-3,2)" default="testing"/>
-        <setting label="Enable subdirectory" type="bool" id="custom_subdir_enable_2" enable="eq(-6,true)" visible="!eq(-4,2)" default="false"/>
-        <setting label="Subdirectory" type="text" id="custom_subdir_2" enable="eq(-7,true) + eq(-1,true)" visible="!eq(-5,2)" subsetting="true"/>
-        <setting label="Other subdirectory" type="text" id="other_subdir_2" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
+        <setting label="32122" type="enum" id="build_type_2" values="Development|Release|Milhouse" enable="eq(-2,true)" default="2"/>
+        <setting label="32125" type="text" id="custom_source_2" enable="eq(-3,true)" visible="!eq(-1,2)" default="Custom Source 1"/>
+        <setting label="32126" type="text" id="custom_url_2" enable="eq(-4,true)" visible="!eq(-2,2)"/>
+        <setting label="32127" type="labelenum" id="subdir_preset_2" values="Other|testing|next" enable="eq(-5,true)" visible="eq(-3,2)" default="testing"/>
+        <setting label="32129" type="bool" id="custom_subdir_enable_2" enable="eq(-6,true)" visible="!eq(-4,2)" default="false"/>
+        <setting label="32127" type="text" id="custom_subdir_2" enable="eq(-7,true) + eq(-1,true)" visible="!eq(-5,2)" subsetting="true"/>
+        <setting label="32130" type="text" id="other_subdir_2" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
     </category>
-    <category label="Advanced">
-        <setting label="Override installed build type" type="bool" id="set_arch" default="false"/>
-        <setting label="Build type to install" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Nvidia_Legacy.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm|WeTek_Play.arm" enable="eq(-1,true)" subsetting="true"/>
+    <category label="32131">
+        <setting label="32132" type="bool" id="set_arch" default="false"/>
+        <setting label="32133" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Nvidia_Legacy.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm|WeTek_Play.arm" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
-        <setting label="Disable overclocking during update" type="bool" id="disable_overclock" default="false" visible="System.Platform.Linux.RaspberryPi"/>
+        <setting label="32134" type="bool" id="disable_overclock" default="false" visible="System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
-        <setting label="Also update extlinux" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
+        <setting label="32135" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
-        <setting label="Set HTTP timeout" type="bool" id="set_timeout" default="false"/>
-        <setting label="Timeout (seconds)" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
+        <setting label="32136" type="bool" id="set_timeout" default="false"/>
+        <setting label="32137" type="number" id="timeout" enable="eq(-1,true)" subsetting="true" default="10"/>
         <setting type="sep"/>
-        <setting label="Enable debug logging" type="bool" id="debug" default="false"/>
+        <setting label="32138" type="bool" id="debug" default="false"/>
     </category>
 </settings>

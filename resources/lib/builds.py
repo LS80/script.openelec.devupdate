@@ -21,6 +21,7 @@ import openelec, funcs, log
 
 timeout = None
 arch = openelec.ARCH
+date_fmt = '%d %b %y'
 
 
 class BuildURLError(Exception):
@@ -59,8 +60,7 @@ class Build(object):
         return self._datetime > other._datetime
 
     def __str__(self):
-        return '{} ({})'.format(self.version,
-                                self.date)
+        return '{} ({})'.format(self.version, self.date)
 
     def __repr__(self):
         return "{}('{}', '{}')".format("Build",
@@ -69,7 +69,7 @@ class Build(object):
 
     @property
     def date(self):
-        return self._datetime.strftime('%d %b %y')
+        return self._datetime.strftime(date_fmt)
 
     @property    
     def version(self):
