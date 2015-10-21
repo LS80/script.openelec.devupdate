@@ -420,6 +420,10 @@ class MilhouseBuildsURL(BuildsURL):
         return "{}('{}')".format(self.__class__.__name__, self.subdir)
 
 
+dual_audio_builds = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
+                              subdir=arch, extractor=DualAudioReleaseLinkExtractor)
+
+
 def get_installed_build():
     """Return the currently installed build object."""
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
@@ -465,11 +469,6 @@ def sources():
                                               extractor=OfficialReleaseLinkExtractor)
     _sources["Official Archive"] = BuildsURL("http://archive.openelec.tv",
                                              extractor=ReleaseLinkExtractor)
-
-    builds_url = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
-                           subdir=arch,
-                           extractor=DualAudioReleaseLinkExtractor)
-    _sources["DarkAngel2401 Dual Audio Builds"] = builds_url
 
     return _sources
 

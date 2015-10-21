@@ -220,19 +220,22 @@ def add_custom_sources(sources):
                     subdir = addon.get_setting('other_subdir' + suffix)
                 custom_name = "Milhouse Builds ({})".format(subdir)
                 sources[custom_name] = builds.MilhouseBuildsURL(subdir)
-            else:
+            elif build_type_index < 2:
                 custom_name = addon.get_setting('custom_source' + suffix)
                 custom_url = addon.get_setting('custom_url' + suffix)
                 scheme, netloc = urlparse(custom_url)[:2]
                 if not scheme in ('http', 'https') or not netloc:
                     bad_url(custom_url, L10n(32066))
-                else:
-                    custom_extractors = (builds.BuildLinkExtractor,
-                                         builds.ReleaseLinkExtractor)
+                    continue
 
-                    kwargs = {}
-                    if addon.get_setting('custom_subdir_enable' + suffix):
-                        kwargs['subdir'] = addon.get_setting('custom_subdir' + suffix)
+                custom_extractors = (builds.BuildLinkExtractor,
+                                     builds.ReleaseLinkExtractor)
 
-                    sources[custom_name] = builds.BuildsURL(
-                        custom_url, custom_extractors[build_type_index], **kwargs)
+                kwargs = {}
+                if addon.get_setting('custom_subdir_enable' + suffix):
+                    kwargs['subdir'] = addon.get_setting('custom_subdir' + suffix)
+
+                sources[custom_name] = builds.BuildsURL(
+                    custom_url, custom_extractors[build_type_index], **kwargs)
+            elif build_type_index == 3:
+                sources["DarkAngel2401 Dual Audio Builds"] = builds.dual_audio_builds
