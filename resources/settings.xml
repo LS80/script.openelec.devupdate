@@ -44,6 +44,17 @@
         <setting label="32129" type="bool" id="custom_subdir_enable_2" enable="eq(-6,true)" visible="lt(-4,2)" default="false"/>
         <setting label="32127" type="text" id="custom_subdir_2" enable="eq(-7,true) + eq(-1,true)" visible="lt(-5,2)" subsetting="true"/>
         <setting label="32130" type="text" id="other_subdir_2" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
+
+        <setting label="Custom Source 3" type="lsep"/>
+        <setting label="32121" type="bool" id="custom_source_enable_3" default="false"/>
+        <setting type="sep"/>
+        <setting label="32122" type="enum" id="build_type_3" values="Development|Release|Milhouse|DarkAngel2401 Dual Audio" enable="eq(-2,true)" default="2"/>
+        <setting label="32125" type="text" id="custom_source_3" enable="eq(-3,true)" visible="lt(-1,2)" default="Custom Source 1"/>
+        <setting label="32126" type="text" id="custom_url_3" enable="eq(-4,true)" visible="lt(-2,2)"/>
+        <setting label="32127" type="labelenum" id="subdir_preset_3" values="Other|testing|next" enable="eq(-5,true)" visible="eq(-3,2)" default="testing"/>
+        <setting label="32129" type="bool" id="custom_subdir_enable_3" enable="eq(-6,true)" visible="lt(-4,2)" default="false"/>
+        <setting label="32127" type="text" id="custom_subdir_3" enable="eq(-7,true) + eq(-1,true)" visible="lt(-5,2)" subsetting="true"/>
+        <setting label="32130" type="text" id="other_subdir_3" enable="eq(-8,true)" visible="eq(-6,2) + eq(-3,0)" subsetting="true"/>
     </category>
     <category label="32131">
         <setting label="32132" type="bool" id="set_arch" default="false"/>

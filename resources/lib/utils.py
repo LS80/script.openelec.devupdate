@@ -205,7 +205,7 @@ def maybe_confirm_installation(selected, installed_build):
 
 
 def add_custom_sources(sources):
-    for suffix in ('', '_2'):
+    for suffix in ('', '_2', '_3'):
         if addon.get_setting('custom_source_enable' + suffix) == 'true':
             build_type = addon.get_setting('build_type' + suffix)
             try:
