@@ -1,3 +1,8 @@
+4.34.0
+ - Moved DarkAngel2401 Dual Audio Builds from the default list
+   to the custom sources so it can be disabled
+ - Added an extra custom source slot
+
 4.33.0
  - Fixed build summaries not showing when the build list is re-focused.
  - Show toolbar tooltips in white to visually separate them from
