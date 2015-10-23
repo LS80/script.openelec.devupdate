@@ -16,7 +16,6 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-
 msgctxt "#32001"
 msgid "Confirm upgrade"
 msgstr ""
@@ -139,10 +138,6 @@ msgstr ""
 
 msgctxt "#32032"
 msgid "Install history not available"
-msgstr ""
-
-msgctxt "#32033"
-msgid "Arch: {}"
 msgstr ""
 
 msgctxt "#32034"

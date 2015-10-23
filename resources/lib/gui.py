@@ -91,8 +91,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         self._build_list = self.getControl(self.BUILD_LIST_ID)
 
-        label = L10n(32033).format(builds.arch)
-        self.getControl(self.LABEL_ID).setLabel(label)
+        self.getControl(self.LABEL_ID).setLabel(builds.arch)
 
         self._info_textbox = self.getControl(self.INFO_TEXTBOX_ID)
 

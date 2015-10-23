@@ -41,6 +41,7 @@
 
             <control type="group">
                 <description>Left panel</description>
+                <width>680</width>
 
                 <control type="image">
                     <description>OpenELEC logo</description>
@@ -53,8 +54,10 @@
                 </control>
 
                 <control type="label" id="100">
+                    <description>Build type label</description>
                     <top>150</top>
-                    <left>400</left>
+                    <right>50</right>
+                    <align>right</align>
                     <aligny>top</aligny>
                     <textcolor>ff87bde1</textcolor>
                 </control>
@@ -185,6 +188,7 @@
                     <description>Right panel</description>
                     <left>680</left>
                     <height>940</height>
+                    <width>420</width>
 
                     <control type="image">
                         <texture border="5">white.png</texture>
@@ -203,7 +207,6 @@
                         <description>Build list</description>
                         <left>0</left>
                         <top>45</top>
-                        <width>420</width>
                         <height>845</height>
                         <pagecontrol>600</pagecontrol>
                         <onleft>10</onleft>
