@@ -236,6 +236,6 @@ def add_custom_sources(sources):
                     kwargs['subdir'] = addon.get_setting('custom_subdir' + suffix)
 
                 sources[custom_name] = builds.BuildsURL(
-                    custom_url, custom_extractors[build_type_index], **kwargs)
+                    custom_url, extractor=custom_extractors[build_type_index], **kwargs)
             elif build_type_index == 3:
                 sources["DarkAngel2401 Dual Audio Builds"] = builds.dual_audio_builds
