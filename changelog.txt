@@ -1,3 +1,7 @@
+4.34.1
+ - Fixed a problem with manually defined URLs.
+ - Fixed the alignment of the build type label.
+
 4.34.0
  - Moved DarkAngel2401 Dual Audio Builds from the default list
    to the custom sources so it can be disabled
