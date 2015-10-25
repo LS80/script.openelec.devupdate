@@ -11,6 +11,9 @@
         <setting label="32106" type="bool" id="verify_files" default="false"/>
         <setting type="sep"/>
         <setting label="32061" type="enum" id="backup" lvalues="32107|32108|32109" default="1"/>
+        <setting type="sep"/>
+        <setting label="32139" type="bool" id="set_date_format" default="false"/>
+        <setting label="32140" type="labelenum" id="date_format" values="DD MMM YY" visible="eq(-1,true)" subsetting="true" default="false"/>
     </category>
     <category label="32110">
         <setting label="32111" type="bool" id="check" default="true"/>

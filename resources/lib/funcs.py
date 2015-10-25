@@ -13,6 +13,21 @@ TEMP_DIR = os.path.expanduser('~')
 UPDATE_EXTLINUX_FILE = os.path.join(TEMP_DIR, '.update_extlinux')
 NOTIFY_FILE = os.path.join(TEMP_DIR, '.installed_build')
 
+STRFTIME_FMTS = [('YYYY', '%Y'),
+                 ('YY', '%y'),
+                 ('MMMM', '%B'),
+                 ('MMM', '%b'),
+                 ('MM', '%m'),
+                 ('M', '%-m'),
+                 ('DD', '%d'),
+                 ('D', '%-d')]
+
+
+def strftime_fmt(date_fmt):
+    for key, fmt in STRFTIME_FMTS:
+        date_fmt = date_fmt.replace(key, fmt)
+    return date_fmt
+
 
 def size_fmt(num):
     for s, f in (('bytes', '{0:.0f}'), ('KB', '{0:.1f}'), ('MB', '{0:.1f}')):

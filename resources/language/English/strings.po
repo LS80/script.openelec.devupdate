@@ -415,3 +415,11 @@ msgstr ""
 msgctxt "#32138"
 msgid "Enable debug logging"
 msgstr ""
+
+msgctxt "#32139"
+msgid "Set custom build date format"
+msgstr ""
+
+msgctxt "#32140"
+msgid "Date format"
+msgstr ""

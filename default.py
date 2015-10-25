@@ -366,6 +366,13 @@ def new_build_check():
 
 log.log_version()
 log.log("Script arguments: {}".format(sys.argv))
+
+if addon.get_bool_setting('set_date_format'):
+    builds.date_fmt = funcs.strftime_fmt(addon.get_setting('date_format'))
+else:
+    builds.date_fmt = xbmc.getRegion('dateshort')
+log.log("Set date format to {}".format(builds.date_fmt))
+
 if len(sys.argv) > 1:
     if sys.argv[1] == 'checkperiodic':
         if addon.get_setting('check') == 'true':
