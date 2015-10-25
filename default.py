@@ -54,6 +54,7 @@ class Main(object):
         log.log("Starting")
 
         builds.arch = utils.get_arch()
+        log.log("Set arch to {}".format(builds.arch))
 
         if addon.get_setting('set_timeout') == 'true':
             builds.timeout = float(addon.get_setting('timeout'))
