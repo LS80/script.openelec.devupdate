@@ -62,45 +62,37 @@
                     <textcolor>ff87bde1</textcolor>
                 </control>
 
-                <control type="group" id="300">
+                <control type="grouplist" id="300">
                     <description>Toolbar</description>
                     <top>190</top>
-                    <width>680</width>
-                    <height>50</height>
+                    <left>60</left>
+                    <itemgap>30</itemgap>
+                    <orientation>horizontal</orientation>
+                    <ondown>10</ondown>
+                    <onright>20</onright>
 
                     <control type="button" id="30">
                         <description>Settings button</description>
-                        <left>60</left>
                         <width>48</width>
                         <height>48</height>
                         <texturefocus colordiffuse="ff87bde1">settings.png</texturefocus>
                         <texturenofocus colordiffuse="ff555555">settings.png</texturenofocus>
-                        <ondown>10</ondown>
-                        <onright>40</onright>
                     </control>
 
                     <control type="button" id="40">
                         <description>History button</description>
-                        <left>140</left>
                         <width>48</width>
                         <height>48</height>
                         <texturefocus colordiffuse="ff87bde1">history.png</texturefocus>
                         <texturenofocus colordiffuse="ff555555">history.png</texturenofocus>
-                        <ondown>10</ondown>
-                        <onleft>30</onleft>
-                        <onright>50</onright>
                     </control>
 
                     <control type="button" id="50">
                         <description>Cancel button</description>
-                        <left>220</left>
                         <width>48</width>
                         <height>48</height>
                         <texturefocus colordiffuse="ff87bde1">cancel.png</texturefocus>
                         <texturenofocus colordiffuse="ff555555">cancel.png</texturenofocus>
-                        <ondown>10</ondown>
-                        <onleft>40</onleft>
-                        <onright>20</onright>
                     </control>
                 </control>
                 
