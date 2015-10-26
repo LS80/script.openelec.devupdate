@@ -1,3 +1,9 @@
+4.35.0
+ - Changed the build date display to use the Kodi short date format.
+ - Added a setting to restore the old build date format.
+ - Fixed toolbar button tooltip not showing.
+ - Fixed a problem with re-enabling rpi overclocking.
+
 4.34.1
  - Fixed a problem with manually defined URLs.
  - Fixed the alignment of the build type label.
