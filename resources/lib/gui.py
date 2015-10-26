@@ -196,6 +196,8 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         if controlID == self.BUILD_LIST_ID:
             self._builds_focused = True
             self._set_build_info()
+        elif controlID == self.SOURCE_LIST_ID:
+            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32141)))
         elif controlID == self.SETTINGS_BUTTON_ID:
             self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32036)))
         elif controlID == self.HISTORY_BUTTON_ID:
