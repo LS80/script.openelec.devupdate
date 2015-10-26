@@ -71,7 +71,7 @@ def remove_update_files():
 
 
 def get_arch():
-    if addon.get_setting('set_arch') == 'true':
+    if addon.get_bool_setting('set_arch'):
         return addon.get_setting('arch')
     else:
         return openelec.ARCH
@@ -96,7 +96,7 @@ def showbusy(f):
 
 
 def do_show_dialog():
-    show = int(addon.get_setting('check_prompt'))
+    show = addon.get_int_setting('check_prompt')
     return show == 2 or (show == 1 and not xbmc.Player().isPlayingVideo())
 
 
@@ -144,12 +144,12 @@ def install_cmdline_script():
 
 def maybe_schedule_extlinux_update():
     if (not openelec.ARCH.startswith('RPi') and
-        addon.get_setting('update_extlinux') == 'true'):
+        addon.get_bool_setting('update_extlinux')):
         funcs.schedule_extlinux_update()
 
 
 def maybe_run_backup():
-    backup = int(addon.get_setting('backup'))
+    backup = addon.get_int_setting('backup')
     if backup == 0:
         do_backup = False
     elif backup == 1:
@@ -177,8 +177,8 @@ def format_build(build):
 
 def setup_build_check():
     xbmc.executebuiltin(make_runscript('checkonboot'))
-    if not addon.get_setting('check_onbootonly') == 'true':
-        interval = int(addon.get_setting('check_interval'))
+    if not addon.get_bool_setting('check_onbootonly'):
+        interval = addon.get_int_setting('check_interval')
         log.log("Starting build check timer for every {:d} hour{}"
                 .format(interval, 's' if interval > 1 else ''))
         cmd = ("AlarmClock(devupdatecheck, {}, {:02d}:00:00, silent, loop)".
@@ -206,7 +206,7 @@ def maybe_confirm_installation(selected, installed_build):
 
 def add_custom_sources(sources):
     for suffix in ('', '_2', '_3'):
-        if addon.get_setting('custom_source_enable' + suffix) == 'true':
+        if addon.get_bool_setting('custom_source_enable' + suffix):
             build_type = addon.get_setting('build_type' + suffix)
             try:
                 build_type_index = int(build_type)

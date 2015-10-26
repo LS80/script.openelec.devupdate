@@ -56,11 +56,11 @@ class Main(object):
         builds.arch = utils.get_arch()
         log.log("Set arch to {}".format(builds.arch))
 
-        if addon.get_setting('set_timeout') == 'true':
+        if addon.get_bool_setting('set_timeout'):
             builds.timeout = float(addon.get_setting('timeout'))
 
-        self.background = addon.get_setting('background') == 'true'
-        self.verify_files = addon.get_setting('verify_files') == 'true'
+        self.background = addon.get_bool_setting('background')
+        self.verify_files = addon.get_bool_setting('verify_files')
         
         funcs.create_directory(openelec.UPDATE_DIR)
 
@@ -127,7 +127,7 @@ class Main(object):
         self.selected_build = selected_build
 
     def check_archive(self):
-        self.archive = addon.get_setting('archive') == 'true'
+        self.archive = addon.get_bool_setting('archive')
         if self.archive:
             archive_root = addon.get_setting('archive_root')
             self.archive_root = utils.ensure_trailing_slash(archive_root)
@@ -293,7 +293,7 @@ class Main(object):
         build_str = utils.format_build(self.selected_build)
         do_notify = False
 
-        if addon.get_setting('confirm_reboot') == 'true':
+        if addon.get_bool_setting('confirm_reboot'):
             if utils.yesno(L10n(32022), " ", L10n(32024).format(build_str)):
                 xbmc.restart()
             else:
@@ -301,7 +301,7 @@ class Main(object):
         else:
             if progress.reboot_countdown(
                     L10n(32054), L10n(32025).format(build_str),
-                    int(addon.get_setting('reboot_count'))):
+                    addon.get_int_setting('reboot_count')):
                 xbmc.restart()
                 sys.exit()
             else:
@@ -314,8 +314,8 @@ class Main(object):
 def new_build_check():
     log.log("Checking for a new build")
     
-    check_official = addon.get_setting('check_official') == 'true'
-    check_interval = int(addon.get_setting('check_interval'))
+    check_official = addon.get_bool_setting('check_official')
+    check_interval = addon.get_int_setting('check_interval')
 
     autoclose_ms = check_interval * 3540000 # check interval in ms - 1 min
     
@@ -333,7 +333,7 @@ def new_build_check():
     else:
         builds.arch = utils.get_arch()
 
-        if addon.get_setting('set_timeout') == 'true':
+        if addon.get_bool_setting('set_timeout'):
             builds.timeout = float(addon.get_setting('timeout'))
 
         build_sources = builds.sources()
@@ -375,13 +375,13 @@ log.log("Set date format to {}".format(builds.date_fmt))
 
 if len(sys.argv) > 1:
     if sys.argv[1] == 'checkperiodic':
-        if addon.get_setting('check') == 'true':
+        if addon.get_bool_setting('check'):
             selected = builds.get_build_from_notify_file()
             if not utils.check_update_files(selected):
                 new_build_check()
 
     elif sys.argv[1] == 'checkonboot':
-        if addon.get_setting('check') == 'true':
+        if addon.get_bool_setting('check'):
             new_build_check()
 
     elif sys.argv[1] == 'confirm':

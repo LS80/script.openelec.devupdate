@@ -26,7 +26,8 @@ def maybe_restore_config():
         with openelec.write_context():
             xbmcvfs.copy(CONFIG_BACKUP_PATH, CONFIG_PATH)
         xbmcvfs.delete(CONFIG_BACKUP_PATH)
-        if progress.restart_countdown(L10n(32040), addon.get_setting('reboot_count')):
+        if progress.reboot_countdown(L10n(32054), L10n(32040),
+                                     addon.get_int_setting('reboot_count')):
             log.log("Restarting")
             xbmc.restart()
             sys.exit()
@@ -37,7 +38,7 @@ def maybe_restore_config():
 def maybe_disable_overclock():
     if (openelec.ARCH.startswith('RPi') and
         os.path.isfile(CONFIG_PATH) and
-        addon.get_setting('disable_overclock') == 'true'):
+        addon.get_bool_setting('disable_overclock')):
 
         with open(CONFIG_PATH, 'r') as a:
             config = a.read()
