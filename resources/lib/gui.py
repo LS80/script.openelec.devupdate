@@ -25,7 +25,7 @@ class InfoDialog(BaseInfoDialog):
         self._text = text
 
     def onInit(self):
-        self.getControl(1).setText(self._title)
+        self.getControl(1).setLabel(self._title)
         self.getControl(2).setText(self._text)
 
 
@@ -39,7 +39,7 @@ class HistoryDialog(BaseInfoDialog):
 
     def onInit(self):
         if self._history is not None:
-            self.getControl(1).setText(L10n(32031))
+            self.getControl(1).setLabel(L10n(32031))
             install_list = self.getControl(2)
             for install in reversed(self._history):
                 li = xbmcgui.ListItem()
@@ -48,7 +48,7 @@ class HistoryDialog(BaseInfoDialog):
                 li.setProperty('timestamp', install.timestamp.strftime("%Y-%m-%d %H:%M"))
                 install_list.addItem(li)
         else:
-            self.getControl(1).setText(L10n(32032))
+            self.getControl(1).setLabel(L10n(32032))
 
 
 class BuildSelectDialog(xbmcgui.WindowXMLDialog):

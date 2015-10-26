@@ -15,7 +15,7 @@
                 <texture colordiffuse="ff111111">white.png</texture>
             </control>
  
-            <control type="textbox" id="1">
+            <control type="label" id="1">
                 <description>Title</description>
                 <width>200</width>
                 <height>90</height>
