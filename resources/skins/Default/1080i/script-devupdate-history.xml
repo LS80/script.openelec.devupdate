@@ -5,7 +5,7 @@
         <control type="group">
             <animation effect="fade" start="0" end="100" time="600">WindowOpen</animation>
             <animation effect="fade" start="1000" end="0" time="600">WindowClose</animation>
-            <width>1920</width>
+            <width>1100</width>
             <height>1080</height>
             <centerleft>960</centerleft>
             <centertop>540</centertop>
@@ -17,9 +17,8 @@
  
             <control type="label" id="1">
                 <description>Title</description>
-                <width>1920</width>
+                <width>1100</width>
                 <height>90</height>
-                <left>0</left>
                 <top>40</top>
                 <align>center</align>
                 <textcolor>ffffffff</textcolor>
@@ -27,46 +26,45 @@
 
             <control type="panel" id="2">
                 <top>131</top>
-                <left>580</left>
-                <width>1780</width>
+                <left>170</left>
                 <height>880</height>
                 <pagecontrol>10</pagecontrol>
                 <scrolltime>2000</scrolltime>
-                
-                <itemlayout height="44" width="1780">
+
+                <itemlayout height="44" width="820">
                     <control type="label">
-                            <left>0</left>
-                            <width>260</width>
-                            <height>44</height>
-                            <textcolor>ffbbbbbb</textcolor>
-                            <info>ListItem.Property(timestamp)</info>
+                        <left>0</left>
+                        <width>260</width>
+                        <height>44</height>
+                        <textcolor>ffbbbbbb</textcolor>
+                        <info>ListItem.Property(timestamp)</info>
                     </control>
                     <control type="label">
-                            <left>260</left>
-                            <width>160</width>
-                            <height>44</height>
-                            <align>right</align>
-                            <textcolor>ff87bde1</textcolor>
-                            <info>ListItem.Property(version)</info>
+                        <left>260</left>
+                        <width>160</width>
+                        <height>44</height>
+                        <align>right</align>
+                        <textcolor>ff87bde1</textcolor>
+                        <info>ListItem.Property(version)</info>
                     </control>
                     <control type="label">
-                            <left>450</left>
-                            <width>400</width>
-                            <height>44</height>
-                            <align>left</align>
-                            <textcolor>ff888888</textcolor>
-                            <info>ListItem.Property(source)</info>
+                        <left>450</left>
+                        <width>400</width>
+                        <height>44</height>
+                        <align>left</align>
+                        <textcolor>ff888888</textcolor>
+                        <info>ListItem.Property(source)</info>
                     </control>
                 </itemlayout>
-                
-                <focusedlayout height="44" width="1780">
+
+                <focusedlayout height="44" width="820">
                 </focusedlayout>
-                
+
             </control>
 
             <control type="scrollbar" id="10">
                 <top>131</top>
-                <left>1912</left>
+                <left>1092</left>
                 <height>880</height>
                 <texturesliderbackground colordiffuse="ff999999">white.png</texturesliderbackground>
                 <texturesliderbar colordiffuse="ffffffff">white.png</texturesliderbar>
