@@ -189,7 +189,10 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self.close()
 
     def onFocus(self, controlID):
-        self._builds_focused = False
+        if controlID != self.BUILD_LIST_ID:
+            self._info_textbox.setText("")
+            self._builds_focused = False
+
         if controlID == self.BUILD_LIST_ID:
             self._builds_focused = True
             self._set_build_info()
@@ -227,7 +230,6 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
         return info
 
     def _set_build_info(self):
-        info = ""
         if self._builds_focused:
             selected_item = self._build_list.getSelectedItem()
             try:
@@ -238,10 +240,11 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                 try:
                     info = self._build_infos[build_version].summary
                 except KeyError:
+                    info = ""
                     log.log("Build info for build {} not found".format(build_version))
                 else:
                     log.log("Info for build {}:\n\t{}".format(build_version, info))
-        self._info_textbox.setText(info)
+            self._info_textbox.setText(info)
 
     def _get_and_set_build_info(self, build_url):
         self._build_infos = self._get_build_infos(build_url)
