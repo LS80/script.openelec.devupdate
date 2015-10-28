@@ -1,3 +1,7 @@
+4.36.0
+ - Make the history dialog the same size as the main dialog.
+ - Tooltip for selecting a build source.
+
 4.35.0
  - Changed the build date display to use the Kodi short date format.
  - Added a setting to restore the old build date format.
