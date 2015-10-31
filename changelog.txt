@@ -1,3 +1,6 @@
+4.36.1
+ - Fixed a script error when the update directory does not exist.
+
 4.36.0
  - Make the history dialog the same size as the main dialog.
  - Tooltip for selecting a build source.
