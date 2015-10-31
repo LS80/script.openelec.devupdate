@@ -206,7 +206,7 @@ class Main(object):
             self.maybe_copy_to_archive()
         
             log.log("Moving tar file to " + self.update_tar_path)
-            os.rename(self.temp_tar_path, self.update_tar_path)
+            os.renames(self.temp_tar_path, self.update_tar_path)
 
         addon.set_setting('update_pending', 'true')
 
