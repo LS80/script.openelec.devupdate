@@ -1,3 +1,6 @@
+4.37.0
+ - Added a Spanish translation. Thanks Gaudi.
+
 4.36.1
  - Fixed a script error when the update directory does not exist.
 
