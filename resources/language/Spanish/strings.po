@@ -1,0 +1,430 @@
+# Kodi Media Center language file
+# Addon Name: OpenELEC Dev Update
+# Addon id: script.openelec.devupdate
+# Addon Provider: Leopold
+msgid ""
+msgstr ""
+"Project-Id-Version: Kodi Addons\n"
+"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2015-11-06 13:46-0300\n"
+"Last-Translator: Gaudi <sebac111@hotmail.com>\n"
+"Language-Team: English (http://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.8.6\n"
+
+msgctxt "#32001"
+msgid "Confirm upgrade"
+msgstr "Confirmar actualización"
+
+msgctxt "#32002"
+msgid "Upgrade"
+msgstr "Actualizad"
+
+msgctxt "#32003"
+msgid "{}  to  {} ?"
+msgstr "¿{}  a  {} ?"
+
+msgctxt "#32004"
+msgid "Confirm downgrade"
+msgstr "Confirmar degradación de versión"
+
+msgctxt "#32005"
+msgid "Downgrade"
+msgstr "Degradar versión"
+
+msgctxt "#32006"
+msgid "Confirm install"
+msgstr "Confirmar la instalación"
+
+msgctxt "#32007"
+msgid "Build  {}  is already installed."
+msgstr "La compilación  {}  ya se encuentra instalada."
+
+msgctxt "#32008"
+msgid "Continue?"
+msgstr "¿Continuar?"
+
+msgctxt "#32009"
+msgid "Directory Error"
+msgstr "Error de carpeta"
+
+msgctxt "#32010"
+msgid "{} is not accessible."
+msgstr "{} no se encuentra accesible"
+
+msgctxt "#32011"
+msgid "Check the archive directory in the addon settings."
+msgstr "Verifique la carpeta de almacenamiento en la configuración del addon."
+
+msgctxt "#32012"
+msgid "Unable to create {}."
+msgstr "Imposible crear {}."
+
+msgctxt "#32013"
+msgid "Check the archive directory permissions."
+msgstr "Verifique los permisos de la carpeta de almacenamiento."
+
+msgctxt "#32014"
+msgid "Downloading"
+msgstr "Descargando"
+
+msgctxt "#32015"
+msgid "Decompressing"
+msgstr "Descomprimiendo"
+
+msgctxt "#32016"
+msgid "Retrieving tar file from archive"
+msgstr "Recuperando archivo tar del almacenamiento"
+
+msgctxt "#32017"
+msgid "Copying to archive"
+msgstr "Copiando al almacenamiendo"
+
+msgctxt "#32018"
+msgid "Verifying"
+msgstr "Verificando"
+
+msgctxt "#32019"
+msgid "{} md5 mismatch"
+msgstr "{} error de md5"
+
+msgctxt "#32020"
+msgid "The {} image is corrupt."
+msgstr "La imagen {} está corrupta."
+
+msgctxt "#32021"
+msgid "The update file will be removed."
+msgstr "El archivo de actualización será removido."
+
+msgctxt "#32022"
+msgid "Confirm reboot"
+msgstr "Confirmar reinicio"
+
+msgctxt "#32024"
+msgid "Reboot now to install build  {}?"
+msgstr "¿Reiniciar ahora para instalar la compilación  {}?"
+
+msgctxt "#32025"
+msgid "Build  {}  is ready to install."
+msgstr "La compilación  {}  está lista para ser instalada."
+
+msgctxt "#32026"
+msgid "Build  {}  will install on the next reboot"
+msgstr "La compilación  {}  se instalará en el próximo reinicio"
+
+msgctxt "#32027"
+msgid "A more recent build is available:  {}"
+msgstr "Está disponible una versión más actualizada:  {}"
+
+msgctxt "#32028"
+msgid "Current build:  {}"
+msgstr "Compilación actual:  {}"
+
+msgctxt "#32029"
+msgid "Show builds available to install?"
+msgstr "¿Mostrar compilaciones disponibles para instalar?"
+
+msgctxt "#32030"
+msgid "Build  {}  is available"
+msgstr "La compilación  {}  está disponible"
+
+msgctxt "#32031"
+msgid "Install History"
+msgstr "Historial de instalación"
+
+msgctxt "#32032"
+msgid "Install history not available"
+msgstr "Historial de instalación no disponible"
+
+msgctxt "#32034"
+msgid "Update cancelled"
+msgstr "Actualización cancelada"
+
+msgctxt "#32035"
+msgid "Build {}"
+msgstr "Compilación {}"
+
+msgctxt "#32036"
+msgid "Open settings"
+msgstr "Abrir ajustes"
+
+msgctxt "#32037"
+msgid "Show install history"
+msgstr "Mostar historial de instalación"
+
+msgctxt "#32038"
+msgid "Cancel pending installation"
+msgstr "Cancelar instalación pendiente"
+
+msgctxt "#32039"
+msgid "No builds were found for {}."
+msgstr "No se han encontrado compilaciones para {}."
+
+msgctxt "#32040"
+msgid "Ready to reboot to re-enable overclocking."
+msgstr "Listo para reiniciar para reactivar overclocking."
+
+msgctxt "#32041"
+msgid "Connection Error"
+msgstr "Error de conexión"
+
+msgctxt "#32042"
+msgid "Please check you have a connection to the internet."
+msgstr "Por favor verifique que tiene conexión a internet"
+
+msgctxt "#32043"
+msgid "URL not found."
+msgstr "URL no encontrada."
+
+msgctxt "#32044"
+msgid "URL Error"
+msgstr "Error de URL"
+
+msgctxt "#32045"
+msgid "Please check the URL."
+msgstr "Por favor verifique la URL."
+
+msgctxt "#32046"
+msgid "Please check the log file."
+msgstr "Por favor verifique el archivo de registro."
+
+msgctxt "#32047"
+msgid "Write Error"
+msgstr "Error de escritura"
+
+msgctxt "#32048"
+msgid "Check the directory."
+msgstr "Verifique carpeta."
+
+msgctxt "#32049"
+msgid "Decompression Error"
+msgstr "Error de descompresión"
+
+msgctxt "#32050"
+msgid "An error occurred during decompression:"
+msgstr "Ocurrión un error durante la descompresión:"
+
+msgctxt "#32052"
+msgid "An installation is pending for {}."
+msgstr "Hay una instalación pendiente para {}."
+
+msgctxt "#32053"
+msgid "An installation is pending."
+msgstr "Hay una instalación pendiente."
+
+msgctxt "#32054"
+msgid "Rebooting"
+msgstr "Reiniciando"
+
+msgctxt "#32055"
+msgid "Reboot now to install the update?"
+msgstr "¿Reiniciar ahora para instalar la actualización?"
+
+msgctxt "#32056"
+msgid "Please reboot"
+msgstr "Por favor reinicie"
+
+msgctxt "#32057"
+msgid "Rebooting in {} seconds..."
+msgstr "Reiniciando en {} segundos..."
+
+msgctxt "#32058"
+msgid "Rebooting in 1 second..."
+msgstr "Reiniciando en 1 segundo..."
+
+msgctxt "#32059"
+msgid "Rebooting..."
+msgstr "Reiniciando..."
+
+msgctxt "#32060"
+msgid "ERROR: {}"
+msgstr "ERROR: {}"
+
+msgctxt "#32061"
+msgid "Backup"
+msgstr "Copia de seguridad"
+
+msgctxt "#32062"
+msgid "Run Backup now?"
+msgstr "¿Ejecutar copia de seguridad ahora?"
+
+msgctxt "#32063"
+msgid "This is recommended"
+msgstr "Se recomienda"
+
+msgctxt "#32064"
+msgid "Build {} was installed successfully"
+msgstr "La compilación {} se instaló satisfactoriamente"
+
+msgctxt "#32065"
+msgid "Build {} was not installed"
+msgstr "La compilación {} no se instaló"
+
+msgctxt "#32066"
+msgid "Invalid custom source URL"
+msgstr "Origen URL personalizado inválido"
+
+msgctxt "#32101"
+msgid "General"
+msgstr "General"
+
+msgctxt "#32102"
+msgid "Selected source name"
+msgstr "Nobre de origen seleccionado"
+
+msgctxt "#32103"
+msgid "Show progress in background"
+msgstr "Mostrar progreso en el fondo"
+
+msgctxt "#32104"
+msgid "Archive tar files (for quicker re-installs)"
+msgstr "Almacenar archivos tar (para reinstalaciones más rápidas)"
+
+msgctxt "#32105"
+msgid "Archive directory"
+msgstr "Carpeta de almacenamiendo"
+
+msgctxt "#32106"
+msgid "Verify update files"
+msgstr "Verificar los archivos de actualización"
+
+msgctxt "#32107"
+msgid "Never"
+msgstr "Nunca"
+
+msgctxt "#32108"
+msgid "Prompt every time"
+msgstr "Preguntar cada vez"
+
+msgctxt "#32109"
+msgid "Always"
+msgstr "Siempre"
+
+msgctxt "#32110"
+msgid "Notifications"
+msgstr "Notificaciones"
+
+msgctxt "#32111"
+msgid "Enable notifications"
+msgstr "Habilitar notificaciones"
+
+msgctxt "#32112"
+msgid "Check only on boot"
+msgstr "Verificar solo al inicio"
+
+msgctxt "#32113"
+msgid "Check interval in hours (requires restart)"
+msgstr "Intervalo de verificación en horas (requiere reinicio)"
+
+msgctxt "#32114"
+msgid "Show dialog"
+msgstr "Mostrar diálogo"
+
+msgctxt "#32115"
+msgid "When not playing video"
+msgstr "Cuando no se esté reproduciendo video"
+
+msgctxt "#32116"
+msgid "Enable for official releases"
+msgstr "Habilitar para versiones oficiales"
+
+msgctxt "#32117"
+msgid "Enable reboot confirmation dialog"
+msgstr "Habilitar el diálogo de confirmación de reinicio"
+
+msgctxt "#32118"
+msgid "Reboot countdown (seconds)"
+msgstr "Cuenta regresiva de reinicio (segundos)"
+
+msgctxt "#32119"
+msgid "Custom Sources"
+msgstr "Orígenes personalizados"
+
+msgctxt "#32121"
+msgid "Enable"
+msgstr "Habilitar"
+
+msgctxt "#32122"
+msgid "Build type"
+msgstr "Tipo de compilación"
+
+msgctxt "#32123"
+msgid "Development"
+msgstr "Desarrollo"
+
+msgctxt "#32124"
+msgid "Release"
+msgstr "Version"
+
+msgctxt "#32125"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "#32126"
+msgid "URL"
+msgstr "URL"
+
+msgctxt "#32127"
+msgid "Subdirectory"
+msgstr "Subcarpeta"
+
+msgctxt "#32128"
+msgid "Other"
+msgstr "Otro"
+
+msgctxt "#32129"
+msgid "Enable subdirectory"
+msgstr "Habilitar subcarpeta"
+
+msgctxt "#32130"
+msgid "Other subdirectory"
+msgstr "Otra subcarpeta"
+
+msgctxt "#32131"
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgctxt "#32132"
+msgid "Override installed build type"
+msgstr "Sustituir tipo de compilación instalada"
+
+msgctxt "#32133"
+msgid "Build type to install"
+msgstr "Tipo de versión a instalar"
+
+msgctxt "#32134"
+msgid "Disable overclocking during update"
+msgstr "Desactivar el overclocking durante la actualización"
+
+msgctxt "#32135"
+msgid "Also update extlinux"
+msgstr "Actualizar también extlinux"
+
+msgctxt "#32136"
+msgid "Set HTTP timeout"
+msgstr "Configurar el tiempo de espera HTTP"
+
+msgctxt "#32137"
+msgid "Timeout (seconds)"
+msgstr "Tiempo de espera (segundos)"
+
+msgctxt "#32138"
+msgid "Enable debug logging"
+msgstr "Habilitar el registro de depuración"
+
+msgctxt "#32139"
+msgid "Set custom build date format"
+msgstr "Configurar el formato de fecha para compilaciones personalizadas"
+
+msgctxt "#32140"
+msgid "Date format"
+msgstr "Formato de fecha"
+
+msgctxt "#32141"
+msgid "Select to show the list of available builds"
+msgstr "Seleccione para mostrar una lista de compilaciones disponibles"
