@@ -1,3 +1,6 @@
+4.37.1
+ - Fixed the notification of a pending installation.
+
 4.37.0
  - Added a Spanish translation. Thanks Gaudi.
 
