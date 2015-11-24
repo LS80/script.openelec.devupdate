@@ -59,7 +59,7 @@ def check_update_files(selected, force_dialog=False):
                 xbmc.restart()
                 sys.exit(0)
         else:
-            notify(" ".join(msg, L10n(32056)))
+            notify(" ".join((msg, L10n(32056))))
 
         return True
     else:
