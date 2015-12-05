@@ -55,7 +55,7 @@ class Build(object):
 
     def __lt__(self, other):
         return self._datetime < other._datetime
-    
+
     def __gt__(self, other):
         return self._datetime > other._datetime
 
@@ -71,7 +71,7 @@ class Build(object):
     def date(self):
         return self._datetime.strftime(date_fmt)
 
-    @property    
+    @property
     def version(self):
         return self._version
 
@@ -94,10 +94,10 @@ class Release(Build):
         else:
             self._has_date = False
         self.release = [int(p) for p in version.split('.')]
-        
+
     def is_valid(self):
         return self._has_date and self.release >= self.MIN_VERSION
-    
+
     __nonzero__ = is_valid
 
     @classmethod
@@ -117,7 +117,7 @@ class Release(Build):
         iter_contents = iter(soup.contents)
         return dict((unicode(iter_contents.next().string), tag['datetime'])
                     for tag in iter_contents)
-        
+
     @classmethod
     def maybe_get_tags(cls):
         if cls.tags is None:
@@ -173,7 +173,7 @@ class BuildLinkBase(object):
         name, ext = os.path.splitext(self.filename)
         self.tar_name = self.filename if ext == '.tar' else name
         self.compressed = ext == '.bz2'
-            
+
         return response.raw
 
 
@@ -246,7 +246,7 @@ class BuildLinkExtractor(BaseExtractor):
 class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
 
-        
+
 class ReleaseLinkExtractor(BuildLinkExtractor):
     """Class to extract release links from a URL.
 
@@ -375,7 +375,7 @@ class BuildsURL(object):
         self.url = url
         if subdir:
             self.add_subdir(subdir)
-        
+
         self._extractor = extractor
         self.info_extractors = info_extractors
 
@@ -497,7 +497,7 @@ def get_build_from_notify_file():
 def main():
     """Test function to print all available builds when executing the module."""
     import sys
-    
+
     installed_build = get_installed_build()
 
     def get_info(build_url):
