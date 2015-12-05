@@ -313,7 +313,7 @@
  - Handle URL problems properly.
 
 2.18.3
- - Fixed a downloading problem caused by the previous change. 
+ - Fixed a downloading problem caused by the previous change.
 
 2.18.2
  - Fixed a possible problem retrieving the build list from a custom URL.
@@ -354,7 +354,7 @@
  - Create the directory for temporary downloads if it doesn't exist.
 
 2.16.0
- - Handle the new build version format with the git shorthash (-r12345-g123abc.tar) 
+ - Handle the new build version format with the git shorthash (-r12345-g123abc.tar)
 
 2.15.2
  - Fixed potential Raspberry Pi infinite reboot problem introduced in 2.15.1.
@@ -475,7 +475,7 @@
  - Reduced the delay between starting the add-on and the busy indicator appearing.
 
 2.0.8
- - Fixed a possible script error when using nightly build sources. 
+ - Fixed a possible script error when using nightly build sources.
 
 2.0.7
  - Fixed build list to also show uncompressed tar file builds.
@@ -516,7 +516,7 @@
 
 1.1.5
  - Official releases now have an associated date.
- 
+
 1.1.4
  - Fixed the slow startup problem.
  - Fixed an issue with official daily build downloads.
@@ -539,7 +539,7 @@
  - Added a progress bar for the md5 verification (slow on RPi).
 
 1.0.8
- - Added a speed indicator to the progress bar.	
+ - Added a speed indicator to the progress bar.
  - Worked around the missing progress dialog bug (trac #13467).
  - Added verification of the md5 sums.
 
@@ -562,15 +562,15 @@
  - The addon will now auto-update.
 
 1.0.2
- - Updated the official build URL. 
+ - Updated the official build URL.
  - Catch write errors and handle them with a popup message box.
-    
+
 1.0.1
  - Changed the addon id to script.openelec.devupdate.
  - Added a debug logging setting.
  - Better handle url errors by popping up a dialog message box and
    either log the error cleanly, or open up the settings to attempt
    to correct the problem.
-    
+
 1.0.0
  - Initial release.
