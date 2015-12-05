@@ -349,7 +349,7 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
 
 def get_milhouse_build_info_extractors():
     if arch.startswith("RPi"):
-        threads = (224025, 231092)
+        threads = (224025, 231092, 250817)
     else:
         threads = (238393,)
 
