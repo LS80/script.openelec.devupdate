@@ -1,3 +1,6 @@
+4.37.2
+ - Added new Milhouse RPi builds thread for v17.
+
 4.37.1
  - Fixed the notification of a pending installation.
 
