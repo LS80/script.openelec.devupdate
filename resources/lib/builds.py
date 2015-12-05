@@ -327,7 +327,7 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
     R = re.compile("#(\d{4}[a-z]?).*?\((.+)\)")
 
     def _get_info(self, soup):
-        for post in soup.find_all('div', 'post-body', limit=2):
+        for post in soup.find_all('div', 'post-body', limit=3):
             for ul in post('ul'):
                 for li in ul('li'):
                     m = self.R.match(li.get_text())
