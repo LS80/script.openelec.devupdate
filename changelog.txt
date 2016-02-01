@@ -1,3 +1,6 @@
+4.38.0
+ - Reversed the order of the builds in the command line script.
+
 4.37.2
  - Added new Milhouse RPi builds thread for v17.
 
