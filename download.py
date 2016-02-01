@@ -43,10 +43,15 @@ parser.add_argument('-r', '--releases', action='store_true',
 args = parser.parse_args()
 
 
-def get_choice(items, suffix=lambda item: " "):
-    print
+def get_choice(items, suffix=lambda item: " ", reverse=False):
     num_width = len(str(len(items) - 1))
-    for i, item in enumerate(items):
+
+    if reverse:
+        items_iter = reversed(list(enumerate(items)))
+    else:
+        items_iter = enumerate(items)
+
+    for i, item in items_iter:
         print "[{num:{width}d}] {item:s}\t{suffix}".format(
             num=i, item=item, width=num_width, suffix=suffix(item))
     print '-' * 50
@@ -136,7 +141,7 @@ except builds.BuildURLError as e:
     print str(e)
 else:
     if links:
-        build = get_choice(links, build_suffix)
+        build = get_choice(links, build_suffix, reverse=True)
         remote = build.remote_file()
         file_path = os.path.join(openelec.UPDATE_DIR, build.filename)
         print
