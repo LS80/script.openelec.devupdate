@@ -9,6 +9,7 @@
     <import addon="script.module.beautifulsoup4" version="4.3.2" optional="false"/>
     <import addon="script.module.requests" version="2.3.0" optional="false"/>
     <import addon="script.module.html2text" version="2015.6.21" optional="false"/>
+    <import addon="script.module.pyrollbar" version="0.11.2" optional="false"/>
     <import addon="script.xbmcbackup" version="0.5.2" optional="false"/>
   </requires>
   <extension point="xbmc.python.script" library="default.py"/>
