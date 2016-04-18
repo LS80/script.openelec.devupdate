@@ -122,7 +122,9 @@ class Release(Build):
     def maybe_get_tags(cls):
         if cls.tags is None:
             cls.tags = {}
-            html = requests.get("http://github.com/OpenELEC/OpenELEC.tv/releases").text
+            releases_url = "http://github.com/{dist}/{dist}.tv/tags".format(
+                                dist=openelec.dist())
+            html = requests.get(releases_url).text
             while True:
                 cls.tags.update(cls.get_tags_page_dict(html))
                 soup = BeautifulSoup(html, 'html.parser',
@@ -218,7 +220,7 @@ class BaseExtractor(object):
 
 class BuildLinkExtractor(BaseExtractor):
     """Base class for extracting build links from a URL"""
-    BUILD_RE = (".*OpenELEC.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
+    BUILD_RE = (".*{dist}.*-{arch}-(?:\d+\.\d+-|)[a-zA-Z]+-(\d+)"
                 "-r\d+[a-z]*-g([0-9a-z]+)\.tar(|\.bz2)")
     CSS_CLASS = None
 
@@ -228,7 +230,7 @@ class BuildLinkExtractor(BaseExtractor):
         if self.CSS_CLASS is not None:
             args.append(self.CSS_CLASS)
 
-        self.build_re = re.compile(self.BUILD_RE.format(arch=arch))
+        self.build_re = re.compile(self.BUILD_RE.format(dist=openelec.dist(), arch=arch), re.I)
 
         soup = BeautifulSoup(html, 'html.parser',
                              parse_only=SoupStrainer(*args, href=self.build_re))
@@ -252,7 +254,7 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
 
        Overrides _create_link to return a ReleaseLink for each link.
     """
-    BUILD_RE = ".*OpenELEC.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
     BASE_URL = None
 
     def _create_link(self, link):
@@ -262,15 +264,15 @@ class ReleaseLinkExtractor(BuildLinkExtractor):
 
 
 class OfficialReleaseLinkExtractor(ReleaseLinkExtractor):
-    BASE_URL = "http://releases.openelec.tv"
+    BASE_URL = "http://releases.{dist}.tv".format(dist=openelec.dist())
 
 
 class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
-    BUILD_RE = ".*OpenELEC-{arch}.DA-([\d\.]+)\.tar(|\.bz2)"
+    BUILD_RE = ".*{dist}-{arch}.DA-([\d\.]+)\.tar(|\.bz2)"
 
 
 class MilhouseBuildLinkExtractor(BuildLinkExtractor):
-    BUILD_RE = ("OpenELEC-{arch}-(?:\d+\.\d+-|)"
+    BUILD_RE = ("{dist}-{arch}-(?:\d+\.\d+-|)"
                 "Milhouse-(\d+)-(?:r|%23)(\d+[a-z]*)-g[0-9a-z]+\.tar(|\.bz2)")
 
 
@@ -348,10 +350,16 @@ class MilhouseBuildInfoExtractor(BuildInfoExtractor):
 
 
 def get_milhouse_build_info_extractors():
-    if arch.startswith("RPi"):
-        threads = (224025, 231092, 250817)
-    else:
-        threads = (238393,)
+    if openelec.dist() == "openelec":
+        if arch.startswith("RPi"):
+            threads = [224025, 231092, 250817]
+        else:
+            threads = [238393]
+    elif openelec.dist() == "libreelec":
+        if arch.startswith("RPi"):
+            threads = [269814, 298461]
+        else:
+            threads = [269815, 298462]
 
     for thread_id in threads:
         yield MilhouseBuildInfoExtractor.from_thread_id(thread_id)
@@ -412,8 +420,9 @@ class BuildsURL(object):
 class MilhouseBuildsURL(BuildsURL):
     def __init__(self, subdir="master"):
         self.subdir = subdir
+        url = "http://milhouse.{dist}.tv/builds/".format(dist=openelec.dist().lower())
         super(MilhouseBuildsURL, self).__init__(
-            "http://milhouse.openelec.tv/builds/", os.path.join(subdir, arch.split('.')[0]),
+            url, os.path.join(subdir, arch.split('.')[0]),
             MilhouseBuildLinkExtractor, list(get_milhouse_build_info_extractors()))
 
     def __repr__(self):
@@ -427,11 +436,11 @@ dual_audio_builds = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-
 def get_installed_build():
     """Return the currently installed build object."""
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
+    if 'MILHOUSE_BUILD' in openelec.OS_RELEASE:
+        DEVEL_RE = "devel-(\d+)-[r#](\d{4}[a-z]?)"
 
-    if openelec.OS_RELEASE['NAME'] == "OpenELEC":
+    if openelec.OS_RELEASE['NAME'] in ("OpenELEC", "LibreELEC"):
         version = openelec.OS_RELEASE['VERSION']
-        if 'MILHOUSE_BUILD' in openelec.OS_RELEASE:
-            DEVEL_RE = "devel-(\d+)-[r#](\d{4}[a-z]?)"
     else:
         # For testing on a non OpenELEC machine
         version = 'devel-20150503135721-r20764-gbfd3782'
@@ -450,25 +459,27 @@ def sources():
        The GUI will show the sources in the order defined here.
     """
     _sources = OrderedDict()
+    if openelec.OS_RELEASE['NAME'] == "OpenELEC":
+        builds_url = BuildsURL("http://snapshots.openelec.tv",
+                            info_extractors=[CommitInfoExtractor()])
+        _sources["Official Snapshot Builds"] = builds_url
 
-    builds_url = BuildsURL("http://snapshots.openelec.tv",
-                           info_extractors=[CommitInfoExtractor()])
-    _sources["Official Snapshot Builds"] = builds_url
+        if arch.startswith("RPi"):
+            builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
+                                   info_extractors=[CommitInfoExtractor()])
+            _sources["Chris Swan RPi Builds"] = builds_url
+
+        _sources["Official Releases"] = BuildsURL(
+            "http://{dist}.mirrors.uk2.net".format(dist=openelec.dist()),
+            extractor=OfficialReleaseLinkExtractor)
+
+    _sources["Official Archive"] = BuildsURL(
+        "http://archive.{dist}.tv".format(dist=openelec.dist()), extractor=ReleaseLinkExtractor)
 
     _sources["Milhouse Builds"] = MilhouseBuildsURL()
 
     if openelec.debug_system_partition():
         _sources["Milhouse Builds (debug)"] = MilhouseBuildsURL(subdir="debug")
-
-    if arch.startswith("RPi"):
-        builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
-                               info_extractors=[CommitInfoExtractor()])
-        _sources["Chris Swan RPi Builds"] = builds_url
-
-    _sources["Official Releases"] = BuildsURL("http://openelec.mirrors.uk2.net",
-                                              extractor=OfficialReleaseLinkExtractor)
-    _sources["Official Archive"] = BuildsURL("http://archive.openelec.tv",
-                                             extractor=ReleaseLinkExtractor)
 
     return _sources
 

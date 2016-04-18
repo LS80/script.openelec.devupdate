@@ -14,7 +14,7 @@ except KeyError:
     ARCH = 'RPi.arm'
 
 UPDATE_DIR = os.path.join(os.path.expanduser('~'), '.update')
-if OS_RELEASE['NAME'] != "OpenELEC":
+if OS_RELEASE['NAME'] not in ["OpenELEC", "LibreELEC"]:
     try:
         import xbmc
     except ImportError:
@@ -25,6 +25,13 @@ if OS_RELEASE['NAME'] != "OpenELEC":
         UPDATE_DIR = xbmc.translatePath("special://temp/")
 
 UPDATE_IMAGES = ('SYSTEM', 'KERNEL')
+
+def dist():
+    dist = OS_RELEASE['NAME']
+    if dist in ("LibreELEC", "OpenELEC"):
+        return dist.lower()
+    else:
+        return "libreelec"
 
 
 def mount_readwrite():
