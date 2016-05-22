@@ -1,3 +1,6 @@
+4.38.1
+ - Fixed a script error when retrieving dates for official releases.
+
 4.38.0
  - Reversed the order of the builds in the command line script.
 
