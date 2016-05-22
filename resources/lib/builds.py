@@ -102,7 +102,7 @@ class Release(Build):
 
     @classmethod
     def tag_match(cls, tag, attrs):
-        return (tag == 'time' or
+        return (tag == 'relative-time' or
                ('class' in attrs and attrs['class'] == 'tag-name'))
 
     @classmethod
