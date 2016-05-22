@@ -64,7 +64,4 @@ def debug_system_partition():
         return False
     
     system_size_bytes = int(open(size_path).read()) * 512
-    if system_size_bytes >= 384 * 1024*1024:
-        return True
-    else:
-        return False
+    return system_size_bytes >= 384 * 1024*1024
