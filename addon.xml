@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="script.openelec.devupdate"
-       name="OpenELEC Dev Update"
+       name="LibreELEC Dev Update"
        version="4.39.0"
        provider-name="Leopold">
   <requires>
     <import addon="xbmc.python" version="2.13.0"/>
-    <import addon="os.openelec.tv" version="4.0" optional="false"/>
+    <import addon="os.libreelec.tv" version="7.0" optional="false"/>
     <import addon="script.module.beautifulsoup4" version="4.3.2" optional="false"/>
     <import addon="script.module.requests" version="2.3.0" optional="false"/>
     <import addon="script.module.html2text" version="2015.6.21" optional="false"/>
@@ -15,8 +15,8 @@
   <extension point="xbmc.service" library="service.py" start="startup"/>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>Unofficial OpenELEC updater</summary>
-    <description>This add-on downloads OpenELEC update files ready to be installed on the next reboot. Select a predefined source or a custom source defined in the add-on settings, then choose from a list of available builds. Some sources provide full build details which can be viewed by pressing 'Info'.</description>
+    <summary>Unofficial LibreELEC updater</summary>
+    <description>This add-on downloads LibreELEC update files ready to be installed on the next reboot. Select a predefined source or a custom source defined in the add-on settings, then choose from a list of available builds. Some sources provide full build details which can be viewed by pressing 'Info'.</description>
     <disclaimer>Development builds often have major bugs and crashes can happen quite often. Always backup your userdata folder when installing development builds.</disclaimer>
     <forum>http://openelec.tv/forum/128-addons/49855</forum>
     <website>http://ls80.github.io/script.openelec.devupdate</website>

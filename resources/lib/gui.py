@@ -91,7 +91,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
 
         self._build_list = self.getControl(self.BUILD_LIST_ID)
 
-        self.getControl(self.LABEL_ID).setLabel(builds.arch)
+        self.getControl(self.LABEL_ID).setLabel("[B]{}[/B]".format(builds.arch))
 
         self._info_textbox = self.getControl(self.INFO_TEXTBOX_ID)
 
@@ -197,13 +197,13 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
             self._builds_focused = True
             self._set_build_info()
         elif controlID == self.SOURCE_LIST_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32141)))
+            self._info_textbox.setText("[B]{}[/B]".format(L10n(32141)))
         elif controlID == self.SETTINGS_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32036)))
+            self._info_textbox.setText("[B]{}[/B]".format(L10n(32036)))
         elif controlID == self.HISTORY_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32037)))
+            self._info_textbox.setText("[B]{}[/B]".format(L10n(32037)))
         elif controlID == self.CANCEL_BUTTON_ID:
-            self._info_textbox.setText("[COLOR=white]{}[/COLOR]".format(L10n(32038)))
+            self._info_textbox.setText("[B]{}[/B]".format(L10n(32038)))
 
     @utils.showbusy
     def _get_build_links(self, build_url):
@@ -246,7 +246,7 @@ class BuildSelectDialog(xbmcgui.WindowXMLDialog):
                     log.log("Build info for build {} not found".format(build_version))
                 else:
                     log.log("Info for build {}:\n\t{}".format(build_version, info))
-            self._info_textbox.setText(info)
+            self._info_textbox.setText("[B]{}[/B]".format(info))
 
     def _get_and_set_build_info(self, build_url):
         self._build_infos = self._get_build_infos(build_url)

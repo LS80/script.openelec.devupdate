@@ -44,7 +44,7 @@
                         <width>160</width>
                         <height>44</height>
                         <align>right</align>
-                        <textcolor>ff87bde1</textcolor>
+                        <textcolor>ff00a9f6</textcolor>
                         <info>ListItem.Property(version)</info>
                     </control>
                     <control type="label">

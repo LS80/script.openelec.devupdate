@@ -29,7 +29,7 @@ class BuildURLError(Exception):
 
 
 class Build(object):
-    """Holds information about an OpenELEC build and defines how to compare them,
+    """Holds information about a LibreELEC build and defines how to compare them,
        produce a unique hash for dictionary keys, and print them.
     """
     DATETIME_FMT = '%Y%m%d%H%M%S'
@@ -180,14 +180,14 @@ class BuildLinkBase(object):
 
 
 class BuildLink(Build, BuildLinkBase):
-    """Holds information about a link to an OpenELEC build."""
+    """Holds information about a link to a LibreELEC build."""
     def __init__(self, baseurl, link, datetime_str, revision):
         BuildLinkBase.__init__(self, baseurl, link)
         Build.__init__(self, datetime_str, version=revision)
 
 
 class ReleaseLink(Release, BuildLinkBase):
-    """Class for links to OpenELEC release downloads."""
+    """Class for links to LibreELEC release downloads."""
     def __init__(self, baseurl, link, release):
         BuildLinkBase.__init__(self, baseurl, link)
         Release.__init__(self, release)

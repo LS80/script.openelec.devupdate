@@ -33,7 +33,7 @@ import requests
 from resources.lib import builds, openelec, funcs
 
 
-parser = ArgumentParser(description='Download an OpenELEC update')
+parser = ArgumentParser(description='Download a LibreELEC update')
 parser.add_argument('-a', '--arch',
                     help='Set the build type (e.g. Generic.x86_64, RPi.arm)')
 parser.add_argument('-s', '--source', help='Set the build source')
