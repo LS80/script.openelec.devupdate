@@ -64,7 +64,6 @@
         <setting label="32133" type="select" id="arch" values="Generic.i386|Generic.x86_64|ION.x86_64|Intel.x86_64|Fusion.x86_64|Nvidia_Legacy.x86_64|Cuboxi.arm|imx6.arm|RPi.arm|RPi2.arm|WeTek_Play.arm" enable="eq(-1,true)" subsetting="true"/>
         <setting type="sep"/>
         <setting label="32134" type="bool" id="disable_overclock" default="false" visible="System.Platform.Linux.RaspberryPi"/>
-        <setting type="sep"/>
         <setting label="32135" type="bool" id="update_extlinux" default="false" visible="!System.Platform.Linux.RaspberryPi"/>
         <setting type="sep"/>
         <setting label="32136" type="bool" id="set_timeout" default="false"/>
