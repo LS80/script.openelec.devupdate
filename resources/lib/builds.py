@@ -81,63 +81,29 @@ class Release(Build):
 
        Has additional methods for retrieving datetime information from the git tags.
     """
-    DATETIME_FMT = '%Y-%m-%dT%H:%M:%S'
-    MIN_VERSION = [3,95,0]
-    tags = None
+    DATETIME_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
     def __init__(self, version):
         self.release_str = version
-        self.maybe_get_tags()
-        if version in self.tags:
-            self._has_date = True
-            Build.__init__(self, self.tags[version][:19], version)
+        self.release_date = self.get_release_date()
+        if self.release_date:
+            Build.__init__(self, self.release_date, version)
+            self.release = [int(p) for p in version.split('.')]
+
+    def __nonzero__(self):
+        return self.release_date is not None
+
+    def get_release_date(self):
+        url = "https://api.github.com/repos/{dist}/{dist}.tv/git/refs/tags/{version}".format(
+            dist=openelec.dist(), version=self.release_str)
+        resp = requests.get(url)
+        if resp:
+            tag = resp.json()
+            url = tag['object']['url']
+            commit = requests.get(url).json()
+            return commit['committer']['date']
         else:
-            self._has_date = False
-        self.release = [int(p) for p in version.split('.')]
-
-    def is_valid(self):
-        return self._has_date and self.release >= self.MIN_VERSION
-
-    __nonzero__ = is_valid
-
-    @classmethod
-    def tag_match(cls, tag, attrs):
-        return (tag == 'relative-time' or
-               ('class' in attrs and attrs['class'] == 'tag-name'))
-
-    @classmethod
-    def pagination_match(cls, tag, attrs):
-        return (tag == 'div' and
-               ('class' in attrs and attrs['class'] == 'pagination'))
-
-    @classmethod
-    def get_tags_page_dict(cls, html):
-        soup = BeautifulSoup(html, 'html.parser',
-                             parse_only=SoupStrainer(cls.tag_match))
-        iter_contents = iter(soup.contents)
-        return dict((unicode(iter_contents.next().string), tag['datetime'])
-                    for tag in iter_contents)
-
-    @classmethod
-    def maybe_get_tags(cls):
-        if cls.tags is None:
-            cls.tags = {}
-            releases_url = "http://github.com/{dist}/{dist}.tv/tags".format(
-                                dist=openelec.dist())
-            html = requests.get(releases_url).text
-            while True:
-                cls.tags.update(cls.get_tags_page_dict(html))
-                soup = BeautifulSoup(html, 'html.parser',
-                                     parse_only=SoupStrainer(cls.pagination_match))
-                next_page_link = soup.find('a', text='Next')
-                if next_page_link:
-                    href = next_page_link['href']
-                    version = [int(p) for p in href.split('=')[-1].split('.')]
-                    if version < cls.MIN_VERSION:
-                        break
-                    html = requests.get(href).text
-                else:
-                    break
+            return
 
     def __repr__(self):
         return "{}('{}')".format("Release", self.release_str)
@@ -249,26 +215,16 @@ class DropboxBuildLinkExtractor(BuildLinkExtractor):
     CSS_CLASS = 'filename-link'
 
 
-class ReleaseLinkExtractor(BuildLinkExtractor):
-    """Class to extract release links from a URL.
-
-       Overrides _create_link to return a ReleaseLink for each link.
-    """
-    BUILD_RE = ".*{dist}.*-{arch}-([\d\.]+)\.tar(|\.bz2)"
-    BASE_URL = None
-
-    def _create_link(self, link):
-        href = link['href']
-        baseurl = self.BASE_URL if self.BASE_URL is not None else self.url
-        return ReleaseLink(baseurl, href, self.build_re.match(href).group(1))
-
-
-class OfficialReleaseLinkExtractor(ReleaseLinkExtractor):
-    BASE_URL = "http://releases.{dist}.tv".format(dist=openelec.dist())
-
-
-class DualAudioReleaseLinkExtractor(ReleaseLinkExtractor):
-    BUILD_RE = ".*{dist}-{arch}.DA-([\d\.]+)\.tar(|\.bz2)"
+class ReleaseLinkExtractor(BaseExtractor):
+    def __iter__(self):
+        base_url = "http://releases.{dist}.tv".format(dist=openelec.dist())
+        releases = self._json()[openelec.release()]['project'][arch]['releases']
+        for release in releases.itervalues():
+            filename = release['file']['name']
+            release_name = re.search('-(\d+\.\d+\.\d+).tar', filename).group(1)
+            release_link = ReleaseLink(base_url, filename, release_name)
+            if release_link:
+                yield release_link
 
 
 class MilhouseBuildLinkExtractor(BuildLinkExtractor):
@@ -378,7 +334,7 @@ class CommitInfoExtractor(BuildInfoExtractor):
 
 class BuildsURL(object):
     """Class representing a source of builds."""
-    def __init__(self, url, subdir=None, extractor=BuildLinkExtractor,
+    def __init__(self, url=None, subdir=None, extractor=BuildLinkExtractor,
                  info_extractors=[BuildInfoExtractor()]):
         self.url = url
         if subdir:
@@ -429,10 +385,6 @@ class MilhouseBuildsURL(BuildsURL):
         return "{}('{}')".format(self.__class__.__name__, self.subdir)
 
 
-dual_audio_builds = BuildsURL("http://openelec-dualaudio.subcarrier.de/OpenELEC-DualAudio/",
-                              subdir=arch, extractor=DualAudioReleaseLinkExtractor)
-
-
 def get_installed_build():
     """Return the currently installed build object."""
     DEVEL_RE = "devel-(\d+)-r\d+-g([a-z0-9]+)"
@@ -459,22 +411,9 @@ def sources():
        The GUI will show the sources in the order defined here.
     """
     _sources = OrderedDict()
-    if openelec.OS_RELEASE['NAME'] == "OpenELEC":
-        builds_url = BuildsURL("http://snapshots.openelec.tv",
-                            info_extractors=[CommitInfoExtractor()])
-        _sources["Official Snapshot Builds"] = builds_url
 
-        if arch.startswith("RPi"):
-            builds_url = BuildsURL("http://resources.pichimney.com/OpenELEC/dev_builds",
-                                   info_extractors=[CommitInfoExtractor()])
-            _sources["Chris Swan RPi Builds"] = builds_url
-
-        _sources["Official Releases"] = BuildsURL(
-            "http://{dist}.mirrors.uk2.net".format(dist=openelec.dist()),
-            extractor=OfficialReleaseLinkExtractor)
-
-    _sources["Official Archive"] = BuildsURL(
-        "http://archive.{dist}.tv".format(dist=openelec.dist()), extractor=ReleaseLinkExtractor)
+    _sources["Official Releases"] = BuildsURL("http://releases.libreelec.tv/releases.json",
+                                              extractor=ReleaseLinkExtractor)
 
     _sources["Milhouse Builds"] = MilhouseBuildsURL()
 

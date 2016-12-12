@@ -34,6 +34,15 @@ def dist():
         return "libreelec"
 
 
+def release():
+    dist = OS_RELEASE['NAME']
+    if dist in ("LibreELEC", "OpenELEC"):
+        return "{name}-{version}".format(name=OS_RELEASE['NAME'],
+                                         version=OS_RELEASE['VERSION_ID'])
+    else:
+        return "LibreELEC-8.0"
+
+
 def mount_readwrite():
     subprocess.check_call(['mount', '-o', 'rw,remount', '/flash'])
 
