@@ -110,12 +110,12 @@
                         <onup>300</onup>
                         <itemlayout height="65" width="680">
                             <control type="image">
-                                <visible>StringCompare(ListItem.Label2, selected)</visible>
+                                <visible>String.IsEqual(ListItem.Label2, selected)</visible>
                                 <texture border="5">white.png</texture>
                                 <colordiffuse>f02b2b2b</colordiffuse>
                             </control>
                             <control type="label">
-                                <visible>StringCompare(ListItem.Label2, selected)</visible>
+                                <visible>String.IsEqual(ListItem.Label2, selected)</visible>
                                 <width>680</width>
                                 <left>50</left>
                                 <aligny>center</aligny>
@@ -123,7 +123,7 @@
                                 <info>ListItem.Label</info>
                             </control>
                             <control type="label">
-                                <visible>!StringCompare(ListItem.Label2, selected)</visible>
+                                <visible>!String.IsEqual(ListItem.Label2, selected)</visible>
                                 <width>680</width>
                                 <left>50</left>
                                 <aligny>center</aligny>
@@ -137,13 +137,13 @@
                                 <animation effect="slide" start="0,-35" end="0,0" time="200" reversible="false" tween="back" easing="out" condition="Container(10).OnNext">Focus</animation>
                                 
                                 <control type="image">
-                                    <visible>!Control.HasFocus(10) + StringCompare(ListItem.Label2, selected)</visible>
+                                    <visible>!Control.HasFocus(10) + String.IsEqual(ListItem.Label2, selected)</visible>
                                     <texture border="5">white.png</texture>
                                     <colordiffuse>f02b2b2b</colordiffuse>
                                 </control>
                                 
                                 <control type="image">
-                                    <visible>Control.HasFocus(10) + StringCompare(ListItem.Label2, selected)</visible>
+                                    <visible>Control.HasFocus(10) + String.IsEqual(ListItem.Label2, selected)</visible>
                                     <texture border="5">white.png</texture>
                                     <colordiffuse>502b2b2b</colordiffuse>
                                 </control>
@@ -155,7 +155,7 @@
                                 </control>
                                 
                                 <control type="label">
-                                    <visible>!StringCompare(ListItem.Label2, selected)</visible>
+                                    <visible>!String.IsEqual(ListItem.Label2, selected)</visible>
                                     <width>680</width>
                                     <left>50</left>
                                     <aligny>center</aligny>
@@ -164,7 +164,7 @@
                                 </control>
                                 
                                 <control type="label">
-                                    <visible>StringCompare(ListItem.Label2, selected)</visible>
+                                    <visible>String.IsEqual(ListItem.Label2, selected)</visible>
                                     <width>680</width>
                                     <left>50</left>
                                     <aligny>center</aligny>
