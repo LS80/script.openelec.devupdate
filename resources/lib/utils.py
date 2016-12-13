@@ -81,7 +81,7 @@ def notify(msg, time=12000, error=False):
     log.log("Notifying: {}".format(msg))
     if error:
         msg = "[COLOR red]{}[/COLOR]".format(L10n(32060)).format(msg)
-    notification(addon.name, msg, addon.icon_path, time)
+    notification(addon.name, msg, addon.notification_icon_path, time)
 
 
 def showbusy(f):
